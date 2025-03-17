@@ -271,15 +271,15 @@ export default defineComponent({
                                 class="absolute inset-0 flex flex-col justify-center items-center text-white z-20 p-8 text-center">
                                 <div class="flex justify-center items-center mb-6">
                                     <div class="bg-green-500 bg-opacity-20 p-4 rounded-full shadow-md">
-                                        <img src="C:\Users\mrlaw\Desktop\livestox_v2.1\src\assets\vue.svg" alt="Logo" class="w-16 h-16 object-contain">
+                                        <img src="C:\Users\mrlaw\Desktop\livestox_v2.1\src\assets\vue.svg" alt="Logo"
+                                            class="w-16 h-16 object-contain">
                                     </div>
                                 </div>
 
                                 <h2 class="text-4xl font-bold mb-4 drop-shadow-lg">{{ slide.title }}</h2>
                                 <p class="text-xl mb-8 drop-shadow">{{ slide.subtitle }}</p>
                                 <div class="max-w-md transform hover:scale-105 transition-transform duration-300">
-                                    <Card
-                                        class="bg-opacity-10 backdrop-filter backdrop-blur-sm border-0 shadow-xl">
+                                    <Card class="bg-opacity-10 backdrop-filter backdrop-blur-sm border-0 shadow-xl">
                                         <template #content>
                                             <i class="pi pi-quote-left text-green-300 text-2xl mb-2"></i>
                                             <p class="text-lg mb-4 text-green-200">{{ slide.quote }}</p>
@@ -323,7 +323,6 @@ export default defineComponent({
 </template>
 
 <style scoped>
-/* Custom styles for PrimeVue components */
 :deep(.p-password-input) {
     width: 100%;
 }
