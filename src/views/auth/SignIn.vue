@@ -12,6 +12,7 @@ import Avatar from 'primevue/avatar';
 import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
 
+
 export default defineComponent({
     name: 'SignInPage',
     components: {
@@ -172,7 +173,7 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="flex min-h-screen bg-gradient-to-b from-green-50 to-green-100">
+    <div class="flex min-h-screen bg-gradient-to-b from-green-200 to-green-900">
         <Toast position="top-right" />
         <div class="flex flex-col md:flex-row bg-white rounded-3xl shadow-2xl m-auto w-full max-w-6xl overflow-hidden">
             <!-- Left side with form -->
@@ -224,7 +225,7 @@ export default defineComponent({
                                 <label for="rememberMe" class="text-gray-700">Remember me</label>
                             </div>
 
-                            <router-link to="/forgot-password"
+                            <router-link to="/signup"
                                 class="text-green-600 hover:text-green-800 font-medium transition-colors">
                                 Forgot password?
                             </router-link>
@@ -302,7 +303,7 @@ export default defineComponent({
 
                     <!-- Carousel indicators -->
                     <div class="absolute bottom-6 left-0 right-0 flex justify-center z-30">
-                        <div v-for="(slide, index) in carouselSlides" :key="`dot-${index}`" @click="setSlide(index)"
+                        <div v-for="index in carouselSlides.length" :key="`dot-${index}`" @click="setSlide(index)"
                             class="w-3 h-3 mx-1 rounded-full cursor-pointer transition-all duration-300"
                             :class="currentSlide === index ? 'bg-white scale-125' : 'bg-white bg-opacity-50'"></div>
                     </div>
@@ -321,179 +322,3 @@ export default defineComponent({
         </div>
     </div>
 </template>
-
-<style scoped>
-:deep(.p-password-input) {
-    width: 100%;
-}
-
-:deep(.p-password .p-password-panel) {
-    border-radius: 12px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-:deep(.p-inputtext) {
-    border: 1px solid #898b8957;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-}
-
-:deep(.p-inputtext:enabled:hover) {
-    border-color: #a7f3d0;
-}
-
-:deep(.p-button) {
-    background-color: #34d399;
-    border-color: #34d399;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    border-radius: 12px;
-    padding: 0.75rem 1.5rem;
-    font-size: 1.05rem;
-}
-
-:deep(.p-button:hover) {
-    background-color: #10b981;
-    border-color: #10b981;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(52, 211, 153, 0.3);
-}
-
-:deep(.p-button:active) {
-    transform: translateY(0);
-    box-shadow: 0 4px 8px rgba(52, 211, 153, 0.2);
-}
-
-:deep(.p-inputtext:focus) {
-    border-color: #34d399;
-    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
-}
-
-:deep(.p-button-outlined) {
-    color: #34d399;
-    background: #f0fdf4;
-    border: 1px solid #a7f3d0;
-}
-
-:deep(.p-button-outlined:hover) {
-    background: #dcfce7;
-    border-color: #34d399;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(52, 211, 153, 0.15);
-}
-
-:deep(.p-card) {
-    background-color: rgba(255, 255, 255, 0.348);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    border-radius: 16px;
-}
-
-/* Removed floating label styles since we're using static labels now */
-
-:deep(.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight) {
-    border-color: #34d399;
-    background: #34d399;
-}
-
-:deep(.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover) {
-    border-color: #10b981;
-    background: #10b981;
-}
-
-:deep(.p-divider .p-divider-content) {
-    background-color: white;
-}
-
-:deep(.p-toast .p-toast-message) {
-    border-radius: 12px;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-:deep(.p-toast .p-toast-message.p-toast-message-info) {
-    background: rgba(165, 243, 252, 0.9);
-    border-left: 6px solid #06b6d4;
-}
-
-:deep(.p-toast .p-toast-message.p-toast-message-success) {
-    background: rgba(167, 243, 208, 0.9);
-    border-left: 6px solid #10b981;
-}
-
-:deep(.p-toast .p-toast-message.p-toast-message-warn) {
-    background: rgba(254, 215, 170, 0.9);
-    border-left: 6px solid #f59e0b;
-}
-
-:deep(.p-toast .p-toast-message.p-toast-message-error) {
-    background: rgba(252, 165, 165, 0.9);
-    border-left: 6px solid #ef4444;
-}
-
-:deep(.p-toast .p-toast-message .p-toast-message-content .p-toast-summary) {
-    font-weight: 600;
-}
-
-:deep(.p-toast .p-toast-message .p-toast-message-content .p-toast-detail) {
-    margin-top: 0.25rem;
-}
-
-/* Carousel transitions */
-.slide-enter-active,
-.slide-leave-active {
-    transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.slide-enter-from {
-    opacity: 0;
-    transform: translateX(30px);
-}
-
-.slide-leave-to {
-    opacity: 0;
-    transform: translateX(-30px);
-}
-
-.slide-enter-to,
-.slide-leave-from {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-/* Shadow and other UI effects */
-.shadow-2xl {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-/* Animation for background image */
-@keyframes slow-zoom {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.05);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.animate-slow-zoom {
-    animation: slow-zoom 20s infinite ease-in-out;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .carousel-container {
-        height: 300px;
-    }
-
-    :deep(.p-toast) {
-        width: 90%;
-        max-width: 300px;
-    }
-}
-</style>
