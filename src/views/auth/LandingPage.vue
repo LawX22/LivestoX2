@@ -1,6 +1,6 @@
 <script>
 import { defineComponent, ref } from 'vue';
-import NavBar from '../../components/Landing/Navbar.vue';
+import NavBar from '../../components/Landing/NavBar.vue';
 import Footer from '../../components/Landing/Footer.vue';
 
 export default defineComponent({

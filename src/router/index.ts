@@ -1,16 +1,33 @@
 import { createRouter, createWebHistory } from 'vue-router';
+
+// Auth Pages
 import LandingPage from '../views/auth/LandingPage.vue';
 import SignIn from '../views/auth/SignIn.vue';
 import SignUp from '../views/auth/SignUp.vue';
+
+// Admin Pages
+import AdminDashboard from '../views/admin/AdminDashboard.vue';
+import UserManagement from '../views/admin/UserManagement.vue';
+
+// Main Pages
 import Dashboard from '../views/Dashboard.vue';
 
+// Define Routes
 const routes = [
-  { path: '/', component: LandingPage }, 
-  { path: '/signin', component: SignIn },
-  { path: '/signup', component: SignUp },
-  { path: '/dashboard', component: Dashboard }
+  // Auth Routes
+  { path: '/', component: LandingPage, name: 'LandingPage' },
+  { path: '/signin', component: SignIn, name: 'SignIn' },
+  { path: '/signup', component: SignUp, name: 'SignUp' },
+
+  // Main Route
+  { path: '/dashboard', component: Dashboard, name: 'Dashboard' },
+
+  // Admin Routes
+  { path: '/admin/adminDashboard', component: AdminDashboard, name: 'AdminDashboard' },
+  { path: '/admin/userManagement', component: UserManagement, name: 'UserManagement' }
 ];
 
+// Create Router
 const router = createRouter({
   history: createWebHistory(),
   routes
