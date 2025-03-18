@@ -102,13 +102,6 @@ export default defineComponent({
             }
         ];
 
-        // Steps configuration - added click events
-        const steps = [
-            { label: 'Personal', command: () => goToStep(0) },
-            { label: 'Security', command: () => goToStep(1) },
-            { label: 'Verification', command: () => goToStep(2) },
-            { label: 'Agreement', command: () => goToStep(3) }
-        ];
 
         // Debounce function implementation
         function debounce(fn: Function, delay: number) {
@@ -124,22 +117,7 @@ export default defineComponent({
             checkUsernameAvailability();
         }, 500);
 
-        // Function to navigate directly to a specific step
-        const goToStep = (step: number) => {
-            // Only allow going to previous steps or current step
-            if (step <= currentStep.value) {
-                currentStep.value = step;
-                submitted.value = false;
-            } else {
-                // If trying to skip ahead, show a message
-                toast.add({
-                    severity: 'info',
-                    summary: 'Complete Current Step',
-                    detail: 'Please complete the current step before proceeding',
-                    life: 3000
-                });
-            }
-        };
+
 
         // Validation functions
         const validatePersonalInfo = (): boolean => {
@@ -191,6 +169,7 @@ export default defineComponent({
             return true;
         };
 
+        // Replace the validateSecurityInfo function with this updated version:
         const validateSecurityInfo = (): boolean => {
             if (!password.value || !confirmPassword.value) {
                 toast.add({
@@ -202,7 +181,7 @@ export default defineComponent({
                 return false;
             }
 
-            // Password validation
+            // Password validation - simplified
             if (password.value.length < 8) {
                 toast.add({
                     severity: 'error',
@@ -213,12 +192,13 @@ export default defineComponent({
                 return false;
             }
 
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            // Less strict password regex that still enforces security
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
             if (!passwordRegex.test(password.value)) {
                 toast.add({
                     severity: 'error',
                     summary: 'Password Requirements',
-                    detail: 'Password must include uppercase, lowercase, number, and special character',
+                    detail: 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character',
                     life: 3000
                 });
                 return false;
@@ -489,8 +469,6 @@ export default defineComponent({
             usernameError,
             // Form options
             genderOptions,
-            // Steps
-            steps,
             // Functions
             nextStep,
             prevStep,
@@ -531,10 +509,19 @@ export default defineComponent({
                         <h1 class="text-3xl font-bold mb-3 text-green-700">Create an Account</h1>
                         <p class="text-gray-600">Join the LivestoX community and start your journey.</p>
                     </div>
-
                     <!-- Steps indicator -->
-                    <div class="mb-8 custom-steps">
-                        <Steps :model="steps" :activeIndex="currentStep" />
+                    <div class="mb-8">
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Step {{ currentStep + 1 }} of 4</span>
+                                <span class="text-sm text-gray-600">{{ ['Personal', 'Security', 'Verification',
+                                    'Agreement'][currentStep] }}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300 ease-in-out"
+                                    :style="{ width: `${(currentStep + 1) * 25}%` }"></div>
+                            </div>
+                        </div>
                     </div>
                     <form @submit.prevent="nextStep" class="w-full max-w-md mx-auto">
                         <!-- Step 1: Personal Information -->
@@ -624,6 +611,7 @@ export default defineComponent({
 
                         <!-- Step 2: Security Information -->
                         <div v-if="currentStep === 1">
+                            <!-- Replace the password and confirm password fields in your template with these: -->
                             <div class="mb-6">
                                 <label for="password" class="block text-gray-700 font-medium mb-2">Password *</label>
                                 <Password id="password" v-model="password" placeholder="Create a strong password"
@@ -631,8 +619,7 @@ export default defineComponent({
                                     :class="{ 'p-invalid': submitted && !password }" aria-describedby="password-error"
                                     inputClass="p-3" />
                                 <small id="password-error" v-if="submitted && !password"
-                                    class="p-error block mt-1">Password
-                                    is required.</small>
+                                    class="p-error block mt-1">Password is required.</small>
                                 <small class="text-gray-500 block mt-1">
                                     Password must be at least 8 characters and include uppercase, lowercase,
                                     number, and special character.
@@ -644,7 +631,7 @@ export default defineComponent({
                                     Password *</label>
                                 <Password id="confirmPassword" v-model="confirmPassword"
                                     placeholder="Confirm your password" class="w-full" toggleMask
-                                    :class="{ 'p-invalid': submitted && (!confirmPassword || confirmPassword !== password) }"
+                                    :class="{ 'p-invalid': submitted && !confirmPassword }"
                                     aria-describedby="confirmPassword-error" inputClass="p-3" />
                                 <small id="confirmPassword-error" v-if="submitted && !confirmPassword"
                                     class="p-error block mt-1">
@@ -786,4 +773,3 @@ export default defineComponent({
         </div>
     </div>
 </template>
-
