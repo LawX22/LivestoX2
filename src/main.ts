@@ -11,8 +11,8 @@ import 'primeicons/primeicons.css';
 
 // Import CSS
 import './assets/css/style.css';
-import './assets/css/auth/SignIn.css';
-import './assets/css/auth/SignUp.css';
+import './assets/css/auth/auth.css';
+import './assets/css/auth/LandingPage.css';
 
 const app = createApp(App);
 app.use(router);

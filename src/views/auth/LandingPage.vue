@@ -96,7 +96,7 @@ export default defineComponent({
                   Get Started
                 </a>
                 <a href="#" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-green-900 bg-green-100 hover:bg-green-200 shadow-md transition duration-300">
-                  Learn More
+                  See Farmers Livetocks
                 </a>
               </div>
             </div>

@@ -7,11 +7,9 @@ import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
-import Card from 'primevue/card';
-import Avatar from 'primevue/avatar';
 import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
-
+import Carousel from '../../components/Landing/Carousel.vue';
 
 export default defineComponent({
     name: 'SignInPage',
@@ -21,10 +19,9 @@ export default defineComponent({
         Password,
         Button,
         Checkbox,
-        Card,
-        Avatar,
         Divider,
-        ProgressSpinner
+        ProgressSpinner,
+        Carousel
     },
     setup() {
         const router = useRouter();
@@ -35,9 +32,8 @@ export default defineComponent({
         const loading = ref<boolean>(false);
         const submitted = ref<boolean>(false);
         const rememberMe = ref<boolean>(false);
-        const currentSlide = ref<number>(0);
-        const autoplayInterval = ref<number | null>(null);
-
+        
+        // Define carousel slides data
         const carouselSlides = [
             {
                 image: "https://images.unsplash.com/photo-1516467508483-a7212febe31a",
@@ -72,32 +68,6 @@ export default defineComponent({
                 role: "Farm Manager"
             }
         ];
-
-        const nextSlide = () => {
-            currentSlide.value = (currentSlide.value + 1) % carouselSlides.length;
-        };
-
-        const prevSlide = () => {
-            currentSlide.value = (currentSlide.value - 1 + carouselSlides.length) % carouselSlides.length;
-        };
-
-        const setSlide = (index: number) => {
-            currentSlide.value = index;
-        };
-
-        const startAutoplay = () => {
-            stopAutoplay();
-            autoplayInterval.value = window.setInterval(() => {
-                nextSlide();
-            }, 5000);
-        };
-
-        const stopAutoplay = () => {
-            if (autoplayInterval.value) {
-                clearInterval(autoplayInterval.value);
-                autoplayInterval.value = null;
-            }
-        };
 
         const handleSubmit = async () => {
             submitted.value = true;
@@ -141,7 +111,6 @@ export default defineComponent({
         };
 
         onMounted(() => {
-            startAutoplay();
             // Show a welcome toast when component mounts
             setTimeout(() => {
                 toast.add({
@@ -161,12 +130,7 @@ export default defineComponent({
             rememberMe,
             handleSubmit,
             carouselSlides,
-            currentSlide,
-            nextSlide,
-            prevSlide,
-            setSlide,
-            startAutoplay,
-            stopAutoplay
+            logoPath: "/src/assets/vue.svg" // Make sure this path is correct
         };
     }
 });
@@ -190,8 +154,7 @@ export default defineComponent({
                     <div class="mb-8 text-center">
                         <div class="flex justify-center items-center mb-6">
                             <div class="bg-green-500 bg-opacity-20 p-4 rounded-full shadow-md">
-                                <img src="C:\Users\mrlaw\Desktop\livestox_v2.1\src\assets\vue.svg" alt="Logo"
-                                    class="w-16 h-16 object-contain">
+                                <img :src="logoPath" alt="Logo" class="w-16 h-16 object-contain">
                             </div>
                         </div>
 
@@ -225,7 +188,7 @@ export default defineComponent({
                                 <label for="rememberMe" class="text-gray-700">Remember me</label>
                             </div>
 
-                            <router-link to="/signup"
+                            <router-link to="/forgot-password"
                                 class="text-green-600 hover:text-green-800 font-medium transition-colors">
                                 Forgot password?
                             </router-link>
@@ -258,66 +221,9 @@ export default defineComponent({
                 </div>
             </div>
 
-            <!-- Right side with carousel -->
-            <div class="w-full md:w-1/2 relative bg-green-800 overflow-hidden">
-                <div class="carousel-container h-full">
-                    <transition-group name="slide">
-                        <div v-for="(slide, index) in carouselSlides" :key="index" v-show="currentSlide === index"
-                            class="carousel-slide absolute inset-0" @mouseenter="stopAutoplay"
-                            @mouseleave="startAutoplay">
-                            <div
-                                class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black bg-opacity-60 z-10">
-                            </div>
-                            <div
-                                class="absolute inset-0 flex flex-col justify-center items-center text-white z-20 p-8 text-center">
-                                <div class="flex justify-center items-center mb-6">
-                                    <div class="bg-green-500 bg-opacity-20 p-4 rounded-full shadow-md">
-                                        <img src="C:\Users\mrlaw\Desktop\livestox_v2.1\src\assets\vue.svg" alt="Logo"
-                                            class="w-16 h-16 object-contain">
-                                    </div>
-                                </div>
-
-                                <h2 class="text-4xl font-bold mb-4 drop-shadow-lg">{{ slide.title }}</h2>
-                                <p class="text-xl mb-8 drop-shadow">{{ slide.subtitle }}</p>
-                                <div class="max-w-md transform hover:scale-105 transition-transform duration-300">
-                                    <Card class="bg-opacity-10 backdrop-filter backdrop-blur-sm border-0 shadow-xl">
-                                        <template #content>
-                                            <i class="pi pi-quote-left text-green-300 text-2xl mb-2"></i>
-                                            <p class="text-lg mb-4 text-green-200">{{ slide.quote }}</p>
-                                            <div class="flex items-center">
-                                                <Avatar icon="pi pi-user" shape="circle" class="bg-green-500" />
-                                                <div class="ml-3">
-                                                    <h4 class="font-medium mb-0 text-green-200">{{ slide.author }}</h4>
-                                                    <p class="text-sm text-green-200">{{ slide.role }}</p>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </Card>
-                                </div>
-                            </div>
-                            <img :src="`${slide.image}?ixlib=rb-4.0.3&auto=format&fit=crop&w=2652&q=80`"
-                                :alt="slide.title"
-                                class="w-full h-full object-cover transform scale-105 animate-slow-zoom" />
-                        </div>
-                    </transition-group>
-
-                    <!-- Carousel indicators -->
-                    <div class="absolute bottom-6 left-0 right-0 flex justify-center z-30">
-                        <div v-for="index in carouselSlides.length" :key="`dot-${index}`" @click="setSlide(index)"
-                            class="w-3 h-3 mx-1 rounded-full cursor-pointer transition-all duration-300"
-                            :class="currentSlide === index ? 'bg-white scale-125' : 'bg-white bg-opacity-50'"></div>
-                    </div>
-
-                    <!-- Carousel navigation arrows -->
-                    <button @click="prevSlide"
-                        class="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 bg-black bg-opacity-30 hover:bg-opacity-50 rounded-full p-3 text-white transition-all duration-300 hover:scale-110">
-                        <i class="pi pi-chevron-left"></i>
-                    </button>
-                    <button @click="nextSlide"
-                        class="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 bg-black bg-opacity-30 hover:bg-opacity-50 rounded-full p-3 text-white transition-all duration-300 hover:scale-110">
-                        <i class="pi pi-chevron-right"></i>
-                    </button>
-                </div>
+            <!-- Right side with carousel component -->
+            <div class="w-full md:w-1/2">
+                <Carousel :slides="carouselSlides" :logo-path="logoPath" />
             </div>
         </div>
     </div>
