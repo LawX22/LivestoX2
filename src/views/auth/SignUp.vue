@@ -9,7 +9,12 @@ import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
 import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
+import Dropdown from 'primevue/dropdown';
 import Carousel from '../../components/Landing/Carousel.vue';
+import Steps from 'primevue/steps';
+import InputMask from 'primevue/inputmask';
+import Calendar from 'primevue/calendar';
+import InputNumber from 'primevue/inputnumber';
 
 export default defineComponent({
     name: 'SignUpPage',
@@ -21,22 +26,47 @@ export default defineComponent({
         Checkbox,
         Divider,
         ProgressSpinner,
-        Carousel
+        Carousel,
+        Steps,
+        Dropdown,
+        InputMask,
+        Calendar,
+        InputNumber
     },
     setup() {
         const router = useRouter();
         const toast = useToast();
 
+        // Form fields
         const firstName = ref<string>('');
         const lastName = ref<string>('');
+        const username = ref<string>('');
         const email = ref<string>('');
+        const phoneNumber = ref<string>('');
+        const gender = ref<string>('');
         const password = ref<string>('');
         const confirmPassword = ref<string>('');
+        const verificationCode = ref<string>('');
+        const agreeToTerms = ref<boolean>(false);
+        const receiveMarketingEmails = ref<boolean>(false);
+
+        // Form states
         const loading = ref<boolean>(false);
         const submitted = ref<boolean>(false);
-        const agreeToTerms = ref<boolean>(false);
-        
-        // Define carousel slides data
+        const currentStep = ref<number>(0);
+        const verificationSent = ref<boolean>(false);
+        const usernameAvailable = ref<boolean>(false);
+        const usernameError = ref<string>('');
+
+        // Form options
+        const genderOptions = [
+            { label: 'Male', value: 'male' },
+            { label: 'Female', value: 'female' },
+            { label: 'Non-binary', value: 'non-binary' },
+            { label: 'Prefer not to say', value: 'not-specified' }
+        ];
+
+        // Carousel slides data
         const carouselSlides = [
             {
                 image: "https://images.unsplash.com/photo-1500595046743-cd271d694d30",
@@ -72,12 +102,123 @@ export default defineComponent({
             }
         ];
 
-        const validateForm = (): boolean => {
-            if (!firstName.value || !lastName.value || !email.value || !password.value || !confirmPassword.value) {
+        // Steps configuration - added click events
+        const steps = [
+            { label: 'Personal', command: () => goToStep(0) },
+            { label: 'Security', command: () => goToStep(1) },
+            { label: 'Verification', command: () => goToStep(2) },
+            { label: 'Agreement', command: () => goToStep(3) }
+        ];
+
+        // Debounce function implementation
+        function debounce(fn: Function, delay: number) {
+            let timeout: ReturnType<typeof setTimeout>;
+            return function (...args: any[]) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => fn(...args), delay);
+            };
+        }
+
+        // Debounced username check
+        const debouncedCheckUsernameAvailability = debounce(() => {
+            checkUsernameAvailability();
+        }, 500);
+
+        // Function to navigate directly to a specific step
+        const goToStep = (step: number) => {
+            // Only allow going to previous steps or current step
+            if (step <= currentStep.value) {
+                currentStep.value = step;
+                submitted.value = false;
+            } else {
+                // If trying to skip ahead, show a message
+                toast.add({
+                    severity: 'info',
+                    summary: 'Complete Current Step',
+                    detail: 'Please complete the current step before proceeding',
+                    life: 3000
+                });
+            }
+        };
+
+        // Validation functions
+        const validatePersonalInfo = (): boolean => {
+            if (!firstName.value || !lastName.value || !username.value || !email.value || !phoneNumber.value || !gender.value) {
                 toast.add({
                     severity: 'warn',
                     summary: 'Missing Information',
-                    detail: 'Please fill in all required fields',
+                    detail: 'Please fill in all required personal information fields',
+                    life: 3000
+                });
+                return false;
+            }
+
+            // Username validation
+            const usernameRegex = /^[a-zA-Z0-9_-]{4,16}$/;
+            if (!usernameRegex.test(username.value)) {
+                usernameError.value = 'Username must be 4-16 characters and can only contain letters, numbers, underscores and hyphens';
+                toast.add({
+                    severity: 'error',
+                    summary: 'Invalid Username',
+                    detail: usernameError.value,
+                    life: 3000
+                });
+                return false;
+            }
+
+            if (!usernameAvailable.value) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Username Not Available',
+                    detail: 'Please choose a different username',
+                    life: 3000
+                });
+                return false;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.value)) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Invalid Email',
+                    detail: 'Please enter a valid email address',
+                    life: 3000
+                });
+                return false;
+            }
+
+            return true;
+        };
+
+        const validateSecurityInfo = (): boolean => {
+            if (!password.value || !confirmPassword.value) {
+                toast.add({
+                    severity: 'warn',
+                    summary: 'Missing Information',
+                    detail: 'Please fill in all required security fields',
+                    life: 3000
+                });
+                return false;
+            }
+
+            // Password validation
+            if (password.value.length < 8) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Weak Password',
+                    detail: 'Password must be at least 8 characters long',
+                    life: 3000
+                });
+                return false;
+            }
+
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password.value)) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Password Requirements',
+                    detail: 'Password must include uppercase, lowercase, number, and special character',
                     life: 3000
                 });
                 return false;
@@ -93,6 +234,36 @@ export default defineComponent({
                 return false;
             }
 
+            return true;
+        };
+
+        const validateVerification = (): boolean => {
+            if (!verificationCode.value) {
+                toast.add({
+                    severity: 'warn',
+                    summary: 'Missing Information',
+                    detail: 'Please enter the verification code sent to your email/phone',
+                    life: 3000
+                });
+                return false;
+            }
+
+            // In a real application, you would validate the code against a server
+            // This is just a mock validation
+            if (verificationCode.value.length !== 6) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Invalid Code',
+                    detail: 'Verification code must be 6 digits',
+                    life: 3000
+                });
+                return false;
+            }
+
+            return true;
+        };
+
+        const validateAgreements = (): boolean => {
             if (!agreeToTerms.value) {
                 toast.add({
                     severity: 'warn',
@@ -106,13 +277,131 @@ export default defineComponent({
             return true;
         };
 
-        const handleSubmit = async () => {
-            submitted.value = true;
+        // Send verification code
+        const sendVerificationCode = async () => {
+            try {
+                loading.value = true;
 
-            if (!validateForm()) {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                verificationSent.value = true;
+
+                toast.add({
+                    severity: 'success',
+                    summary: 'Verification Code Sent',
+                    detail: 'A verification code has been sent to your email and phone',
+                    life: 3000
+                });
+            } catch (error) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Failed to Send Code',
+                    detail: 'There was an error sending the verification code',
+                    life: 3000
+                });
+            } finally {
+                loading.value = false;
+            }
+        };
+
+        // Check username availability
+        const checkUsernameAvailability = async () => {
+            if (!username.value) {
+                usernameAvailable.value = false;
+                usernameError.value = '';
                 return;
             }
 
+            // Check username format first
+            const usernameRegex = /^[a-zA-Z0-9_-]{4,16}$/;
+            if (!usernameRegex.test(username.value)) {
+                usernameError.value = 'Username must be 4-16 characters with only letters, numbers, underscore and hyphen';
+                usernameAvailable.value = false;
+                return;
+            }
+
+            try {
+                loading.value = true;
+                usernameError.value = '';
+
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // For demo purposes, let's pretend usernames ending with "taken" are already taken
+                if (username.value.endsWith('taken')) {
+                    usernameError.value = 'This username is already taken';
+                    usernameAvailable.value = false;
+
+                    toast.add({
+                        severity: 'warn',
+                        summary: 'Username Not Available',
+                        detail: 'This username is already taken, please try another',
+                        life: 3000
+                    });
+                } else {
+                    usernameAvailable.value = true;
+
+                    toast.add({
+                        severity: 'success',
+                        summary: 'Username Available',
+                        detail: 'This username is available',
+                        life: 3000
+                    });
+                }
+            } catch (error) {
+                usernameError.value = 'Error checking username availability';
+                usernameAvailable.value = false;
+            } finally {
+                loading.value = false;
+            }
+        };
+
+        // Navigation functions
+        const nextStep = () => {
+            submitted.value = true;
+
+            // Validate current step
+            let isValid = false;
+
+            switch (currentStep.value) {
+                case 0:
+                    isValid = validatePersonalInfo();
+                    break;
+                case 1:
+                    isValid = validateSecurityInfo();
+                    break;
+                case 2:
+                    isValid = validateVerification();
+                    break;
+                case 3:
+                    isValid = validateAgreements();
+                    break;
+            }
+
+            if (isValid) {
+                if (currentStep.value < 3) {
+                    currentStep.value++;
+                    submitted.value = false;
+
+                    // If moving to verification step, automatically send code
+                    if (currentStep.value === 2 && !verificationSent.value) {
+                        sendVerificationCode();
+                    }
+                } else {
+                    handleSubmit();
+                }
+            }
+        };
+
+        const prevStep = () => {
+            if (currentStep.value > 0) {
+                currentStep.value--;
+                submitted.value = false;
+            }
+        };
+
+        const handleSubmit = async () => {
             try {
                 loading.value = true;
 
@@ -141,6 +430,31 @@ export default defineComponent({
             }
         };
 
+        const resendVerificationCode = async () => {
+            try {
+                loading.value = true;
+
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                toast.add({
+                    severity: 'success',
+                    summary: 'Code Resent',
+                    detail: 'A new verification code has been sent to your email and phone',
+                    life: 3000
+                });
+            } catch (error) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Failed to Resend',
+                    detail: 'There was an error sending the verification code',
+                    life: 3000
+                });
+            } finally {
+                loading.value = false;
+            }
+        };
+
         onMounted(() => {
             // Show a welcome toast when component mounts
             setTimeout(() => {
@@ -154,15 +468,37 @@ export default defineComponent({
         });
 
         return {
+            // Form fields
             firstName,
             lastName,
+            username,
             email,
+            phoneNumber,
+            gender,
             password,
             confirmPassword,
+            verificationCode,
+            agreeToTerms,
+            receiveMarketingEmails,
+            // Form states
             loading,
             submitted,
-            agreeToTerms,
+            currentStep,
+            verificationSent,
+            usernameAvailable,
+            usernameError,
+            // Form options
+            genderOptions,
+            // Steps
+            steps,
+            // Functions
+            nextStep,
+            prevStep,
             handleSubmit,
+            resendVerificationCode,
+            checkUsernameAvailability,
+            debouncedCheckUsernameAvailability,
+            // Other data
             carouselSlides,
             logoPath: "/src/assets/vue.svg"
         };
@@ -196,94 +532,238 @@ export default defineComponent({
                         <p class="text-gray-600">Join the LivestoX community and start your journey.</p>
                     </div>
 
-                    <form @submit.prevent="handleSubmit" class="w-full max-w-md mx-auto">
-                        <div class="flex gap-4 mb-6">
-                            <div class="flex-1">
-                                <label for="firstName" class="block text-gray-700 font-medium mb-2">First Name</label>
-                                <InputText id="firstName" v-model="firstName" placeholder="First name"
-                                    class="w-full p-3" :class="{ 'p-invalid': submitted && !firstName }"
-                                    aria-describedby="firstName-error" />
-                                <small id="firstName-error" v-if="submitted && !firstName" class="p-error block mt-1">First name
-                                    is required.</small>
+                    <!-- Steps indicator -->
+                    <div class="mb-8 custom-steps">
+                        <Steps :model="steps" :activeIndex="currentStep" />
+                    </div>
+                    <form @submit.prevent="nextStep" class="w-full max-w-md mx-auto">
+                        <!-- Step 1: Personal Information -->
+                        <div v-if="currentStep === 0">
+                            <div class="flex gap-4 mb-6">
+                                <div class="flex-1">
+                                    <label for="firstName" class="block text-gray-700 font-medium mb-2">First Name
+                                        *</label>
+                                    <InputText id="firstName" v-model="firstName" placeholder="First name"
+                                        class="w-full p-3" :class="{ 'p-invalid': submitted && !firstName }"
+                                        aria-describedby="firstName-error" />
+                                    <small id="firstName-error" v-if="submitted && !firstName"
+                                        class="p-error block mt-1">First name
+                                        is required.</small>
+                                </div>
+                                <div class="flex-1">
+                                    <label for="lastName" class="block text-gray-700 font-medium mb-2">Last Name
+                                        *</label>
+                                    <InputText id="lastName" v-model="lastName" placeholder="Last name"
+                                        class="w-full p-3" :class="{ 'p-invalid': submitted && !lastName }"
+                                        aria-describedby="lastName-error" />
+                                    <small id="lastName-error" v-if="submitted && !lastName"
+                                        class="p-error block mt-1">Last name
+                                        is required.</small>
+                                </div>
                             </div>
-                            <div class="flex-1">
-                                <label for="lastName" class="block text-gray-700 font-medium mb-2">Last Name</label>
-                                <InputText id="lastName" v-model="lastName" placeholder="Last name"
-                                    class="w-full p-3" :class="{ 'p-invalid': submitted && !lastName }"
-                                    aria-describedby="lastName-error" />
-                                <small id="lastName-error" v-if="submitted && !lastName" class="p-error block mt-1">Last name
-                                    is required.</small>
-                            </div>
-                        </div>
 
-                        <div class="mb-6">
-                            <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
-                            <InputText id="email" v-model="email" placeholder="Enter your email address"
-                                class="w-full p-3" :class="{ 'p-invalid': submitted && !email }"
-                                aria-describedby="email-error" />
-                            <small id="email-error" v-if="submitted && !email" class="p-error block mt-1">Email
-                                is required.</small>
-                        </div>
-
-                        <!-- Modified section: Password and Confirm Password on same row -->
-                        <div class="flex gap-4 mb-6">
-                            <div class="flex-1">
-                                <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
-                                <Password id="password" v-model="password" placeholder="Create a strong password" class="w-full"
-                                    :feedback="true" toggleMask :class="{ 'p-invalid': submitted && !password }"
-                                    aria-describedby="password-error" inputClass="p-3" />
-                                <small id="password-error" v-if="submitted && !password" class="p-error block mt-1">Password
-                                    is required.</small>
-                            </div>
-                            <div class="flex-1">
-                                <label for="confirmPassword" class="block text-gray-700 font-medium mb-2">Confirm Password</label>
-                                <Password id="confirmPassword" v-model="confirmPassword" placeholder="Confirm your password" class="w-full"
-                                    toggleMask :class="{ 'p-invalid': submitted && (!confirmPassword || confirmPassword !== password) }"
-                                    aria-describedby="confirmPassword-error" inputClass="p-3" />
-                                <small id="confirmPassword-error" v-if="submitted && !confirmPassword" class="p-error block mt-1">
-                                    Confirm password is required.
+                            <div class="mb-6">
+                                <label for="username" class="block text-gray-700 font-medium mb-2">Username *</label>
+                                <div class="flex">
+                                    <InputText id="username" v-model="username" placeholder="Choose a username"
+                                        class="w-full p-3"
+                                        :class="{ 'p-invalid': submitted && !username || usernameError }"
+                                        aria-describedby="username-error" @input="debouncedCheckUsernameAvailability" />
+                                    <span v-if="loading" class="ml-2 flex items-center">
+                                        <i class="pi pi-spinner pi-spin"></i>
+                                    </span>
+                                    <span v-if="usernameAvailable && !usernameError"
+                                        class="ml-2 flex items-center text-green-500">
+                                        <i class="pi pi-check"></i>
+                                    </span>
+                                </div>
+                                <small id="username-error" v-if="submitted && !username" class="p-error block mt-1">
+                                    Username is required.
+                                </small>
+                                <small v-if="usernameError" class="p-error block mt-1">
+                                    {{ usernameError }}
+                                </small>
+                                <small class="text-gray-500 block mt-1">
+                                    4-16 characters, letters, numbers, underscore and hyphen only
                                 </small>
                             </div>
-                        </div>
-                        <!-- Password match error below both fields -->
-                        <div class="mb-6">
-                            <small id="password-match-error" v-if="submitted && confirmPassword && confirmPassword !== password" class="p-error block">
-                                Passwords do not match.
-                            </small>
-                        </div>
 
-                        <div class="mb-6">
-                            <div class="flex items-center">
-                                <Checkbox v-model="agreeToTerms" inputId="agreeToTerms" binary
-                                    class="mr-2 border border-gray-500 rounded-md" />
-                                <label for="agreeToTerms" class="text-gray-700">
-                                    I agree to the 
-                                    <a href="#" class="text-green-600 hover:text-green-800 font-medium">
-                                        Terms of Service
-                                    </a> 
-                                    and 
-                                    <a href="#" class="text-green-600 hover:text-green-800 font-medium">
-                                        Privacy Policy
-                                    </a>
-                                </label>
+                            <div class="flex gap-4 mb-6">
+                                <div class="flex-1">
+                                    <label for="email" class="block text-gray-700 font-medium mb-2">Email *</label>
+                                    <InputText id="email" v-model="email" placeholder="Enter your email address"
+                                        class="w-full p-3" :class="{ 'p-invalid': submitted && !email }"
+                                        aria-describedby="email-error" />
+                                    <small id="email-error" v-if="submitted && !email" class="p-error block mt-1">Email
+                                        is required.</small>
+                                </div>
                             </div>
-                            <small id="terms-error" v-if="submitted && !agreeToTerms" class="p-error block mt-1">
-                                You must agree to the terms and conditions.
-                            </small>
+
+                            <div class="flex gap-4 mb-6">
+                                <div class="flex-1">
+                                    <label for="phoneNumber" class="block text-gray-700 font-medium mb-2">Phone Number
+                                        *</label>
+                                    <InputMask id="phoneNumber" v-model="phoneNumber" mask="+99 (999) 999-9999"
+                                        placeholder="+1 (234) 567-8901" class="w-full p-3"
+                                        :class="{ 'p-invalid': submitted && !phoneNumber }"
+                                        aria-describedby="phone-error" />
+                                    <small id="phone-error" v-if="submitted && !phoneNumber"
+                                        class="p-error block mt-1">Phone number is required.</small>
+                                </div>
+
+                                <div class="flex-1">
+                                    <label for="gender" class="block text-gray-700 font-medium mb-2">Gender *</label>
+                                    <Dropdown id="gender" v-model="gender" :options="genderOptions" optionLabel="label"
+                                        optionValue="value" placeholder="Select gender" class="w-full "
+                                        :class="{ 'p-invalid': submitted && !gender }" />
+                                    <small id="gender-error" v-if="submitted && !gender"
+                                        class="p-error block mt-1">Gender is required.</small>
+                                </div>
+                            </div>
                         </div>
 
-                        <Button type="submit" label="Create Account" class="w-full mb-6 p-3 shadow-lg" :loading="loading" />
+                        <!-- Step 2: Security Information -->
+                        <div v-if="currentStep === 1">
+                            <div class="mb-6">
+                                <label for="password" class="block text-gray-700 font-medium mb-2">Password *</label>
+                                <Password id="password" v-model="password" placeholder="Create a strong password"
+                                    class="w-full" :feedback="true" toggleMask
+                                    :class="{ 'p-invalid': submitted && !password }" aria-describedby="password-error"
+                                    inputClass="p-3" />
+                                <small id="password-error" v-if="submitted && !password"
+                                    class="p-error block mt-1">Password
+                                    is required.</small>
+                                <small class="text-gray-500 block mt-1">
+                                    Password must be at least 8 characters and include uppercase, lowercase,
+                                    number, and special character.
+                                </small>
+                            </div>
 
-                        <Divider align="center">
-                            <span class="p-tag bg-white text-gray-500 border border-gray-200 px-3 py-1 rounded-full">Or
-                                sign up with</span>
-                        </Divider>
+                            <div class="mb-6">
+                                <label for="confirmPassword" class="block text-gray-700 font-medium mb-2">Confirm
+                                    Password *</label>
+                                <Password id="confirmPassword" v-model="confirmPassword"
+                                    placeholder="Confirm your password" class="w-full" toggleMask
+                                    :class="{ 'p-invalid': submitted && (!confirmPassword || confirmPassword !== password) }"
+                                    aria-describedby="confirmPassword-error" inputClass="p-3" />
+                                <small id="confirmPassword-error" v-if="submitted && !confirmPassword"
+                                    class="p-error block mt-1">
+                                    Confirm password is required.
+                                </small>
+                                <small id="password-match-error"
+                                    v-if="submitted && confirmPassword && confirmPassword !== password"
+                                    class="p-error block mt-1">
+                                    Passwords do not match.
+                                </small>
+                            </div>
 
-                        <div class="flex justify-center gap-4 my-8">
-                            <Button type="button" icon="pi pi-google" class="p-button-outlined p-button-rounded p-3" />
-                            <Button type="button" icon="pi pi-facebook"
-                                class="p-button-outlined p-button-rounded p-3" />
-                            <Button type="button" icon="pi pi-apple" class="p-button-outlined p-button-rounded p-3" />
+                            <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg mb-6">
+                                <h3 class="text-blue-700 font-medium mb-2">Security Tips</h3>
+                                <ul class="text-gray-600 text-sm space-y-1">
+                                    <li>• Use a unique password you don't use elsewhere</li>
+                                    <li>• Consider using a password manager</li>
+                                    <li>• Enable two-factor authentication after signup for enhanced security</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Verification -->
+                        <div v-if="currentStep === 2">
+                            <div class="mb-6 text-center">
+                                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-left">
+                                    <h3 class="text-green-700 font-medium mb-2">Verification Required</h3>
+                                    <p class="text-gray-600 text-sm">
+                                        We've sent a 6-digit verification code to your email {{ email }} and phone {{
+                                            phoneNumber }}.
+                                        Please enter the code below to verify your identity.
+                                    </p>
+                                </div>
+
+                                <div class="mb-6">
+                                    <label for="verificationCode"
+                                        class="block text-gray-700 font-medium mb-2 text-left">Verification Code
+                                        *</label>
+                                    <InputMask id="verificationCode" v-model="verificationCode" mask="999999"
+                                        placeholder="Enter 6-digit code"
+                                        class="w-full p-3 text-center tracking-widest text-lg"
+                                        :class="{ 'p-invalid': submitted && !verificationCode }" />
+                                    <small id="verificationCode-error" v-if="submitted && !verificationCode"
+                                        class="p-error block mt-1 text-left">
+                                        Verification code is required.
+                                    </small>
+                                </div>
+
+                                <Button type="button" label="Resend Code" class="p-button-text p-3"
+                                    @click="resendVerificationCode" :loading="loading" />
+
+                                <p class="text-sm text-gray-500 mt-4">
+                                    Didn't receive the code? Check your spam folder or try resending after 60 seconds.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Agreements -->
+                        <div v-if="currentStep === 3">
+                            <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                                <h3 class="text-blue-700 font-medium mb-2">Almost Done!</h3>
+                                <p class="text-gray-600 text-sm">
+                                    Please review and accept our terms and conditions to complete your registration.
+                                </p>
+                            </div>
+
+                            <div class="mb-6">
+                                <div class="flex items-center mb-3">
+                                    <Checkbox v-model="agreeToTerms" inputId="agreeToTerms" binary
+                                        class="mr-2 border border-gray-500 rounded-md" />
+                                    <label for="agreeToTerms" class="text-gray-700">
+                                        I agree to the
+                                        <a href="#" class="text-green-600 hover:text-green-800 font-medium">
+                                            Terms of Service
+                                        </a>
+                                        and
+                                        <a href="#" class="text-green-600 hover:text-green-800 font-medium">
+                                            Privacy Policy
+                                        </a> *
+                                    </label>
+                                </div>
+                                <small id="terms-error" v-if="submitted && !agreeToTerms" class="p-error block mt-1">
+                                    You must agree to the terms and conditions.
+                                </small>
+
+                                <div class="flex items-center">
+                                    <Checkbox v-model="receiveMarketingEmails" inputId="receiveMarketingEmails" binary
+                                        class="mr-2 border border-gray-500 rounded-md" />
+                                    <label for="receiveMarketingEmails" class="text-gray-700">
+                                        I would like to receive marketing emails about special offers and updates
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Social login options -->
+                            <Divider align="center">
+                                <span
+                                    class="p-tag bg-white text-gray-500 border border-gray-200 px-3 py-1 rounded-full">Or
+                                    sign up with</span>
+                            </Divider>
+
+                            <div class="flex justify-center gap-4 my-6">
+                                <Button type="button" icon="pi pi-google"
+                                    class="p-button-outlined p-button-rounded p-3" />
+                                <Button type="button" icon="pi pi-facebook"
+                                    class="p-button-outlined p-button-rounded p-3" />
+                                <Button type="button" icon="pi pi-apple"
+                                    class="p-button-outlined p-button-rounded p-3" />
+                            </div>
+                        </div>
+
+                        <!-- Navigation buttons -->
+                        <div class="flex justify-between mt-8">
+                            <Button v-if="currentStep > 0" type="button" label="Previous" class="p-button-outlined p-3"
+                                @click="prevStep" />
+                            <div v-else class="flex-1"></div>
+
+                            <Button type="submit" :label="currentStep < 3 ? 'Next' : 'Create Account'"
+                                class="p-3 shadow-lg" :loading="loading" />
                         </div>
 
                         <div class="text-center mt-6">
@@ -306,3 +786,4 @@ export default defineComponent({
         </div>
     </div>
 </template>
+
