@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue';
+import { defineComponent, ref, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 export default defineComponent({
@@ -15,8 +15,20 @@ export default defineComponent({
     const route = useRoute();
     const isCollapsed = ref(props.collapsed);
 
+    // Load collapsed state from localStorage on component mount
+    onMounted(() => {
+      const savedState = localStorage.getItem('sidebarCollapsed');
+      if (savedState !== null) {
+        isCollapsed.value = savedState === 'true';
+        // Emit the initial state to parent component
+        emit('collapse-change', isCollapsed.value);
+      }
+    });
+
     const toggleSidebar = () => {
       isCollapsed.value = !isCollapsed.value;
+      // Save state to localStorage whenever it changes
+      localStorage.setItem('sidebarCollapsed', isCollapsed.value.toString());
       emit('collapse-change', isCollapsed.value);
     };
 
