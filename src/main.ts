@@ -13,6 +13,7 @@ import 'primeicons/primeicons.css';
 import './assets/css/style.css';
 import './assets/css/auth/auth.css';
 import './assets/css/auth/LandingPage.css';
+import './assets/css/admin/UserManagement.css';
 
 const app = createApp(App);
 app.use(router);
