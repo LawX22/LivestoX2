@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, computed, PropType } from 'vue';
+import { defineComponent, ref, computed, PropType, onMounted, nextTick } from 'vue';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import DataTable from 'primevue/datatable';
@@ -74,6 +74,10 @@ export default defineComponent({
         const currentSort = ref({ field: 'id', order: 1 });
         const expandedRows = ref({});
         const dt = ref();
+        const tableRef = ref<HTMLElement | null>(null);
+        
+        // Table element ID for directly focusing
+        const TABLE_ELEMENT_ID = 'user-management-table';
 
         // Status options for dropdown filter
         const statusOptions = [
@@ -142,6 +146,65 @@ export default defineComponent({
 
                 return matchesSearch && matchesStatus && matchesType && matchesVerification;
             });
+        });
+
+        // Go to the table element to see the loading animation
+        const focusTableElement = () => {
+            // First try getting by ID
+            const tableElement = document.getElementById(TABLE_ELEMENT_ID);
+            
+            if (tableElement) {
+                // Use scrollIntoView with specific options to keep the table in view
+                // but not necessarily at the very top
+                tableElement.scrollIntoView({
+                    behavior: 'auto',
+                    block: 'center'  // Position in the middle of viewport to see loading animation
+                });
+                return true;
+            }
+            
+            // Fallback to finding the DataTable component
+            if (dt.value?.$el) {
+                dt.value.$el.scrollIntoView({
+                    behavior: 'auto',
+                    block: 'center'
+                });
+                return true;
+            }
+            
+            return false;
+        };
+
+        // For hash-based focus preservation
+        const setTableFocusHash = () => {
+            // Only change hash if not already set
+            if (!window.location.hash || window.location.hash !== `#${TABLE_ELEMENT_ID}`) {
+                // Use history.replaceState to avoid adding to browser history
+                history.replaceState(null, '', `#${TABLE_ELEMENT_ID}`);
+            }
+        };
+
+        onMounted(() => {
+            tableRef.value = document.querySelector('.user-management');
+            
+            // Add ID to the table for direct targeting
+            if (tableRef.value) {
+                tableRef.value.id = TABLE_ELEMENT_ID;
+            }
+            
+            // First load - handle hash navigation or set it
+            if (window.location.hash === `#${TABLE_ELEMENT_ID}`) {
+                // If we're already targeting the table, focus it
+                nextTick(() => {
+                    // Small delay to ensure DOM is ready
+                    setTimeout(() => {
+                        focusTableElement();
+                    }, 50);
+                });
+            } else {
+                // Set the hash for future reloads
+                setTableFocusHash();
+            }
         });
 
         const clearFilters = () => {
@@ -296,7 +359,9 @@ export default defineComponent({
             op,
             currentSort,
             rowClass,
-            selectedUser
+            selectedUser,
+            tableRef,
+            TABLE_ELEMENT_ID
         };
     }
 });
