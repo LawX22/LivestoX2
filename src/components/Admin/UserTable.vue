@@ -61,7 +61,7 @@ export default defineComponent({
             default: false
         }
     },
-    emits: ['view-user', 'ban-user', 'edit-user', 'delete-user'],
+    emits: ['view-user', 'ban-user', 'unban-user', 'edit-user'],
     setup(props, { emit }) {
         const searchQuery = ref('');
         const statusFilter = ref(null);
@@ -118,12 +118,6 @@ export default defineComponent({
                         icon: 'pi pi-ban',
                         command: () => banUser(selectedUser.value),
                         disabled: selectedUser.value?.status === 'banned'
-                    },
-                    {
-                        label: 'Delete User',
-                        icon: 'pi pi-trash',
-                        command: () => deleteUser(selectedUser.value),
-                        class: 'text-red-600'
                     }
                 ]
             }
@@ -156,7 +150,7 @@ export default defineComponent({
             typeFilter.value = null;
             dateFilter.value = null;
             verificationFilter.value = null;
-            
+
             // Reset sorting
             if (dt.value) {
                 dt.value.sortField = 'id';
@@ -218,17 +212,12 @@ export default defineComponent({
             if (user) emit('ban-user', user);
         };
 
+        const unbanUser = (user: User | null) => {
+            if (user) emit('unban-user', user);
+        };
+
         const editUser = (user: User | null) => {
             if (user) emit('edit-user', user);
-        };
-
-        const deleteUser = (user: User | null) => {
-            if (user) emit('delete-user', user);
-        };
-
-        const toggleMenu = (event: Event, user: User) => {
-            selectedUser.value = user;
-            actionsMenu.value.toggle(event);
         };
 
         const formatDate = (dateString: string) => {
@@ -236,7 +225,7 @@ export default defineComponent({
             const now = new Date();
             const diffTime = Math.abs(now.getTime() - date.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
+
             if (diffDays <= 1) {
                 return 'Today';
             } else if (diffDays <= 2) {
@@ -253,7 +242,7 @@ export default defineComponent({
             const now = new Date();
             const diffTime = Math.abs(now.getTime() - date.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
+
             if (diffDays <= 1) {
                 return 'text-green-600';
             } else if (diffDays <= 7) {
@@ -271,7 +260,7 @@ export default defineComponent({
 
         const rowClass = (data: User) => {
             return {
-                'hover:bg-blue-50 transition-colors duration-150': true,
+                'hover:bg-blue-50 transition-colors duration-200': true,
                 'bg-red-50': data.status === 'banned'
             };
         };
@@ -295,9 +284,8 @@ export default defineComponent({
             getVerificationIcon,
             viewUser,
             banUser,
+            unbanUser,
             editUser,
-            deleteUser,
-            toggleMenu,
             actionsMenu,
             menuItems,
             expandedRows,
@@ -321,7 +309,7 @@ export default defineComponent({
 
         <!-- Header with title and export -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-semibold text-gray-800">User Management</h2>
+            <h2 class="text-2xl font-bold text-gray-800">User Accounts</h2>
             <div class="flex gap-2">
                 <Button icon="pi pi-download" label="Export CSV" class="p-button-outlined" @click="exportCSV" />
                 <Button icon="pi pi-plus" label="Add User" class="p-button" />
@@ -329,33 +317,122 @@ export default defineComponent({
         </div>
 
         <!-- Search and Filter Controls -->
-        <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="col-span-1 md:col-span-4">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-search" />
-                        <InputText v-model="searchQuery" placeholder="Search by name or email" class="w-full rounded-lg" />
-                    </span>
+        <div class="p-6 bg-gradient-to-r from-gray-50 to-white rounded-xl shadow-lg border border-gray-100 mb-8">
+            <div class="flex flex-col md:flex-row gap-5 items-start md:items-center">
+                <!-- Enhanced Search Bar -->
+                <div class="w-full md:w-1/3">
+                    <div class="relative group">
+                        <span
+                            class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-400 group-hover:text-blue-600 transition-colors">
+                            <i class="pi pi-search"></i>
+                        </span>
+                        <InputText v-model="searchQuery" placeholder="Search by name or email"
+                            class="w-full pl-10 pr-4 py-3 rounded-lg bg-white border-0 shadow-sm focus:outline-none transition-all" />
+                    </div>
                 </div>
-                <div class="col-span-1 md:col-span-8 flex flex-wrap gap-3">
-                    <Dropdown v-model="statusFilter" :options="statusOptions" optionLabel="label"
-                        class="w-full md:w-40 rounded-lg" placeholder="Status" />
-                    <Dropdown v-model="typeFilter" :options="typeOptions" optionLabel="label"
-                        class="w-full md:w-40 rounded-lg" placeholder="User Type" />
-                    <Dropdown v-model="verificationFilter" :options="verificationOptions" optionLabel="label"
-                        class="w-full md:w-40 rounded-lg" placeholder="Verification" />
-                    <Button icon="pi pi-filter-slash" label="Clear" class="p-button-outlined" @click="clearFilters" />
+
+                <!-- Completely Redesigned Filter Controls -->
+                <div class="w-full md:flex-1 flex flex-wrap gap-4 items-center">
+                    <!-- Status Dropdown with custom styling -->
+                    <div class="relative w-full sm:w-auto min-w-[160px]">
+                        <Dropdown v-model="statusFilter" :options="statusOptions" optionLabel="label"
+                            class="w-full custom-dropdown" placeholder="Status"
+                            :class="{ 'active-filter': statusFilter }">
+                            <template #value="slotProps">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full" :class="{
+                                        'bg-green-500': slotProps.value && slotProps.value.value === 'active',
+                                        'bg-red-500': slotProps.value && slotProps.value.value === 'inactive',
+                                        'bg-yellow-500': slotProps.value && slotProps.value.value === 'pending',
+                                        'bg-gray-400': !slotProps.value
+                                    }"></span>
+                                    <span>{{ slotProps.value ? slotProps.value.label : 'Status' }}</span>
+                                </div>
+                            </template>
+                            <template #option="slotProps">
+                                <div class="flex items-center gap-2 p-1">
+                                    <span class="w-3 h-3 rounded-full" :class="{
+                                        'bg-green-500': slotProps.option.value === 'active',
+                                        'bg-red-500': slotProps.option.value === 'inactive',
+                                        'bg-yellow-500': slotProps.option.value === 'pending'
+                                    }"></span>
+                                    <span>{{ slotProps.option.label }}</span>
+                                </div>
+                            </template>
+                        </Dropdown>
+                    </div>
+
+                    <!-- User Type Dropdown with custom styling -->
+                    <div class="relative w-full sm:w-auto min-w-[160px]">
+                        <Dropdown v-model="typeFilter" :options="typeOptions" optionLabel="label"
+                            class="w-full custom-dropdown" placeholder="User Type"
+                            :class="{ 'active-filter': typeFilter }">
+                            <template #value="slotProps">
+                                <div class="flex items-center gap-2">
+                                    <i v-if="slotProps.value" class="pi" :class="{
+                                        'pi-user': slotProps.value.value === 'standard',
+                                        'pi-star': slotProps.value.value === 'premium',
+                                        'pi-shield': slotProps.value.value === 'admin'
+                                    }"></i>
+                                    <span>{{ slotProps.value ? slotProps.value.label : 'User Type' }}</span>
+                                </div>
+                            </template>
+                            <template #option="slotProps">
+                                <div class="flex items-center gap-2 p-1">
+                                    <i class="pi" :class="{
+                                        'pi-user': slotProps.option.value === 'standard',
+                                        'pi-star': slotProps.option.value === 'premium',
+                                        'pi-shield': slotProps.option.value === 'admin'
+                                    }"></i>
+                                    <span>{{ slotProps.option.label }}</span>
+                                </div>
+                            </template>
+                        </Dropdown>
+                    </div>
+
+                    <!-- Verification Dropdown with custom styling -->
+                    <div class="relative w-full sm:w-auto min-w-[160px]">
+                        <Dropdown v-model="verificationFilter" :options="verificationOptions" optionLabel="label"
+                            class="w-full custom-dropdown" placeholder="Verification"
+                            :class="{ 'active-filter': verificationFilter }">
+                            <template #value="slotProps">
+                                <div class="flex items-center gap-2">
+                                    <i v-if="slotProps.value" class="pi" :class="{
+                                        'pi-check-circle text-green-500': slotProps.value.value === 'verified',
+                                        'pi-times-circle text-red-500': slotProps.value.value === 'unverified',
+                                        'pi-clock text-yellow-500': slotProps.value.value === 'pending'
+                                    }"></i>
+                                    <span>{{ slotProps.value ? slotProps.value.label : 'Verification' }}</span>
+                                </div>
+                            </template>
+                            <template #option="slotProps">
+                                <div class="flex items-center gap-2 p-1">
+                                    <i class="pi" :class="{
+                                        'pi-check-circle text-green-500': slotProps.option.value === 'verified',
+                                        'pi-times-circle text-red-500': slotProps.option.value === 'unverified',
+                                        'pi-clock text-yellow-500': slotProps.option.value === 'pending'
+                                    }"></i>
+                                    <span>{{ slotProps.option.label }}</span>
+                                </div>
+                            </template>
+                        </Dropdown>
+                    </div>
+
+                    <!-- Enhanced Clear Button -->
+                    <Button icon="pi pi-filter-slash" label="Clear Filters"
+                        class="p-button-rounded p-button-outlined transition-all duration-300 ease-in-out bg-gradient-to-r from-blue-500 to-blue-600 border-0 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg focus:outline-none "
+                        @click="clearFilters" />
                 </div>
             </div>
         </div>
 
         <!-- Users DataTable -->
-        <DataTable ref="dt" v-model:expandedRows="expandedRows" :value="filteredUsers" :paginator="true" :rows="10" 
-            :rowsPerPageOptions="[5, 10, 20, 50]" filterDisplay="menu" :loading="loading" stripedRows 
-            removableSort responsiveLayout="scroll" class="shadow rounded-lg overflow-hidden"
-            :rowClass="rowClass" :rowHover="true" sortField="id" :sortOrder="1"
-            dataKey="id" v-model:selection="selectedUser" selectionMode="single"
-            showGridlines paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+        <DataTable ref="dt" v-model:expandedRows="expandedRows" :value="filteredUsers" :paginator="true" :rows="10"
+            :rowsPerPageOptions="[5, 10, 20, 50]" filterDisplay="menu" :loading="loading" stripedRows
+            responsiveLayout="scroll" class="shadow-md rounded-lg overflow-hidden" :rowClass="rowClass" :rowHover="true"
+            sortField="id" :sortOrder="1" dataKey="id" v-model:selection="selectedUser" selectionMode="single"
+            showGridlines
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="{first} to {last} of {totalRecords} users">
             <template #empty>
                 <div class="text-center py-12">
@@ -476,10 +553,21 @@ export default defineComponent({
                     <div class="flex gap-2">
                         <Button icon="pi pi-eye" @click="viewUser(slotProps.data)"
                             class="p-button-rounded p-button-text p-button-info" v-tooltip="'View Details'" />
-                        <Button icon="pi pi-pencil" @click="editUser(slotProps.data)"
-                            class="p-button-rounded p-button-text p-button-success" v-tooltip="'Edit User'" />
-                        <Button icon="pi pi-ellipsis-v" @click="toggleMenu($event, slotProps.data)"
-                            class="p-button-rounded p-button-text" v-tooltip="'More Actions'" />
+
+                        <!-- Show edit button only if user is not banned -->
+                        <Button v-if="slotProps.data.status !== 'banned'" icon="pi pi-pencil"
+                            @click="editUser(slotProps.data)" class="p-button-rounded p-button-text p-button-success"
+                            v-tooltip="'Edit User'" />
+
+                        <!-- Show ban button only if user is not banned -->
+                        <Button v-if="slotProps.data.status !== 'banned'" icon="pi pi-ban"
+                            @click="banUser(slotProps.data)" class="p-button-rounded p-button-text p-button-danger"
+                            v-tooltip="'Ban User'" />
+
+                        <!-- Show unban button only if user is banned -->
+                        <Button v-if="slotProps.data.status === 'banned'" icon="pi pi-undo"
+                            @click="unbanUser(slotProps.data)" class="p-button-rounded p-button-text p-button-warning"
+                            v-tooltip="'Unban User'" />
                     </div>
                 </template>
             </Column>
@@ -488,19 +576,29 @@ export default defineComponent({
                 <div class="p-4 bg-gray-50">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-white p-4 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium mb-3">Contact Information</h3>
+                            <h3 class="text-lg font-medium mb-3 flex items-center">
+                                <i class="pi pi-id-card mr-2 text-blue-500"></i>
+                                Contact Information
+                            </h3>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <p class="text-sm text-gray-500">Phone:</p>
-                                    <p class="text-gray-700">{{ slotProps.data.phone || 'Not provided' }}</p>
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-phone mr-2 text-gray-400"></i>
+                                        {{ slotProps.data.phone || 'Not provided' }}
+                                    </p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-500">Email:</p>
-                                    <p class="text-gray-700">{{ slotProps.data.email }}</p>
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-envelope mr-2 text-gray-400"></i>
+                                        {{ slotProps.data.email }}
+                                    </p>
                                 </div>
                                 <div class="col-span-2">
                                     <p class="text-sm text-gray-500">Address:</p>
-                                    <p class="text-gray-700">
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-map-marker mr-2 text-gray-400"></i>
                                         {{ slotProps.data.address || 'Not provided' }}
                                         {{ slotProps.data.city ? ', ' + slotProps.data.city : '' }}
                                         {{ slotProps.data.postalCode ? ', ' + slotProps.data.postalCode : '' }}
@@ -508,33 +606,54 @@ export default defineComponent({
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-500">Country:</p>
-                                    <p class="text-gray-700">{{ slotProps.data.country || 'Not provided' }}</p>
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-globe mr-2 text-gray-400"></i>
+                                        {{ slotProps.data.country || 'Not provided' }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="bg-white p-4 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium mb-3">Activity Information</h3>
+                            <h3 class="text-lg font-medium mb-3 flex items-center">
+                                <i class="pi pi-chart-bar mr-2 text-green-500"></i>
+                                Activity Information
+                            </h3>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <p class="text-sm text-gray-500">Registration Date:</p>
-                                    <p class="text-gray-700">{{ new Date(slotProps.data.registrationDate).toLocaleDateString() }}</p>
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-calendar mr-2 text-gray-400"></i>
+                                        {{ new Date(slotProps.data.registrationDate).toLocaleDateString() }}
+                                    </p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-500">Last Active:</p>
-                                    <p class="text-gray-700">{{ new Date(slotProps.data.lastActive).toLocaleDateString() }}</p>
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-clock mr-2 text-gray-400"></i>
+                                        {{ new Date(slotProps.data.lastActive).toLocaleDateString() }}
+                                    </p>
                                 </div>
                                 <div v-if="slotProps.data.type === 'buyer'">
                                     <p class="text-sm text-gray-500">Orders Placed:</p>
-                                    <p class="text-gray-700">{{ slotProps.data.ordersPlaced || 0 }}</p>
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-shopping-cart mr-2 text-gray-400"></i>
+                                        {{ slotProps.data.ordersPlaced || 0 }}
+                                    </p>
                                 </div>
                                 <div v-if="slotProps.data.type === 'seller'">
                                     <p class="text-sm text-gray-500">Products Listed:</p>
-                                    <p class="text-gray-700">{{ slotProps.data.productsListed || 0 }}</p>
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-tag mr-2 text-gray-400"></i>
+                                        {{ slotProps.data.productsListed || 0 }}
+                                    </p>
                                 </div>
                                 <div v-if="slotProps.data.type === 'seller'">
                                     <p class="text-sm text-gray-500">Total Revenue:</p>
-                                    <p class="text-gray-700">${{ slotProps.data.revenue?.toLocaleString() || '0' }}</p>
+                                    <p class="text-gray-700 flex items-center">
+                                        <i class="pi pi-dollar mr-2 text-gray-400"></i>
+                                        ${{ slotProps.data.revenue?.toLocaleString() || '0' }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -552,59 +671,3 @@ export default defineComponent({
     </div>
 </template>
 
-<style scoped>
-.user-management {
-    font-family: var(--font-family);
-}
-
-/* Add subtle hover effect to actions buttons */
-.p-button-rounded:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-    transform: translateY(-1px);
-    transition: all 0.2s ease;
-}
-
-/* Custom styles for expanded row */
-:deep(.p-datatable-tbody > tr.p-row-expanded) {
-    background-color: #f8fafc;
-}
-
-/* Status tag enhancements */
-:deep(.p-tag) {
-    border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
-}
-
-/* Smooth transitions */
-.p-datatable .p-datatable-tbody > tr {
-    transition: background-color 0.2s, box-shadow 0.2s;
-}
-
-/* Enhanced hover effect */
-.p-datatable .p-datatable-tbody > tr:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    z-index: 1;
-    position: relative;
-}
-
-/* Custom scrollbar */
-:deep(.p-datatable-wrapper) {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 #f1f5f9;
-}
-
-:deep(.p-datatable-wrapper::-webkit-scrollbar) {
-    width: 8px;
-    height: 8px;
-}
-
-:deep(.p-datatable-wrapper::-webkit-scrollbar-track) {
-    background: #f1f5f9;
-    border-radius: 4px;
-}
-
-:deep(.p-datatable-wrapper::-webkit-scrollbar-thumb) {
-    background-color: #cbd5e1;
-    border-radius: 4px;
-}
-</style>

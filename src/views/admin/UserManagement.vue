@@ -320,9 +320,6 @@ export default defineComponent({
 
         <!-- Main Card -->
         <Card class="rounded-xl shadow-md">
-          <template #title>
-            <div class="text-xl font-bold text-gray-800">User Accounts</div>
-          </template>
           <template #content>
             <!-- User Table Component -->
             <UserTable :users="users" :loading="loading" @view-user="viewUserDetails" @ban-user="handleBanUser" />
