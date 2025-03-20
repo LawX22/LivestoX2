@@ -578,7 +578,7 @@ export default defineComponent({
                                 class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
                                 @click="hideUserMenu">
                                 <i class="pi pi-user mr-3 text-gray-500"></i>
-                                <span>Profile</span>
+                                <span>Profile Management</span>
                             </router-link>
 
                             <router-link to="/my-purchases"
@@ -586,6 +586,13 @@ export default defineComponent({
                                 @click="hideUserMenu">
                                 <i class="pi pi-list mr-3 text-gray-500"></i>
                                 <span>My Purchases</span>
+                            </router-link>
+
+                            <router-link to="/favorites-listings"
+                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                @click="hideUserMenu">
+                                <i class="pi pi-list mr-3 text-gray-500"></i>
+                                <span>Favorites Listings</span>
                             </router-link>
 
                             <router-link to="/settings"
