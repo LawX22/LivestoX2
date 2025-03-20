@@ -3,12 +3,14 @@
 import { defineComponent, reactive, ref, computed } from 'vue';
 import NavBar from '../../components/Main/NavBar.vue';
 import Filters from '../../components/Main/Filters.vue';
+import LivestockListing from '../../components/Main/LivestockListings.vue'; 
 
 export default defineComponent({
   name: 'LivestockMarket',
   components: {
     NavBar,
-    Filters
+    Filters,
+    LivestockListing 
   },
   setup() {
     const loading = ref(false);
@@ -202,16 +204,12 @@ export default defineComponent({
             @save-location="handleSaveLocation" />
         </div>
         <div class="main-content">
-          <!-- Your livestock listings will go here -->
-          <div v-if="loading" class="loading-state">
-            <p>Loading livestock data...</p>
-          </div>
-          <div v-else class="livestock-list">
-            <!-- Placeholder for livestock listings -->
-            <p v-if="!hasActiveFilters">Please apply filters to see available livestock</p>
-            <p v-else-if="filteredListings.length === 0">No livestock found matching your criteria</p>
-            <!-- Livestock listings would go here -->
-          </div>
+          <!-- Replace the existing content with the LivestockListing component -->
+          <LivestockListing 
+            :loading="loading" 
+            :filters="filters" 
+            @refresh-listings="handleApplyFilters" 
+          />
         </div>
       </div>
     </div>
