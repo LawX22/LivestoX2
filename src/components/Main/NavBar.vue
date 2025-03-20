@@ -1,294 +1,3 @@
-<template>
-    <div class="shadow-lg bg-white border-b border-gray-200">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo and Main Navigation -->
-                <div className="flex items-center space-x-8">
-                    <div className="flex items-center space-x-2">
-                        <img src="/src/assets/vue.svg" alt="Logo" className="h-8 w-8" />
-                        <div className="font-bold text-xl text-green-600">LivestoX</div>
-                    </div>
-
-                    <nav className="hidden md:flex space-x-5">
-                        <a href="/"
-                            className="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i className="pi pi-home mr-2"></i> Home
-                            <span className="nav-indicator"></span>
-                        </a>
-                        <a href="/livestocks"
-                            className="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i className="pi pi-list mr-2"></i> Livestocks
-                            <span className="nav-indicator"></span>
-                        </a>
-                        <a href="/forum"
-                            className="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i className="pi pi-users mr-2"></i> Forum
-                            <span className="nav-indicator"></span>
-                        </a>
-                        <a href="/resources"
-                            className="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i className="pi pi-book mr-2"></i> Resources
-                            <span className="nav-indicator"></span>
-                        </a>
-                    </nav>
-                </div>
-
-                <!-- Right Side - User Controls -->
-                <div class="flex items-center space-x-2">
-                    <!-- Search -->
-                    <div class="hidden md:flex relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                            <i class="pi pi-search text-gray-400"></i>
-                        </span>
-                    </div>
-
-                    <!-- Chat Notifications -->
-                    <div class="relative">
-                        <Button icon="pi pi-comments"
-                            class="p-button-rounded p-button-text p-button-plain hover:scale-110 transition-transform duration-200"
-                            @click="toggleChat" :class="{ 'p-button-outlined p-button-info': unreadChatCount > 0 }" />
-                        <Badge v-if="unreadChatCount > 0" :value="unreadChatCount"
-                            class="absolute -top-1 -right-1 pulse-animation" severity="danger" />
-
-                        <!-- Custom Chat Menu -->
-                        <div v-if="isChatMenuVisible"
-                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 user-menu-animated">
-                            <div class="py-2 px-3 border-b border-gray-100 flex justify-between items-center">
-                                <div class="font-medium text-gray-800">Messages</div>
-                                <div class="relative">
-                                    <!-- Button with Tooltip -->
-                                    <Button icon="pi pi-check"
-                                        class="p-button-text p-button-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                        @click="markAllChatsAsRead" v-tooltip.top="'Mark all messages as read'" />
-                                </div>
-                            </div>
-                            <div class="max-h-96 overflow-y-auto">
-                                <div v-for="chat in chatNotifications" :key="chat.id" @click="openChat(chat.id)"
-                                    class="p-3 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors duration-200"
-                                    :class="{ 'bg-blue-50': !chat.read }">
-                                    <div class="flex items-start">
-                                        <div class="relative mr-3">
-                                            <Avatar :image="chat.senderAvatar || undefined"
-                                                :label="!chat.senderAvatar ? chat.sender.charAt(0).toUpperCase() : undefined"
-                                                shape="circle"
-                                                :style="!chat.senderAvatar ? 'background: linear-gradient(135deg, #4F46E5, #60a5fa); color: white;' : ''" />
-                                            <span v-if="chat.online"
-                                                class="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-white"></span>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center justify-between">
-                                                <p class="text-sm font-medium"
-                                                    :class="!chat.read ? 'text-blue-600' : 'text-gray-900'">{{
-                                                        chat.sender }}</p>
-                                                <p class="text-xs text-gray-500">{{ chat.time }}</p>
-                                            </div>
-                                            <p class="text-sm text-gray-600 truncate"
-                                                :class="{ 'font-medium': !chat.read }">{{ chat.message }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-if="chatNotifications.length === 0" class="p-4 text-center text-gray-500">
-                                    No messages
-                                </div>
-                            </div>
-                            <div class="p-3 border-t border-gray-100 text-center">
-                                <router-link to="/chat" class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    @click="hideChatMenu">
-                                    View All Messages
-                                </router-link>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Notifications -->
-                    <div class="relative">
-                        <Button icon="pi pi-bell"
-                            class="p-button-rounded p-button-text p-button-plain hover:scale-110 transition-transform duration-200"
-                            @click="toggleNotifications"
-                            :class="{ 'p-button-outlined p-button-info': unreadNotificationCount > 0 }" />
-                        <Badge v-if="unreadNotificationCount > 0" :value="unreadNotificationCount"
-                            class="absolute -top-1 -right-1 pulse-animation" severity="danger" />
-
-                        <!-- Custom Notifications Menu -->
-                        <div v-if="isNotificationMenuVisible"
-                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 user-menu-animated">
-                            <div class="py-2 px-3 border-b border-gray-100 flex justify-between items-center">
-                                <div class="font-medium text-gray-800">Notifications</div>
-                                <div class="relative">
-                                    <!-- Icon-only button with Tooltip -->
-                                    <Button icon="pi pi-check"
-                                        class="p-button-text p-button-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                        @click="markAllNotificationsAsRead"
-                                        v-tooltip.top="'Mark all notifications as read'" />
-                                </div>
-                            </div>
-                            <div class="max-h-96 overflow-y-auto">
-                                <div v-for="notif in notifications" :key="notif.id"
-                                    @click="handleNotificationClick(notif)"
-                                    class="p-3 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors duration-200"
-                                    :class="{ 'bg-blue-50': !notif.read }">
-                                    <div class="flex items-start">
-                                        <div :class="`mr-3 p-2 rounded-full ${getNotificationBgColor(notif.type)}`">
-                                            <i
-                                                :class="`pi ${notif.icon || 'pi-bell'} ${getNotificationIconColor(notif.type)}`"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center justify-between">
-                                                <p class="text-sm font-medium"
-                                                    :class="!notif.read ? 'text-blue-600' : 'text-gray-900'">{{
-                                                        notif.title }}</p>
-                                                <p class="text-xs text-gray-500">{{ notif.time }}</p>
-                                            </div>
-                                            <p class="text-sm text-gray-600" :class="{ 'font-medium': !notif.read }">{{
-                                                notif.message }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-if="notifications.length === 0" class="p-4 text-center text-gray-500">
-                                    No notifications
-                                </div>
-                            </div>
-                            <div class="p-3 border-t border-gray-100 text-center">
-                                <router-link to="/notifications"
-                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    @click="hideNotificationMenu">
-                                    View All Notifications
-                                </router-link>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- User Profile - Improved Design -->
-                    <div class="relative">
-                        <div @click="toggleUserMenu"
-                            class="user-profile-toggle flex items-center cursor-pointer px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors duration-200 border border-transparent hover:border-blue-100">
-                            <Avatar :image="user.avatarUrl || undefined"
-                                :label="!user.avatarUrl ? getUserInitials() : undefined" shape="circle" class="mr-2"
-                                :style="!user.avatarUrl ? 'background: linear-gradient(135deg, #4F46E5, #60a5fa); color: white;' : ''" />
-                            <div class="hidden lg:block">
-                                <div class="text-sm font-medium text-gray-800">{{ user.name }}</div>
-                                <div class="text-xs text-gray-500">{{ user.role }}</div>
-                            </div>
-                            <i class="pi pi-chevron-down ml-2 text-gray-400 text-xs hidden lg:block"></i>
-                        </div>
-
-                        <!-- Improved User Menu -->
-                        <div v-if="isUserMenuVisible"
-                            class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-2 user-menu-animated">
-                            <!-- User Profile Header -->
-                            <div class="px-4 py-3 border-b border-gray-100">
-                                <div class="flex items-center">
-                                    <Avatar :image="user.avatarUrl || undefined"
-                                        :label="!user.avatarUrl ? getUserInitials() : undefined" shape="circle"
-                                        class="mr-3"
-                                        :style="!user.avatarUrl ? 'background: linear-gradient(135deg, #4F46E5, #60a5fa); color: white;' : ''" />
-                                    <div>
-                                        <div class="font-medium text-gray-800">{{ user.name }}</div>
-                                        <div class="text-sm text-gray-600">{{ user.email }}</div>
-                                        <div class="text-xs text-gray-500 mt-1">
-                                            <span class="inline-flex items-center">
-                                                <span class="h-2 w-2 rounded-full bg-green-400 mr-1"></span>
-                                                Active now
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Menu Items -->
-                            <router-link to="/profile"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-user mr-3 text-gray-500"></i>
-                                <span>Profile</span>
-                            </router-link>
-
-                            <router-link to="/my-purchases"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-list mr-3 text-gray-500"></i>
-                                <span>My Purchases</span>
-                            </router-link>
-
-                            <router-link to="/settings"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-cog mr-3 text-gray-500"></i>
-                                <span>Settings</span>
-                            </router-link>
-
-                            <div class="border-t border-gray-100 my-1"></div>
-
-                            <router-link to="/help"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-question-circle mr-3 text-gray-500"></i>
-                                <span>Help Center</span>
-                            </router-link>
-
-                            <button @click="logout"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200 w-full text-left">
-                                <i class="pi pi-sign-out mr-3 text-gray-500"></i>
-                                <span>Logout</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Mobile Menu Button -->
-                    <Button icon="pi pi-bars"
-                        class="p-button-rounded p-button-text p-button-plain md:hidden hover:bg-blue-50 transition-colors duration-200"
-                        @click="showMobileMenu = !showMobileMenu" />
-                </div>
-            </div>
-
-            <!-- Mobile Menu -->
-            <div v-if="showMobileMenu"
-                class="md:hidden py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg shadow-inner">
-
-                <div class="flex flex-col space-y-1 mt-2">
-                    <router-link to="/"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-home mr-3 text-gray-500"></i> Home
-                    </router-link>
-                    <router-link to="/livestocks"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-list mr-3 text-gray-500"></i> Livestocks
-                    </router-link>
-                    <router-link to="/forum"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-users mr-3 text-gray-500"></i> Forum
-                    </router-link>
-                    <router-link to="/resources"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-book mr-3 text-gray-500"></i> Resources
-                    </router-link>
-                    <div class="border-t border-gray-200 my-2"></div>
-                    <router-link to="/profile"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-user mr-3 text-gray-500"></i> Profile
-                    </router-link>
-                    <router-link to="/notifications"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-bell mr-3 text-gray-500"></i> Notifications
-                        <Badge v-if="unreadNotificationCount > 0" :value="unreadNotificationCount" severity="danger"
-                            class="ml-2 pulse-animation" />
-                    </router-link>
-                    <router-link to="/chat"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-comments mr-3 text-gray-500"></i> Messages
-                        <Badge v-if="unreadChatCount > 0" :value="unreadChatCount" severity="danger"
-                            class="ml-2 pulse-animation" />
-                    </router-link>
-                    <button @click="logout"
-                        class="text-left text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-sign-out mr-3 text-gray-500"></i> Logout
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -666,6 +375,299 @@ export default defineComponent({
 });
 </script>
 
+
+<template>
+    <div class="shadow-lg bg-white border-b border-gray-200">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Main Navigation -->
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center space-x-2">
+                        <img src="/src/assets/vue.svg" alt="Logo" class="h-8 w-8" />
+                        <div class="font-bold text-xl text-green-600">LivestoX</div>
+                    </div>
+
+                    <nav class="hidden md:flex space-x-5">
+                        <router-link to="/"
+                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
+                            <i class="pi pi-home mr-2"></i> Home
+                            <span class="nav-indicator"></span>
+                        </router-link>
+                        <router-link to="/main/LivestockMarket"
+                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
+                            <i class="pi pi-list mr-2"></i> Livestocks
+                            <span class="nav-indicator"></span>
+                        </router-link>
+                        <router-link to="/forum"
+                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
+                            <i class="pi pi-users mr-2"></i> Forum
+                            <span class="nav-indicator"></span>
+                        </router-link>
+                        <router-link to="/resources"
+                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
+                            <i class="pi pi-book mr-2"></i> Resources
+                            <span class="nav-indicator"></span>
+                        </router-link>
+                    </nav>
+                </div>
+
+                <!-- Right Side - User Controls -->
+                <div class="flex items-center space-x-2">
+                    <!-- Search -->
+                    <div class="hidden md:flex relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="pi pi-search text-gray-400"></i>
+                        </span>
+                    </div>
+
+                    <!-- Chat Notifications -->
+                    <div class="relative">
+                        <Button icon="pi pi-comments"
+                            class="p-button-rounded p-button-text p-button-plain hover:scale-110 transition-transform duration-200"
+                            @click="toggleChat" :class="{ 'p-button-outlined p-button-info': unreadChatCount > 0 }" />
+                        <Badge v-if="unreadChatCount > 0" :value="unreadChatCount"
+                            class="absolute -top-1 -right-1 pulse-animation" severity="danger" />
+
+                        <!-- Custom Chat Menu -->
+                        <div v-if="isChatMenuVisible"
+                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 user-menu-animated">
+                            <div class="py-2 px-3 border-b border-gray-100 flex justify-between items-center">
+                                <div class="font-medium text-gray-800">Messages</div>
+                                <div class="relative">
+                                    <!-- Button with Tooltip -->
+                                    <Button icon="pi pi-check"
+                                        class="p-button-text p-button-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                                        @click="markAllChatsAsRead" v-tooltip.top="'Mark all messages as read'" />
+                                </div>
+                            </div>
+                            <div class="max-h-96 overflow-y-auto">
+                                <div v-for="chat in chatNotifications" :key="chat.id" @click="openChat(chat.id)"
+                                    class="p-3 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors duration-200"
+                                    :class="{ 'bg-blue-50': !chat.read }">
+                                    <div class="flex items-start">
+                                        <div class="relative mr-3">
+                                            <Avatar :image="chat.senderAvatar || undefined"
+                                                :label="!chat.senderAvatar ? chat.sender.charAt(0).toUpperCase() : undefined"
+                                                shape="circle"
+                                                :style="!chat.senderAvatar ? 'background: linear-gradient(135deg, #4F46E5, #60a5fa); color: white;' : ''" />
+                                            <span v-if="chat.online"
+                                                class="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-white"></span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between">
+                                                <p class="text-sm font-medium"
+                                                    :class="!chat.read ? 'text-blue-600' : 'text-gray-900'">{{
+                                                        chat.sender }}</p>
+                                                <p class="text-xs text-gray-500">{{ chat.time }}</p>
+                                            </div>
+                                            <p class="text-sm text-gray-600 truncate"
+                                                :class="{ 'font-medium': !chat.read }">{{ chat.message }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-if="chatNotifications.length === 0" class="p-4 text-center text-gray-500">
+                                    No messages
+                                </div>
+                            </div>
+                            <div class="p-3 border-t border-gray-100 text-center">
+                                <router-link to="/chat" class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    @click="hideChatMenu">
+                                    View All Messages
+                                </router-link>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <Button icon="pi pi-bell"
+                            class="p-button-rounded p-button-text p-button-plain hover:scale-110 transition-transform duration-200"
+                            @click="toggleNotifications"
+                            :class="{ 'p-button-outlined p-button-info': unreadNotificationCount > 0 }" />
+                        <Badge v-if="unreadNotificationCount > 0" :value="unreadNotificationCount"
+                            class="absolute -top-1 -right-1 pulse-animation" severity="danger" />
+
+                        <!-- Custom Notifications Menu -->
+                        <div v-if="isNotificationMenuVisible"
+                            class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 user-menu-animated">
+                            <div class="py-2 px-3 border-b border-gray-100 flex justify-between items-center">
+                                <div class="font-medium text-gray-800">Notifications</div>
+                                <div class="relative">
+                                    <!-- Icon-only button with Tooltip -->
+                                    <Button icon="pi pi-check"
+                                        class="p-button-text p-button-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                                        @click="markAllNotificationsAsRead"
+                                        v-tooltip.top="'Mark all notifications as read'" />
+                                </div>
+                            </div>
+                            <div class="max-h-96 overflow-y-auto">
+                                <div v-for="notif in notifications" :key="notif.id"
+                                    @click="handleNotificationClick(notif)"
+                                    class="p-3 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors duration-200"
+                                    :class="{ 'bg-blue-50': !notif.read }">
+                                    <div class="flex items-start">
+                                        <div :class="`mr-3 p-2 rounded-full ${getNotificationBgColor(notif.type)}`">
+                                            <i
+                                                :class="`pi ${notif.icon || 'pi-bell'} ${getNotificationIconColor(notif.type)}`"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between">
+                                                <p class="text-sm font-medium"
+                                                    :class="!notif.read ? 'text-blue-600' : 'text-gray-900'">{{
+                                                        notif.title }}</p>
+                                                <p class="text-xs text-gray-500">{{ notif.time }}</p>
+                                            </div>
+                                            <p class="text-sm text-gray-600" :class="{ 'font-medium': !notif.read }">{{
+                                                notif.message }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-if="notifications.length === 0" class="p-4 text-center text-gray-500">
+                                    No notifications
+                                </div>
+                            </div>
+                            <div class="p-3 border-t border-gray-100 text-center">
+                                <router-link to="/notifications"
+                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    @click="hideNotificationMenu">
+                                    View All Notifications
+                                </router-link>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Profile - Improved Design -->
+                    <div class="relative">
+                        <div @click="toggleUserMenu"
+                            class="user-profile-toggle flex items-center cursor-pointer px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors duration-200 border border-transparent hover:border-blue-100">
+                            <Avatar :image="user.avatarUrl || undefined"
+                                :label="!user.avatarUrl ? getUserInitials() : undefined" shape="circle" class="mr-2"
+                                :style="!user.avatarUrl ? 'background: linear-gradient(135deg, #4F46E5, #60a5fa); color: white;' : ''" />
+                            <div class="hidden lg:block">
+                                <div class="text-sm font-medium text-gray-800">{{ user.name }}</div>
+                                <div class="text-xs text-gray-500">{{ user.role }}</div>
+                            </div>
+                            <i class="pi pi-chevron-down ml-2 text-gray-400 text-xs hidden lg:block"></i>
+                        </div>
+
+                        <!-- Improved User Menu -->
+                        <div v-if="isUserMenuVisible"
+                            class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-2 user-menu-animated">
+                            <!-- User Profile Header -->
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <div class="flex items-center">
+                                    <Avatar :image="user.avatarUrl || undefined"
+                                        :label="!user.avatarUrl ? getUserInitials() : undefined" shape="circle"
+                                        class="mr-3"
+                                        :style="!user.avatarUrl ? 'background: linear-gradient(135deg, #4F46E5, #60a5fa); color: white;' : ''" />
+                                    <div>
+                                        <div class="font-medium text-gray-800">{{ user.name }}</div>
+                                        <div class="text-sm text-gray-600">{{ user.email }}</div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            <span class="inline-flex items-center">
+                                                <span class="h-2 w-2 rounded-full bg-green-400 mr-1"></span>
+                                                Active now
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Menu Items -->
+                            <router-link to="/profile"
+                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                @click="hideUserMenu">
+                                <i class="pi pi-user mr-3 text-gray-500"></i>
+                                <span>Profile</span>
+                            </router-link>
+
+                            <router-link to="/my-purchases"
+                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                @click="hideUserMenu">
+                                <i class="pi pi-list mr-3 text-gray-500"></i>
+                                <span>My Purchases</span>
+                            </router-link>
+
+                            <router-link to="/settings"
+                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                @click="hideUserMenu">
+                                <i class="pi pi-cog mr-3 text-gray-500"></i>
+                                <span>Settings</span>
+                            </router-link>
+
+                            <div class="border-t border-gray-100 my-1"></div>
+
+                            <router-link to="/help"
+                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                @click="hideUserMenu">
+                                <i class="pi pi-question-circle mr-3 text-gray-500"></i>
+                                <span>Help Center</span>
+                            </router-link>
+
+                            <button @click="logout"
+                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200 w-full text-left">
+                                <i class="pi pi-sign-out mr-3 text-gray-500"></i>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <Button icon="pi pi-bars"
+                        class="p-button-rounded p-button-text p-button-plain md:hidden hover:bg-blue-50 transition-colors duration-200"
+                        @click="showMobileMenu = !showMobileMenu" />
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div v-if="showMobileMenu"
+                class="md:hidden py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg shadow-inner">
+
+                <div class="flex flex-col space-y-1 mt-2">
+                    <router-link to="/"
+                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
+                        <i class="pi pi-home mr-3 text-gray-500"></i> Home
+                    </router-link>
+                    <router-link to="/main/LivestockMarket"
+                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
+                        <i class="pi pi-list mr-3 text-gray-500"></i> Livestocks
+                    </router-link>
+                    <router-link to="/forum"
+                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
+                        <i class="pi pi-users mr-3 text-gray-500"></i> Forum
+                    </router-link>
+                    <router-link to="/resources"
+                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
+                        <i class="pi pi-book mr-3 text-gray-500"></i> Resources
+                    </router-link>
+                    <div class="border-t border-gray-200 my-2"></div>
+                    <router-link to="/profile"
+                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
+                        <i class="pi pi-user mr-3 text-gray-500"></i> Profile
+                    </router-link>
+                    <router-link to="/notifications"
+                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
+                        <i class="pi pi-bell mr-3 text-gray-500"></i> Notifications
+                        <Badge v-if="unreadNotificationCount > 0" :value="unreadNotificationCount" severity="danger"
+                            class="ml-2 pulse-animation" />
+                    </router-link>
+                    <router-link to="/chat"
+                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
+                        <i class="pi pi-comments mr-3 text-gray-500"></i> Messages
+                        <Badge v-if="unreadChatCount > 0" :value="unreadChatCount" severity="danger"
+                            class="ml-2 pulse-animation" />
+                    </router-link>
+                    <button @click="logout"
+                        class="text-left text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
+                        <i class="pi pi-sign-out mr-3 text-gray-500"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+
 <style scoped>
 /* Enhanced Navigation Links */
 .nav-link {
@@ -690,13 +692,13 @@ export default defineComponent({
 }
 
 .router-link-active {
-    color: #3b82f6 !important;
+    color: #16a34a !important;
     font-weight: 500;
 }
 
 .router-link-active .nav-indicator {
     width: 80%;
-    box-shadow: 0 0 8px #3b82f6, 0 0 15px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 8px #16a34a, 0 0 15px rgba(22, 163, 74, 0.5);
 }
 
 /* Pulse Animation for Notifications */

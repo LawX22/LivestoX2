@@ -10,7 +10,7 @@ import AdminDashboard from '../views/admin/AdminDashboard.vue';
 import UserManagement from '../views/admin/UserManagement.vue';
 
 // Main Pages
-import Dashboard from '../views/main/Dashboard.vue';
+import LivestockMarket from '../views/main/LivestockMarket.vue';
 
 // Define Routes
 const routes = [
@@ -20,7 +20,7 @@ const routes = [
   { path: '/signup', component: SignUp, name: 'SignUp' },
 
   // Main Route
-  { path: '/main/Dashboard', component: Dashboard, name: 'Dashboard' },
+  { path: '/main/LivestockMarket', component: LivestockMarket, name: 'LivestockMarket' },
 
   // Admin Routes
   { path: '/admin/adminDashboard', component: AdminDashboard, name: 'AdminDashboard' },
