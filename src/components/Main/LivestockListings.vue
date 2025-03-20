@@ -1,3 +1,232 @@
+<script lang="ts">
+import { defineComponent, ref, computed, onMounted } from 'vue';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
+import Badge from 'primevue/badge';
+import Paginator from 'primevue/paginator';
+
+interface Livestock {
+    id: number;
+    title: string;
+    description: string;
+    category: string;
+    breed: string;
+    age: number;
+    ageUnit: string;
+    gender: string;
+    weight: number;
+    weightUnit: string;
+    price: number;
+    negotiable: boolean;
+    quantity: number;
+    location: string;
+    healthStatus: string;
+    feedingType: string;
+    imageUrl: string;
+    videoUrl?: string;
+    videoThumbnail?: string;
+    certified: boolean;
+    auction: boolean;
+    availableImmediate: boolean;
+    isFavorite: boolean;
+    listedDate: Date;
+}
+
+export default defineComponent({
+    name: 'LivestockMarketplace',
+    components: {
+        Button,
+        InputText,
+        Dropdown,
+        Badge,
+        Paginator
+    },
+    setup() {
+        // Search and basic filters
+        const searchQuery = ref('');
+        const selectedCategory = ref<{ name: string; code: string } | null>(null);
+        const sortOption = ref({ value: 'newest', label: 'Newest First' });
+        const first = ref(0);
+
+        // View mode toggle (grid, list, compact)
+        const viewMode = ref<'grid' | 'list' | 'compact'>('grid');
+
+        // Options for dropdowns
+        const categories = ref([
+            { name: 'Cattle', code: 'cattle' },
+            { name: 'Pigs', code: 'pigs' },
+            { name: 'Goats', code: 'goats' },
+            { name: 'Sheep', code: 'sheep' },
+            { name: 'Horses', code: 'horses' },
+            { name: 'Poultry', code: 'poultry' }
+        ]);
+
+        const sortOptions = ref([
+            { value: 'newest', label: 'Newest First' },
+            { value: 'oldest', label: 'Oldest First' },
+            { value: 'price_low', label: 'Price: Low to High' },
+            { value: 'price_high', label: 'Price: High to Low' },
+            { value: 'popularity', label: 'Popularity' }
+        ]);
+
+        // Livestock listings
+        const listings = ref<Livestock[]>([]);
+
+        // Generate mock listings data
+        const generateListings = () => {
+            const items: Livestock[] = [];
+            const categories = ['Cattle', 'Pigs', 'Goats', 'Sheep', 'Horses', 'Poultry'];
+            const breeds = ['Brahman', 'Angus', 'Holstein', 'Jersey', 'Duroc', 'Hampshire'];
+            const genders = ['Male', 'Female'];
+            const locations = ['Cebu City', 'Mandaue City', 'Lapu-Lapu City', 'Bogo City', 'Toledo City'];
+
+            for (let i = 0; i < 20; i++) {
+                const categoryIndex = i % categories.length;
+                const breedIndex = i % breeds.length;
+                const gender = genders[i % 2];
+                const location = locations[i % locations.length];
+                const daysAgo = Math.floor(Math.random() * 30);
+
+                items.push({
+                    id: i + 1,
+                    title: `${breeds[breedIndex]} ${categories[categoryIndex]} - ${gender}`,
+                    description: "Quality livestock for sale. Well cared for and in excellent health.",
+                    category: categories[categoryIndex],
+                    breed: breeds[breedIndex],
+                    age: Math.floor(Math.random() * 5) + 1,
+                    ageUnit: "years",
+                    gender: gender,
+                    weight: Math.floor(Math.random() * 500) + 200,
+                    weightUnit: "kg",
+                    price: Math.floor(Math.random() * 4000) + 500,
+                    negotiable: Math.random() > 0.5,
+                    quantity: Math.floor(Math.random() * 5) + 1,
+                    location: location,
+                    healthStatus: "Vaccinated",
+                    feedingType: "Grass-fed",
+                    imageUrl: `/src/assets/Bull.jpg?text=${breeds[breedIndex]}+${i}`,
+                    certified: Math.random() > 0.7,
+                    auction: Math.random() > 0.8,
+                    availableImmediate: Math.random() > 0.3,
+                    isFavorite: Math.random() > 0.9,
+                    listedDate: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+                });
+            }
+
+            return items;
+        };
+
+        const filteredListings = computed(() => {
+            let result = listings.value;
+
+            // Apply search query filter
+            if (searchQuery.value) {
+                const query = searchQuery.value.toLowerCase();
+                result = result.filter(item =>
+                    item.title.toLowerCase().includes(query) ||
+                    item.category.toLowerCase().includes(query) ||
+                    item.breed.toLowerCase().includes(query) ||
+                    item.location.toLowerCase().includes(query)
+                );
+            }
+
+            // Apply category filter
+            if (selectedCategory.value) {
+                result = result.filter(item =>
+                    selectedCategory.value && item.category === selectedCategory.value.name
+                );
+            }
+
+            // Apply sorting
+            if (sortOption.value) {
+                switch (sortOption.value.value) {
+                    case 'newest':
+                        result = [...result].sort((a, b) =>
+                            b.listedDate.getTime() - a.listedDate.getTime()
+                        );
+                        break;
+                    case 'oldest':
+                        result = [...result].sort((a, b) =>
+                            a.listedDate.getTime() - b.listedDate.getTime()
+                        );
+                        break;
+                    case 'price_low':
+                        result = [...result].sort((a, b) => a.price - b.price);
+                        break;
+                    case 'price_high':
+                        result = [...result].sort((a, b) => b.price - a.price);
+                        break;
+                    // For popularity, we could use a combination of views, favorites, etc.
+                    // For demo purposes, we'll just use a random sort
+                    case 'popularity':
+                        result = [...result].sort(() => Math.random() - 0.5);
+                        break;
+                }
+            }
+
+            return result;
+        });
+
+        // Methods
+        const viewListing = (id: number) => {
+            // In a real app, this would navigate to the listing details page
+            console.log(`Navigating to listing ${id}`);
+        };
+
+        const toggleFavorite = (listing: Livestock) => {
+            listing.isFavorite = !listing.isFavorite;
+            // In a real app, you would save this to your API
+        };
+
+        const formatPrice = (price: number): string => {
+            return price.toLocaleString();
+        };
+
+        const formatDate = (date: Date): string => {
+            // Calculate days ago
+            const now = new Date();
+            const diffTime = Math.abs(now.getTime() - date.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return 'Today';
+            } else if (diffDays === 1) {
+                return 'Yesterday';
+            } else if (diffDays < 7) {
+                return `${diffDays} days ago`;
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        };
+
+        onMounted(() => {
+            // In a real app, this would be an API call
+            listings.value = generateListings();
+        });
+
+        return {
+            searchQuery,
+            selectedCategory,
+            sortOption,
+            first,
+            viewMode,
+
+            categories,
+            sortOptions,
+
+            listings,
+            filteredListings,
+
+            viewListing,
+            toggleFavorite,
+            formatPrice,
+            formatDate
+        };
+    }
+});
+</script>
+
 <template>
     <div class="livestock-marketplace">
         <!-- Hero/Banner Section with pastel colors -->
@@ -143,69 +372,100 @@
             </div>
 
             <!-- Grid View -->
-            <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div v-for="listing in filteredListings" :key="listing.id"
-                    class="livestock-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
+                    class="livestock-card bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col">
                     <div class="relative">
-                        <img :src="listing.imageUrl" :alt="listing.title" class="w-full h-56 object-cover" />
-                        <div class="absolute top-0 left-0 right-0 p-2 flex justify-between">
-                            <span v-if="listing.certified"
-                                class="bg-purple-200 text-purple-800 px-2 py-1 rounded-full text-xs font-medium flex items-center">
-                                <i class="pi pi-check-circle mr-1"></i> Certified
-                            </span>
-                            <span v-if="listing.auction"
-                                class="bg-amber-200 text-amber-800 px-2 py-1 rounded-full text-xs font-medium flex items-center">
-                                <i class="pi pi-clock mr-1"></i> Auction
-                            </span>
+                        <!-- Image with gradient overlay -->
+                        <div class="relative h-52 overflow-hidden">
+                            <img :src="listing.imageUrl" :alt="listing.title"
+                                class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent">
+                            </div>
+
+                            <!-- Price badge -->
+                            <div
+                                class="absolute bottom-3 left-3 bg-white/90 text-green-600 px-3 py-1 rounded-lg text-base font-bold shadow-md">
+                                ${{ formatPrice(listing.price) }}
+                            </div>
+
+                            <!-- Available now badge -->
+                            <div v-if="listing.availableImmediate"
+                                class="absolute bottom-3 right-3 bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium inline-flex items-center">
+                                <i class="pi pi-check-circle mr-1"></i> Available Now
+                            </div>
                         </div>
-                        <button
-                            class="absolute bottom-3 right-3 w-10 h-10 flex items-center justify-center rounded-full shadow-md transition-colors duration-200"
-                            :class="[listing.isFavorite ? 'bg-red-200 text-red-800' : 'bg-white text-gray-500 hover:text-red-800']"
-                            @click="toggleFavorite(listing)">
-                            <i class="pi pi-heart-fill text-lg"></i>
-                        </button>
+
+                        <!-- Top badges -->
+                        <div class="absolute top-3 left-3 right-3 flex justify-between">
+                            <div class="flex gap-1.5">
+                                <span v-if="listing.certified"
+                                    class="bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-sm">
+                                    <i class="pi pi-check-circle mr-1"></i> Certified
+                                </span>
+                                <span v-if="listing.auction"
+                                    class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-sm">
+                                    <i class="pi pi-clock mr-1"></i> Auction
+                                </span>
+                            </div>
+
+                            <!-- Favorite button -->
+                            <button
+                                class="w-8 h-8 flex items-center justify-center rounded-full shadow-md transition-all duration-200"
+                                :class="[listing.isFavorite ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-500 hover:bg-red-50 hover:text-red-500']"
+                                @click="toggleFavorite(listing)" aria-label="Toggle favorite">
+                                <i class="pi pi-heart-fill text-sm"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="text-lg font-bold text-gray-800 hover:text-green-700 transition-colors cursor-pointer"
-                                @click="viewListing(listing.id)">
-                                {{ listing.title }}
-                            </h3>
-                            <div class="text-xl font-bold text-green-700">${{ formatPrice(listing.price) }}</div>
-                        </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <!-- Title -->
+                        <h3 class="text-base font-bold text-gray-800 hover:text-green-600 transition-colors cursor-pointer line-clamp-2 mb-2"
+                            @click="viewListing(listing.id)">
+                            {{ listing.title }}
+                        </h3>
 
-                        <div class="flex items-center text-sm text-gray-600 mb-3">
-                            <i class="pi pi-map-marker mr-1"></i>
+                        <!-- Location and date -->
+                        <div class="flex items-center text-xs text-gray-500 mb-3">
+                            <i class="pi pi-map-marker mr-1 text-green-600"></i>
                             <span>{{ listing.location }}</span>
-                            <div class="mx-2 h-1 w-1 rounded-full bg-gray-400"></div>
+                            <div class="mx-2 h-1 w-1 rounded-full bg-gray-300"></div>
                             <span>{{ formatDate(listing.listedDate) }}</span>
                         </div>
 
-                        <div class="mb-4">
-                            <div class="flex flex-wrap gap-1 mb-2">
-                                <Badge :value="listing.category" severity="info" class="p-badge-sm" />
-                                <Badge :value="listing.gender" severity="secondary" class="p-badge-sm" />
-                                <Badge v-if="listing.availableImmediate" value="Available Now" severity="success"
-                                    class="p-badge-sm" />
-                            </div>
+                        <!-- Description -->
+                        <div class="bg-gray-50 p-3 rounded-lg mb-3">
+                            <p class="text-gray-700 text-xs line-clamp-2">{{ listing.description }}</p>
+                        </div>
 
-                            <div class="text-sm text-gray-700">
-                                <div class="flex items-center">
-                                    <span class="text-gray-500 mr-2">Age:</span> {{ listing.age }} {{ listing.ageUnit }}
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="text-gray-500 mr-2">Weight:</span> {{ listing.weight }} {{
-                                        listing.weightUnit }}
-                                </div>
-                                <div v-if="listing.quantity > 1" class="flex items-center">
-                                    <span class="text-gray-500 mr-2">Quantity:</span> {{ listing.quantity }} available
-                                </div>
+                        <!-- Key specs -->
+                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-700 mb-3">
+                            <div class="flex items-center">
+                                <i class="pi pi-tag text-green-600 mr-1.5"></i>
+                                <span>{{ listing.category }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="pi pi-calendar text-green-600 mr-1.5"></i>
+                                <span>{{ listing.age }} {{ listing.ageUnit }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="pi pi-heart text-green-600 mr-1.5"></i>
+                                <span>{{ listing.healthStatus }}</span>
+                            </div>
+                            <div v-if="listing.quantity > 1" class="flex items-center">
+                                <i class="pi pi-th-large text-green-600 mr-1.5"></i>
+                                <span>{{ listing.quantity }} Left </span>
                             </div>
                         </div>
 
+                        <!-- Spacer to push button to bottom -->
+                        <div class="flex-grow"></div>
+
+                        <!-- Button -->
                         <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
-                            class="p-button-rounded p-button-success w-full" @click="viewListing(listing.id)" />
+                            class="p-button-rounded p-button-success w-full font-medium text-sm mt-3"
+                            @click="viewListing(listing.id)" />
                     </div>
                 </div>
             </div>
@@ -213,76 +473,118 @@
             <!-- List View -->
             <div v-else-if="viewMode === 'list'" class="flex flex-col gap-4">
                 <div v-for="listing in filteredListings" :key="listing.id"
-                    class="livestock-card bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row overflow-hidden">
-                    <div class="relative md:w-1/4">
-                        <img :src="listing.imageUrl" :alt="listing.title" class="w-full h-48 md:h-full object-cover" />
-                        <div class="absolute top-0 left-0 p-2 flex gap-2">
+                    class="livestock-card bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row overflow-hidden border border-gray-100">
+                    <div class="relative md:w-1/4 lg:w-1/5">
+                        <!-- Image with gradient overlay -->
+                        <div class="relative h-48 md:h-full overflow-hidden">
+                            <img :src="listing.imageUrl" :alt="listing.title"
+                                class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent md:opacity-40">
+                            </div>
+
+                            <!-- Price badge -->
+                            <div
+                                class="absolute bottom-3 left-3 bg-white/90 text-green-600 px-3 py-1 rounded-lg text-base font-bold shadow-md md:hidden">
+                                ${{ formatPrice(listing.price) }}
+                            </div>
+                        </div>
+
+                        <!-- Badges -->
+                        <div class="absolute top-3 left-3 flex gap-1.5">
                             <span v-if="listing.certified"
-                                class="bg-purple-200 text-purple-800 px-2 py-1 rounded-full text-xs font-medium flex items-center">
+                                class="bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-sm">
                                 <i class="pi pi-check-circle mr-1"></i> Certified
                             </span>
                             <span v-if="listing.auction"
-                                class="bg-amber-200 text-amber-800 px-2 py-1 rounded-full text-xs font-medium flex items-center">
+                                class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center shadow-sm">
                                 <i class="pi pi-clock mr-1"></i> Auction
                             </span>
                         </div>
                     </div>
 
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="text-xl font-bold text-gray-800 hover:text-green-700 transition-colors cursor-pointer"
-                                    @click="viewListing(listing.id)">
-                                    {{ listing.title }}
-                                </h3>
-                                <div class="text-2xl font-bold text-green-700">${{ formatPrice(listing.price) }}</div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-start justify-between mb-2">
+                            <!-- Title -->
+                            <h3 class="text-lg font-bold text-gray-800 hover:text-green-600 transition-colors cursor-pointer"
+                                @click="viewListing(listing.id)">
+                                {{ listing.title }}
+                            </h3>
+                            <!-- Price (desktop) -->
+                            <div class="text-lg font-bold text-green-600 hidden md:block">
+                                ${{ formatPrice(listing.price) }}
                             </div>
-
-                            <div class="flex items-center text-sm text-gray-600 mb-4">
-                                <i class="pi pi-map-marker mr-1"></i>
-                                <span>{{ listing.location }}</span>
-                                <div class="mx-2 h-1 w-1 rounded-full bg-gray-400"></div>
-                                <span>{{ formatDate(listing.listedDate) }}</span>
-                            </div>
-
-                            <div class="flex flex-wrap gap-2 mb-3">
-                                <Badge :value="listing.category" severity="info" class="p-badge-sm" />
-                                <Badge :value="listing.gender" severity="secondary" class="p-badge-sm" />
-                                <Badge v-if="listing.availableImmediate" value="Available Now" severity="success"
-                                    class="p-badge-sm" />
-                            </div>
-
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm text-gray-700 mb-4">
-                                <div class="flex items-center">
-                                    <span class="text-gray-500 mr-2">Age:</span> {{ listing.age }} {{ listing.ageUnit }}
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="text-gray-500 mr-2">Weight:</span> {{ listing.weight }} {{
-                                        listing.weightUnit }}
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="text-gray-500 mr-2">Breed:</span> {{ listing.breed }}
-                                </div>
-                                <div v-if="listing.quantity > 1" class="flex items-center">
-                                    <span class="text-gray-500 mr-2">Quantity:</span> {{ listing.quantity }}
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="text-gray-500 mr-2">Health:</span> {{ listing.healthStatus }}
-                                </div>
-                            </div>
-
-                            <p class="text-gray-600 text-sm mb-4">{{ listing.description }}</p>
                         </div>
 
-                        <div class="flex items-center justify-between">
+                        <!-- Location and date -->
+                        <div class="flex items-center text-xs text-gray-500 mb-3">
+                            <i class="pi pi-map-marker mr-1 text-green-600"></i>
+                            <span>{{ listing.location }}</span>
+                            <div class="mx-2 h-1 w-1 rounded-full bg-gray-300"></div>
+                            <span>{{ formatDate(listing.listedDate) }}</span>
+                        </div>
+
+                        <!-- Description - Now with better styling -->
+                        <div class="bg-gray-50 p-3 rounded-lg mb-3">
+                            <h4 class="text-xs font-bold text-gray-700 mb-1">Description</h4>
+                            <p class="text-gray-700 text-xs line-clamp-2">{{ listing.description }}</p>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-1.5 mb-3">
+                            <span class="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                {{ listing.category }}
+                            </span>
+                            <span class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                {{ listing.gender }}
+                            </span>
+                            <span v-if="listing.availableImmediate"
+                                class="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                <i class="pi pi-check-circle mr-1"></i> Available Now
+                            </span>
+                        </div>
+
+                        <!-- Specifications -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-xs text-gray-700 mb-3">
+                            <div class="flex items-center">
+                                <i class="pi pi-calendar text-green-600 mr-1.5"></i>
+                                <span class="text-gray-500 mr-1">Age:</span> {{ listing.age }} {{ listing.ageUnit }}
+                            </div>
+                            <div class="flex items-center">
+                                <i class="pi pi-tag text-green-600 mr-1.5"></i>
+                                <span class="text-gray-500 mr-1">Weight:</span> {{ listing.weight }} {{
+                                    listing.weightUnit }}
+                            </div>
+                            <div class="flex items-center">
+                                <i class="pi pi-bookmark text-green-600 mr-1.5"></i>
+                                <span class="text-gray-500 mr-1">Breed:</span> {{ listing.breed }}
+                            </div>
+                            <div v-if="listing.quantity > 1" class="flex items-center">
+                                <i class="pi pi-th-large text-green-600 mr-1.5"></i>
+                                <span class="text-gray-500 mr-1">Quantity:</span> {{ listing.quantity }}
+                            </div>
+                            <div class="flex items-center">
+                                <i class="pi pi-heart text-green-600 mr-1.5"></i>
+                                <span class="text-gray-500 mr-1">Health:</span> {{ listing.healthStatus }}
+                            </div>
+                            <div class="flex items-center">
+                                <i class="pi pi-box text-green-600 mr-1.5"></i>
+                                <span class="text-gray-500 mr-1">Feed:</span> {{ listing.feedingType }}
+                            </div>
+                        </div>
+
+                        <!-- Spacer to push button to bottom -->
+                        <div class="flex-grow"></div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center justify-between mt-3">
                             <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
-                                class="p-button-rounded p-button-success" @click="viewListing(listing.id)" />
+                                class="p-button-rounded p-button-success text-sm" @click="viewListing(listing.id)" />
 
                             <button
-                                class="w-10 h-10 flex items-center justify-center rounded-full shadow-md transition-colors duration-200"
-                                :class="[listing.isFavorite ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-500 hover:text-red-800']"
-                                @click="toggleFavorite(listing)">
-                                <i class="pi pi-heart-fill text-lg"></i>
+                                class="ml-3 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-200"
+                                :class="[listing.isFavorite ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-500']"
+                                @click="toggleFavorite(listing)" aria-label="Toggle favorite">
+                                <i class="pi pi-heart-fill"></i>
                             </button>
                         </div>
                     </div>
@@ -293,53 +595,55 @@
             <div v-else class="overflow-x-auto">
                 <table class="min-w-full bg-white border-collapse">
                     <thead>
-                        <tr class="bg-green-100 text-green-800">
-                            <th class="py-3 px-4 text-left">Image</th>
-                            <th class="py-3 px-4 text-left">Details</th>
-                            <th class="py-3 px-4 text-left">Location</th>
-                            <th class="py-3 px-4 text-left">Category</th>
-                            <th class="py-3 px-4 text-left">Age/Weight</th>
-                            <th class="py-3 px-4 text-right">Price</th>
-                            <th class="py-3 px-4 text-center">Actions</th>
+                        <tr class="bg-green-300 text-green-800 border-b border-green-100 rounded-xl">
+                            <th class="py-3 px-4 text-left font-medium">Image</th>
+                            <th class="py-3 px-4 text-left font-medium">Details</th>
+                            <th class="py-3 px-4 text-left font-medium">Location</th>
+                            <th class="py-3 px-4 text-left font-medium">Category</th>
+                            <th class="py-3 px-4 text-left font-medium">Age/Weight</th>
+                            <th class="py-3 px-4 text-right font-medium">Price</th>
+                            <th class="py-3 px-4 text-center font-medium">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="listing in filteredListings" :key="listing.id"
                             class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="py-2 px-4">
+                            <td class="py-3 px-4">
                                 <div class="relative w-16 h-16">
                                     <img :src="listing.imageUrl" :alt="listing.title"
-                                        class="w-16 h-16 rounded-md object-cover" />
+                                        class="w-16 h-16 rounded-lg object-cover shadow-sm" />
                                     <div v-if="listing.certified"
-                                        class="absolute -top-1 -right-1 w-5 h-5 bg-purple-200 text-purple-800 rounded-full flex items-center justify-center text-xs">
+                                        class="absolute -top-1 -right-1 w-5 h-5 bg-purple-100 text-purple-800 rounded-full flex items-center justify-center text-xs border border-white shadow-sm">
                                         <i class="pi pi-check"></i>
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-2 px-4">
-                                <div class="font-medium text-gray-800">{{ listing.title }}</div>
-                                <div class="text-xs text-gray-500">{{ formatDate(listing.listedDate) }}</div>
+                            <td class="py-3 px-4">
+                                <div class="font-medium text-gray-800 hover:text-green-600 cursor-pointer"
+                                    @click="viewListing(listing.id)">{{ listing.title }}</div>
+                                <div class="text-xs text-gray-500 mt-1">{{ formatDate(listing.listedDate) }}</div>
                             </td>
-                            <td class="py-2 px-4 text-gray-600">{{ listing.location }}</td>
-                            <td class="py-2 px-4">
+                            <td class="py-3 px-4 text-gray-600">{{ listing.location }}</td>
+                            <td class="py-3 px-4">
                                 <Badge :value="listing.category" severity="info" class="p-badge-sm" />
                             </td>
-                            <td class="py-2 px-4 text-gray-600 text-sm">
+                            <td class="py-3 px-4 text-gray-600 text-sm">
                                 {{ listing.age }} {{ listing.ageUnit }} / {{ listing.weight }} {{ listing.weightUnit }}
                             </td>
-                            <td class="py-2 px-4 text-right">
-                                <div class="font-bold text-green-700">${{ formatPrice(listing.price) }}</div>
+                            <td class="py-3 px-4 text-right">
+                                <div class="font-bold text-green-600">${{ formatPrice(listing.price) }}</div>
+                                <div v-if="listing.negotiable" class="text-xs text-gray-500">Negotiable</div>
                             </td>
-                            <td class="py-2 px-4">
+                            <td class="py-3 px-4">
                                 <div class="flex items-center justify-center gap-2">
                                     <button
-                                        class="w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-200"
-                                        :class="[listing.isFavorite ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-500 hover:text-red-800']"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200"
+                                        :class="[listing.isFavorite ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-500']"
                                         @click="toggleFavorite(listing)">
                                         <i class="pi pi-heart-fill text-sm"></i>
                                     </button>
                                     <button
-                                        class="w-8 h-8 flex items-center justify-center bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors duration-200"
+                                        class="w-8 h-8 flex items-center justify-center bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-all duration-200"
                                         @click="viewListing(listing.id)">
                                         <i class="pi pi-eye text-sm"></i>
                                     </button>
@@ -349,7 +653,6 @@
                     </tbody>
                 </table>
             </div>
-
             <!-- Improved pagination with style -->
             <div class="flex justify-center mt-8">
                 <Paginator :rows="12" :totalRecords="120" v-model:first="first" :rowsPerPageOptions="[12, 24, 36]"
@@ -376,309 +679,16 @@
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Dropdown from 'primevue/dropdown';
-import Badge from 'primevue/badge';
-import Paginator from 'primevue/paginator';
-
-interface Livestock {
-    id: number;
-    title: string;
-    description: string;
-    category: string;
-    breed: string;
-    age: number;
-    ageUnit: string;
-    gender: string;
-    weight: number;
-    weightUnit: string;
-    price: number;
-    negotiable: boolean;
-    quantity: number;
-    location: string;
-    healthStatus: string;
-    feedingType: string;
-    imageUrl: string;
-    videoUrl?: string;
-    videoThumbnail?: string;
-    certified: boolean;
-    auction: boolean;
-    availableImmediate: boolean;
-    isFavorite: boolean;
-    listedDate: Date;
-}
-
-export default defineComponent({
-    name: 'LivestockMarketplace',
-    components: {
-        Button,
-        InputText,
-        Dropdown,
-        Badge,
-        Paginator
-    },
-    setup() {
-        // Search and basic filters
-        const searchQuery = ref('');
-        const selectedCategory = ref<{ name: string; code: string } | null>(null);
-        const sortOption = ref({ value: 'newest', label: 'Newest First' });
-        const first = ref(0);
-
-        // View mode toggle (grid, list, compact)
-        const viewMode = ref<'grid' | 'list' | 'compact'>('grid');
-
-        // Options for dropdowns
-        const categories = ref([
-            { name: 'Cattle', code: 'cattle' },
-            { name: 'Pigs', code: 'pigs' },
-            { name: 'Goats', code: 'goats' },
-            { name: 'Sheep', code: 'sheep' },
-            { name: 'Horses', code: 'horses' },
-            { name: 'Poultry', code: 'poultry' }
-        ]);
-
-        const sortOptions = ref([
-            { value: 'newest', label: 'Newest First' },
-            { value: 'oldest', label: 'Oldest First' },
-            { value: 'price_low', label: 'Price: Low to High' },
-            { value: 'price_high', label: 'Price: High to Low' },
-            { value: 'popularity', label: 'Popularity' }
-        ]);
-
-        // Livestock listings
-        const listings = ref<Livestock[]>([]);
-
-        // Generate mock listings data
-        const generateListings = () => {
-            const items: Livestock[] = [];
-            const categories = ['Cattle', 'Pigs', 'Goats', 'Sheep', 'Horses', 'Poultry'];
-            const breeds = ['Brahman', 'Angus', 'Holstein', 'Jersey', 'Duroc', 'Hampshire'];
-            const genders = ['Male', 'Female'];
-            const locations = ['Cebu City', 'Mandaue City', 'Lapu-Lapu City', 'Bogo City', 'Toledo City'];
-
-            for (let i = 0; i < 20; i++) {
-                const categoryIndex = i % categories.length;
-                const breedIndex = i % breeds.length;
-                const gender = genders[i % 2];
-                const location = locations[i % locations.length];
-                const daysAgo = Math.floor(Math.random() * 30);
-
-                items.push({
-                    id: i + 1,
-                    title: `${breeds[breedIndex]} ${categories[categoryIndex]} - ${gender}`,
-                    description: "Quality livestock for sale. Well cared for and in excellent health.",
-                    category: categories[categoryIndex],
-                    breed: breeds[breedIndex],
-                    age: Math.floor(Math.random() * 5) + 1,
-                    ageUnit: "years",
-                    gender: gender,
-                    weight: Math.floor(Math.random() * 500) + 200,
-                    weightUnit: "kg",
-                    price: Math.floor(Math.random() * 4000) + 500,
-                    negotiable: Math.random() > 0.5,
-                    quantity: Math.floor(Math.random() * 5) + 1,
-                    location: location,
-                    healthStatus: "Vaccinated, Dewormed",
-                    feedingType: "Grass-fed",
-                    imageUrl: `/src/assets/vue.svg?text=${breeds[breedIndex]}+${i}`,
-                    certified: Math.random() > 0.7,
-                    auction: Math.random() > 0.8,
-                    availableImmediate: Math.random() > 0.3,
-                    isFavorite: Math.random() > 0.9,
-                    listedDate: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
-                });
-            }
-
-            return items;
-        };
-
-        const filteredListings = computed(() => {
-            let result = listings.value;
-
-            // Apply search query filter
-            if (searchQuery.value) {
-                const query = searchQuery.value.toLowerCase();
-                result = result.filter(item =>
-                    item.title.toLowerCase().includes(query) ||
-                    item.category.toLowerCase().includes(query) ||
-                    item.breed.toLowerCase().includes(query) ||
-                    item.location.toLowerCase().includes(query)
-                );
-            }
-
-            // Apply category filter
-            if (selectedCategory.value) {
-                result = result.filter(item =>
-                    selectedCategory.value && item.category === selectedCategory.value.name
-                );
-            }
-
-            // Apply sorting
-            if (sortOption.value) {
-                switch (sortOption.value.value) {
-                    case 'newest':
-                        result = [...result].sort((a, b) =>
-                            b.listedDate.getTime() - a.listedDate.getTime()
-                        );
-                        break;
-                    case 'oldest':
-                        result = [...result].sort((a, b) =>
-                            a.listedDate.getTime() - b.listedDate.getTime()
-                        );
-                        break;
-                    case 'price_low':
-                        result = [...result].sort((a, b) => a.price - b.price);
-                        break;
-                    case 'price_high':
-                        result = [...result].sort((a, b) => b.price - a.price);
-                        break;
-                    // For popularity, we could use a combination of views, favorites, etc.
-                    // For demo purposes, we'll just use a random sort
-                    case 'popularity':
-                        result = [...result].sort(() => Math.random() - 0.5);
-                        break;
-                }
-            }
-
-            return result;
-        });
-
-        // Methods
-        const viewListing = (id: number) => {
-            // In a real app, this would navigate to the listing details page
-            console.log(`Navigating to listing ${id}`);
-        };
-
-        const toggleFavorite = (listing: Livestock) => {
-            listing.isFavorite = !listing.isFavorite;
-            // In a real app, you would save this to your API
-        };
-
-        const formatPrice = (price: number): string => {
-            return price.toLocaleString();
-        };
-
-        const formatDate = (date: Date): string => {
-            // Calculate days ago
-            const now = new Date();
-            const diffTime = Math.abs(now.getTime() - date.getTime());
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 0) {
-                return 'Today';
-            } else if (diffDays === 1) {
-                return 'Yesterday';
-            } else if (diffDays < 7) {
-                return `${diffDays} days ago`;
-            } else {
-                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }
-        };
-
-        onMounted(() => {
-            // In a real app, this would be an API call
-            listings.value = generateListings();
-        });
-
-        return {
-            searchQuery,
-            selectedCategory,
-            sortOption,
-            first,
-            viewMode,
-
-            categories,
-            sortOptions,
-
-            listings,
-            filteredListings,
-
-            viewListing,
-            toggleFavorite,
-            formatPrice,
-            formatDate
-        };
-    }
-});
-</script>
-
 <style scoped>
-.livestock-card {
-    transition: all 0.3s ease;
-}
-
 .livestock-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
 }
 
-@keyframes pulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-.animate-pulse {
-    animation: pulse 3s infinite;
-}
-
-:deep(.p-inputtext) {
-    font-size: 0.925rem;
-}
-
-:deep(.p-dropdown) {
-    font-size: 0.875rem;
-}
-
-:deep(.p-paginator-rounded .p-paginator-page) {
-    border-radius: 50%;
-}
-
-:deep(.p-badge-sm) {
-    font-size: 0.7rem;
-    min-width: 1.5rem;
-    height: 1.5rem;
-    line-height: 1.5rem;
-}
-
-/* Custom focus styles for form elements */
-:deep(.p-inputtext:focus) {
-    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.35);
-    border-color: #a78bfa;
-}
-
-:deep(.p-dropdown:focus) {
-    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.35);
-    border-color: #a78bfa;
-}
-
-/* Button styling with pastel colors */
-:deep(.p-button-success) {
-    background: #4ade80;
-    border-color: #4ade80;
-}
-
-:deep(.p-button-success:hover) {
-    background: #22c55e;
-    border-color: #22c55e;
-}
-
-/* Customizing the UI elements for pastel */
-:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight) {
-    background: #d1fae5;
-    color: #047857;
-}
-
-:deep(.p-paginator .p-paginator-pages .p-paginator-page.p-highlight) {
-    background: #d1fae5;
-    color: #047857;
+/* Improved card accessibility */
+.livestock-card:focus-within {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
 }
 </style>
