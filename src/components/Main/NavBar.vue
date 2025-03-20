@@ -395,7 +395,7 @@ export default defineComponent({
                         </router-link>
                         <router-link to="/main/LivestockMarket"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i class="pi pi-list mr-2"></i> Livestocks
+                            <i class="pi pi-list mr-2"></i> Livestocks Market
                             <span class="nav-indicator"></span>
                         </router-link>
                         <router-link to="/forum"

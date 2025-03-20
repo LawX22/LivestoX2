@@ -73,7 +73,7 @@ export default defineComponent({
             </a>
             <a @click="navigateTo('/main/LivestockMarket')" 
               :class="['nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative cursor-pointer', isActive('/main/LivestockMarket') ? 'active-link' : '']">
-              <i class="pi pi-list mr-2"></i> Livestocks
+              <i class="pi pi-list mr-2"></i> Livestocks Market
               <span class="nav-indicator" :class="{ 'active': isActive('/main/LivestockMarket') }"></span>
             </a>
             <a @click="navigateTo('/forums')" 
