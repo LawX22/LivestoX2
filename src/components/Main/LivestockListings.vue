@@ -5,7 +5,7 @@ import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import Badge from 'primevue/badge';
 import Paginator from 'primevue/paginator';
-import ViewListings from './ViewListings.vue'; // Import the ViewListings component
+import ViewListings from './ViewListings.vue';
 
 interface Livestock {
     id: number;
