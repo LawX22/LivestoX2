@@ -255,7 +255,7 @@ export default defineComponent({
         const openChat = (id: string) => {
             markChatAsRead(id);
             hideChatMenu();
-            router.push('/chat/' + id);
+            router.push('/main/Message');
         };
 
         // Mark all notifications as read
@@ -470,7 +470,7 @@ export default defineComponent({
                                 </div>
                             </div>
                             <div class="p-3 border-t border-gray-100 text-center">
-                                <router-link to="/chat" class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                <router-link to="/main/Message" class="text-blue-600 hover:text-blue-800 text-sm font-medium"
                                     @click="hideChatMenu">
                                     View All Messages
                                 </router-link>
