@@ -467,22 +467,30 @@ export default defineComponent({
                             </div>
 
                             <!-- Key specs -->
-                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-700 mb-3">
-                                <div class="flex items-center">
-                                    <i class="pi pi-tag text-green-600 mr-1.5"></i>
-                                    <span>{{ listing.category }}</span>
+                            <div class="flex flex-col gap-y-2 text-xs text-gray-700 mb-3">
+                                <!-- First row -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                        <i class="pi pi-tag text-green-600 mr-1.5"></i>
+                                        <span>{{ listing.category }}</span>
+                                    </div>
+                                    <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                        <i class="pi pi-calendar text-green-600 mr-1.5"></i>
+                                        <span>{{ listing.age }} {{ listing.ageUnit }}</span>
+                                    </div>
                                 </div>
-                                <div class="flex items-center">
-                                    <i class="pi pi-calendar text-green-600 mr-1.5"></i>
-                                    <span>{{ listing.age }} {{ listing.ageUnit }}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="pi pi-heart text-green-600 mr-1.5"></i>
-                                    <span>{{ listing.healthStatus }}</span>
-                                </div>
-                                <div v-if="listing.quantity > 1" class="flex items-center">
-                                    <i class="pi pi-th-large text-green-600 mr-1.5"></i>
-                                    <span>{{ listing.quantity }} Left </span>
+
+                                <!-- Second row -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                        <i class="pi pi-heart text-green-600 mr-1.5"></i>
+                                        <span>{{ listing.healthStatus }}</span>
+                                    </div>
+                                    <div v-if="listing.quantity > 1"
+                                        class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                        <i class="pi pi-th-large text-green-600 mr-1.5"></i>
+                                        <span>{{ listing.quantity }} Left</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -575,21 +583,33 @@ export default defineComponent({
                             </div>
 
                             <!-- Specs grid -->
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs mb-4">
-                                <div class="flex flex-col">
-                                    <span class="text-gray-500">Breed</span>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
+                                <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
+                                    <div class="flex items-center mb-1">
+                                        <i class="pi pi-tags text-green-600 mr-1.5"></i>
+                                        <span class="text-gray-500">Breed</span>
+                                    </div>
                                     <span class="font-medium">{{ listing.breed }}</span>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-gray-500">Weight</span>
+                                <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
+                                    <div class="flex items-center mb-1">
+                                        <i class="pi pi-chart-bar text-green-600 mr-1.5"></i>
+                                        <span class="text-gray-500">Weight</span>
+                                    </div>
                                     <span class="font-medium">{{ listing.weight }} {{ listing.weightUnit }}</span>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-gray-500">Health</span>
+                                <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
+                                    <div class="flex items-center mb-1">
+                                        <i class="pi pi-heart text-green-600 mr-1.5"></i>
+                                        <span class="text-gray-500">Health</span>
+                                    </div>
                                     <span class="font-medium">{{ listing.healthStatus }}</span>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-gray-500">Feeding</span>
+                                <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
+                                    <div class="flex items-center mb-1">
+                                        <i class="pi pi-utensils text-green-600 mr-1.5"></i>
+                                        <span class="text-gray-500">Feeding</span>
+                                    </div>
                                     <span class="font-medium">{{ listing.feedingType }}</span>
                                 </div>
                             </div>

@@ -1,3 +1,375 @@
+<script lang="ts">
+import { defineComponent, ref, computed, onMounted } from 'vue';
+import Card from 'primevue/card';
+import Button from 'primevue/button';
+import Badge from 'primevue/badge';
+import ProgressSpinner from 'primevue/progressspinner';
+import Divider from 'primevue/divider';
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
+import Rating from 'primevue/rating';
+import Avatar from 'primevue/avatar';
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
+import Tooltip from 'primevue/tooltip';
+import { useRouter } from 'vue-router';
+
+interface Livestock {
+    id: number;
+    title: string;
+    description: string;
+    category: string;
+    breed: string;
+    age: number;
+    ageUnit: string;
+    gender: string;
+    weight: number;
+    weightUnit: string;
+    price: number;
+    negotiable: boolean;
+    quantity: number;
+    location: string;
+    healthStatus: string;
+    feedingType: string;
+    imageUrl: string;
+    videoUrl?: string;
+    videoThumbnail?: string;
+    certified: boolean;
+    auction: boolean;
+    availableImmediate: boolean;
+    isFavorite: boolean;
+    listedDate: Date;
+    deliveryOption: string;
+    deliveryDetails: string;
+    restrictions: string;
+    sellerId: number;
+}
+
+interface Seller {
+    id: number;
+    name: string;
+    avatarUrl?: string;
+    rating: number;
+    reviewCount: number;
+    showPhoneNumber: boolean;
+    phoneNumber?: string;
+}
+
+interface Review {
+    id: number;
+    username: string;
+    avatarUrl?: string;
+    rating: number;
+    comment: string;
+    date: Date;
+}
+
+export default defineComponent({
+    name: 'LivestockDetailsPage',
+    directives: {
+        tooltip: Tooltip
+    },
+    components: {
+        Card,
+        Button,
+        Badge,
+        ProgressSpinner,
+        Divider,
+        TabView,
+        TabPanel,
+        Rating,
+        Avatar,
+        Dialog,
+        InputText,
+        InputNumber
+    },
+    props: {
+        id: {
+            type: Number,
+            required: true
+        }
+    },
+    setup(props) {
+        const router = useRouter();
+        const loading = ref(true);
+        const livestock = ref<Livestock>({} as Livestock);
+        const seller = ref<Seller>({} as Seller);
+        const reviews = ref<Review[]>([]);
+        const similarListings = ref<Livestock[]>([]);
+        const selectedImage = ref(0);
+        const additionalImages = ref<string[]>([]);
+        const selectedQuantity = ref(1);
+        const contactDialogVisible = ref(false);
+        const videoDialogVisible = ref(false);
+        const contactMessage = ref('');
+
+        // Compute livestock details for display
+        const livestockDetails = computed(() => {
+            if (!livestock.value) return [];
+
+            return [
+                { label: 'Category', value: livestock.value.category },
+                { label: 'Breed', value: livestock.value.breed },
+                { label: 'Age', value: `${livestock.value.age} ${livestock.value.ageUnit}` },
+                { label: 'Gender', value: livestock.value.gender },
+                { label: 'Weight', value: `${livestock.value.weight} ${livestock.value.weightUnit}` },
+                { label: 'Health Status', value: livestock.value.healthStatus },
+                { label: 'Feeding Type', value: livestock.value.feedingType }
+            ];
+        });
+
+        // Fetch livestock details
+        const fetchLivestockDetails = () => {
+            // In a real app, this would be an API call
+            setTimeout(() => {
+                // Mock data for livestock details
+                livestock.value = {
+                    id: props.id,
+                    title: "Healthy Brahman Cow for Sale",
+                    description: "This Brahman cow is 2 years old, fully vaccinated, and grass-fed. It has a strong build, is disease-free, and perfect for breeding or meat production. The cow has been well cared for in our farm and has excellent temperament. We provide all necessary documentation and health certificates.",
+                    category: "Cattle",
+                    breed: "Brahman",
+                    age: 2,
+                    ageUnit: "years",
+                    gender: "Female",
+                    weight: 450,
+                    weightUnit: "kg",
+                    price: 1200,
+                    negotiable: true,
+                    quantity: 5,
+                    location: "Bogo City, Philippines",
+                    healthStatus: "Vaccinated, Dewormed, Disease-free",
+                    feedingType: "Grass-fed",
+                    imageUrl: "/src/assets/Bull.jpg?text=Brahman+Cow",
+                    videoThumbnail: "/src/assets/Bull.jpg?text=Video+Thumbnail",
+                    videoUrl: "#",
+                    certified: true,
+                    auction: false,
+                    availableImmediate: true,
+                    isFavorite: false,
+                    listedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+                    deliveryOption: "Pick-up only",
+                    deliveryDetails: "Available for pick-up Monday to Saturday, 8am to 5pm",
+                    restrictions: "Only available for buyers within Cebu",
+                    sellerId: 123
+                };
+
+                // Generate additional images
+                additionalImages.value = [
+                    livestock.value.imageUrl,
+                    "/src/assets/Bull.jpg?text=Brahman+Side+View",
+                    "/src/assets/Bull.jpg?text=Brahman+Front+View",
+                    "/src/assets/Bull.jpg?text=Brahman+Close+Up"
+                ];
+
+                // Mock seller data
+                seller.value = {
+                    id: 123,
+                    name: "John Doe's Farm",
+                    avatarUrl: "/src/assets/Bull.jpg?text=JD",
+                    rating: 4.8,
+                    reviewCount: 15,
+                    showPhoneNumber: true,
+                    phoneNumber: "+63 912 345 6789"
+                };
+
+                // Mock reviews
+                reviews.value = [
+                    {
+                        id: 1,
+                        username: "FarmerMike",
+                        avatarUrl: "/src/assets/Bull.jpg?text=FM",
+                        rating: 5,
+                        comment: "Great quality livestock! Healthy and exactly as described. The seller was very knowledgeable and helpful.",
+                        date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000)
+                    },
+                    {
+                        id: 2,
+                        username: "RanchOwner22",
+                        rating: 4,
+                        comment: "Good cattle, slightly smaller than expected but overall healthy and good condition.",
+                        date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000)
+                    }
+                ];
+
+                // Similar listings
+                fetchSimilarListings();
+
+                loading.value = false;
+            }, 1000);
+        };
+
+        // Fetch similar listings
+        const fetchSimilarListings = () => {
+            // In a real app, this would call an API with the current livestock's category/breed
+            setTimeout(() => {
+                const items: Livestock[] = [];
+                for (let i = 0; i < 3; i++) {
+                    items.push({
+                        id: 1000 + i,
+                        title: `${i % 2 === 0 ? 'Brahman' : 'Angus'} Cattle - ${i % 2 === 0 ? 'Female' : 'Male'}`,
+                        description: "High-quality livestock raised in optimal conditions. Fully vaccinated and health-certified with proper documentation. Ideal for breeding or farm expansion.",
+                        category: "Cattle",
+                        breed: i % 2 === 0 ? "Brahman" : "Angus",
+                        age: 2 + i,
+                        ageUnit: "years",
+                        gender: i % 2 === 0 ? "Female" : "Male",
+                        weight: 450 + (i * 25),
+                        weightUnit: "kg",
+                        price: 900 + (i * 100),
+                        negotiable: true,
+                        quantity: 1 + i,
+                        location: `${['Cebu City', 'Mandaue City', 'Lapu-Lapu City', 'Toledo City'][i]}, Philippines`,
+                        healthStatus: "Healthy",
+                        feedingType: "Grass-fed",
+                        imageUrl: `/src/assets/Bull.jpg?text=Similar+${i + 1}`,
+                        certified: i % 3 === 0,
+                        auction: i % 4 === 0,
+                        availableImmediate: i % 2 === 0,
+                        isFavorite: false,
+                        listedDate: new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000),
+                        deliveryOption: "Pick-up only",
+                        deliveryDetails: "Available for pick-up Monday to Saturday, 8am to 5pm",
+                        restrictions: "None",
+                        sellerId: 123
+                    });
+                }
+                similarListings.value = items;
+            }, 500);
+        };
+
+        onMounted(() => {
+            fetchLivestockDetails();
+        });
+
+        // Methods for interaction
+        const selectImage = (index: number) => {
+            selectedImage.value = index;
+            livestock.value.imageUrl = additionalImages.value[index];
+        };
+
+        const toggleFavorite = (item: Livestock) => {
+            item.isFavorite = !item.isFavorite;
+            // In a real app, you would save this to your API
+        };
+
+        const incrementQuantity = () => {
+            if (selectedQuantity.value < livestock.value.quantity) {
+                selectedQuantity.value++;
+            }
+        };
+
+        const decrementQuantity = () => {
+            if (selectedQuantity.value > 1) {
+                selectedQuantity.value--;
+            }
+        };
+
+        const contactSeller = () => {
+            contactDialogVisible.value = true;
+        };
+
+        const sendMessage = () => {
+            // In a real app, this would send the message to your backend
+            alert(`Message sent: ${contactMessage.value}`);
+            contactMessage.value = '';
+            contactDialogVisible.value = false;
+        };
+
+        const buyNow = () => {
+            // In a real app, this would redirect to checkout or payment page
+            alert(`Proceeding to purchase ${selectedQuantity.value} item(s) for $${formatPrice(livestock.value.price * selectedQuantity.value)}`);
+        };
+        const goBack = () => {
+            router.back(); // This will go back one step in the browser history
+            // Alternatively, you can use: router.back();
+        };
+
+        const viewSellerProfile = () => {
+            // In a real app, this would navigate to the seller's profile
+            alert(`Viewing profile for seller: ${seller.value.name}`);
+        };
+
+        const callSeller = () => {
+            // In a real app, this would use the device's call functionality
+            if (seller.value.phoneNumber) {
+                alert(`Calling seller at: ${seller.value.phoneNumber}`);
+            }
+        };
+
+        const reportListing = () => {
+            // In a real app, this would open a report dialog
+            alert('Opening report listing form');
+        };
+
+        const playVideo = () => {
+            videoDialogVisible.value = true;
+        };
+
+        const viewListing = (id: number) => {
+            // In a real app, this would navigate to the selected listing
+            alert(`Navigating to listing with ID: ${id}`);
+        };
+
+        const formatDate = (date: Date) => {
+            // Calculate days difference
+            const now = new Date();
+            const diffTime = Math.abs(now.getTime() - date.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return 'Today';
+            } else if (diffDays === 1) {
+                return 'Yesterday';
+            } else if (diffDays < 7) {
+                return `${diffDays} days ago`;
+            } else if (diffDays < 30) {
+                return `${Math.floor(diffDays / 7)} weeks ago`;
+            } else {
+                return `${Math.floor(diffDays / 30)} months ago`;
+            }
+        };
+
+        const formatPrice = (price: number) => {
+            return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        };
+
+        return {
+            loading,
+            livestock,
+            seller,
+            reviews,
+            similarListings,
+            selectedImage,
+            additionalImages,
+            selectedQuantity,
+            contactDialogVisible,
+            videoDialogVisible,
+            contactMessage,
+            livestockDetails,
+
+            // Methods
+            selectImage,
+            toggleFavorite,
+            incrementQuantity,
+            decrementQuantity,
+            contactSeller,
+            sendMessage,
+            buyNow,
+            goBack,
+            viewSellerProfile,
+            callSeller,
+            reportListing,
+            playVideo,
+            viewListing,
+            formatDate,
+            formatPrice
+        };
+    }
+});
+</script>
+
 <template>
     <div class="livestock-details-page bg-gray-50 min-h-screen">
         <!-- Loading state -->
@@ -6,7 +378,7 @@
                 animationDuration=".2s" aria-label="Loading" />
         </div>
 
-        <div v-else class="container mx-auto px-4 py-6">
+        <div v-else class="container mx-auto px-4 py-2">
             <!-- Back button with improved styling -->
             <Button icon="pi pi-arrow-left" label="Back to Listings"
                 class="p-button-text mb-6 hover:bg-green-50 transition-colors duration-200 font-medium"
@@ -408,377 +780,6 @@
         </Dialog>
     </div>
 </template>
-
-<script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
-import Card from 'primevue/card';
-import Button from 'primevue/button';
-import Badge from 'primevue/badge';
-import ProgressSpinner from 'primevue/progressspinner';
-import Divider from 'primevue/divider';
-import TabView from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
-import Rating from 'primevue/rating';
-import Avatar from 'primevue/avatar';
-import Dialog from 'primevue/dialog';
-import InputText from 'primevue/inputtext';
-import InputNumber from 'primevue/inputnumber';
-import Tooltip from 'primevue/tooltip';
-
-interface Livestock {
-    id: number;
-    title: string;
-    description: string;
-    category: string;
-    breed: string;
-    age: number;
-    ageUnit: string;
-    gender: string;
-    weight: number;
-    weightUnit: string;
-    price: number;
-    negotiable: boolean;
-    quantity: number;
-    location: string;
-    healthStatus: string;
-    feedingType: string;
-    imageUrl: string;
-    videoUrl?: string;
-    videoThumbnail?: string;
-    certified: boolean;
-    auction: boolean;
-    availableImmediate: boolean;
-    isFavorite: boolean;
-    listedDate: Date;
-    deliveryOption: string;
-    deliveryDetails: string;
-    restrictions: string;
-    sellerId: number;
-}
-
-interface Seller {
-    id: number;
-    name: string;
-    avatarUrl?: string;
-    rating: number;
-    reviewCount: number;
-    showPhoneNumber: boolean;
-    phoneNumber?: string;
-}
-
-interface Review {
-    id: number;
-    username: string;
-    avatarUrl?: string;
-    rating: number;
-    comment: string;
-    date: Date;
-}
-
-export default defineComponent({
-    name: 'LivestockDetailsPage',
-    directives: {
-        tooltip: Tooltip
-    },
-    components: {
-        Card,
-        Button,
-        Badge,
-        ProgressSpinner,
-        Divider,
-        TabView,
-        TabPanel,
-        Rating,
-        Avatar,
-        Dialog,
-        InputText,
-        InputNumber
-    },
-    props: {
-        id: {
-            type: Number,
-            required: true
-        }
-    },
-    setup(props) {
-        const loading = ref(true);
-        const livestock = ref<Livestock>({} as Livestock);
-        const seller = ref<Seller>({} as Seller);
-        const reviews = ref<Review[]>([]);
-        const similarListings = ref<Livestock[]>([]);
-        const selectedImage = ref(0);
-        const additionalImages = ref<string[]>([]);
-        const selectedQuantity = ref(1);
-        const contactDialogVisible = ref(false);
-        const videoDialogVisible = ref(false);
-        const contactMessage = ref('');
-
-        // Compute livestock details for display
-        const livestockDetails = computed(() => {
-            if (!livestock.value) return [];
-
-            return [
-                { label: 'Category', value: livestock.value.category },
-                { label: 'Breed', value: livestock.value.breed },
-                { label: 'Age', value: `${livestock.value.age} ${livestock.value.ageUnit}` },
-                { label: 'Gender', value: livestock.value.gender },
-                { label: 'Weight', value: `${livestock.value.weight} ${livestock.value.weightUnit}` },
-                { label: 'Health Status', value: livestock.value.healthStatus },
-                { label: 'Feeding Type', value: livestock.value.feedingType }
-            ];
-        });
-
-        // Fetch livestock details
-        const fetchLivestockDetails = () => {
-            // In a real app, this would be an API call
-            setTimeout(() => {
-                // Mock data for livestock details
-                livestock.value = {
-                    id: props.id,
-                    title: "Healthy Brahman Cow for Sale",
-                    description: "This Brahman cow is 2 years old, fully vaccinated, and grass-fed. It has a strong build, is disease-free, and perfect for breeding or meat production. The cow has been well cared for in our farm and has excellent temperament. We provide all necessary documentation and health certificates.",
-                    category: "Cattle",
-                    breed: "Brahman",
-                    age: 2,
-                    ageUnit: "years",
-                    gender: "Female",
-                    weight: 450,
-                    weightUnit: "kg",
-                    price: 1200,
-                    negotiable: true,
-                    quantity: 5,
-                    location: "Bogo City, Philippines",
-                    healthStatus: "Vaccinated, Dewormed, Disease-free",
-                    feedingType: "Grass-fed",
-                    imageUrl: "/src/assets/Bull.jpg?text=Brahman+Cow",
-                    videoThumbnail: "/src/assets/Bull.jpg?text=Video+Thumbnail",
-                    videoUrl: "#",
-                    certified: true,
-                    auction: false,
-                    availableImmediate: true,
-                    isFavorite: false,
-                    listedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-                    deliveryOption: "Pick-up only",
-                    deliveryDetails: "Available for pick-up Monday to Saturday, 8am to 5pm",
-                    restrictions: "Only available for buyers within Cebu",
-                    sellerId: 123
-                };
-
-                // Generate additional images
-                additionalImages.value = [
-                    livestock.value.imageUrl,
-                    "/src/assets/Bull.jpg?text=Brahman+Side+View",
-                    "/src/assets/Bull.jpg?text=Brahman+Front+View",
-                    "/src/assets/Bull.jpg?text=Brahman+Close+Up"
-                ];
-
-                // Mock seller data
-                seller.value = {
-                    id: 123,
-                    name: "John Doe's Farm",
-                    avatarUrl: "/src/assets/Bull.jpg?text=JD",
-                    rating: 4.8,
-                    reviewCount: 15,
-                    showPhoneNumber: true,
-                    phoneNumber: "+63 912 345 6789"
-                };
-
-                // Mock reviews
-                reviews.value = [
-                    {
-                        id: 1,
-                        username: "FarmerMike",
-                        avatarUrl: "/src/assets/Bull.jpg?text=FM",
-                        rating: 5,
-                        comment: "Great quality livestock! Healthy and exactly as described. The seller was very knowledgeable and helpful.",
-                        date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000)
-                    },
-                    {
-                        id: 2,
-                        username: "RanchOwner22",
-                        rating: 4,
-                        comment: "Good cattle, slightly smaller than expected but overall healthy and good condition.",
-                        date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000)
-                    }
-                ];
-
-                // Similar listings
-                fetchSimilarListings();
-
-                loading.value = false;
-            }, 1000);
-        };
-
-        // Fetch similar listings
-        const fetchSimilarListings = () => {
-            // In a real app, this would call an API with the current livestock's category/breed
-            setTimeout(() => {
-                const items: Livestock[] = [];
-                for (let i = 0; i < 3; i++) {
-                    items.push({
-                        id: 1000 + i,
-                        title: `${i % 2 === 0 ? 'Brahman' : 'Angus'} Cattle - ${i % 2 === 0 ? 'Female' : 'Male'}`,
-                        description: "High-quality livestock raised in optimal conditions. Fully vaccinated and health-certified with proper documentation. Ideal for breeding or farm expansion.",
-                        category: "Cattle",
-                        breed: i % 2 === 0 ? "Brahman" : "Angus",
-                        age: 2 + i,
-                        ageUnit: "years",
-                        gender: i % 2 === 0 ? "Female" : "Male",
-                        weight: 450 + (i * 25),
-                        weightUnit: "kg",
-                        price: 900 + (i * 100),
-                        negotiable: true,
-                        quantity: 1 + i,
-                        location: `${['Cebu City', 'Mandaue City', 'Lapu-Lapu City', 'Toledo City'][i]}, Philippines`,
-                        healthStatus: "Healthy",
-                        feedingType: "Grass-fed",
-                        imageUrl: `/src/assets/Bull.jpg?text=Similar+${i + 1}`,
-                        certified: i % 3 === 0,
-                        auction: i % 4 === 0,
-                        availableImmediate: i % 2 === 0,
-                        isFavorite: false,
-                        listedDate: new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000),
-                        deliveryOption: "Pick-up only",
-                        deliveryDetails: "Available for pick-up Monday to Saturday, 8am to 5pm",
-                        restrictions: "None",
-                        sellerId: 123
-                    });
-                }
-                similarListings.value = items;
-            }, 500);
-        };
-
-        onMounted(() => {
-            fetchLivestockDetails();
-        });
-
-        // Methods for interaction
-        const selectImage = (index: number) => {
-            selectedImage.value = index;
-            livestock.value.imageUrl = additionalImages.value[index];
-        };
-
-        const toggleFavorite = (item: Livestock) => {
-            item.isFavorite = !item.isFavorite;
-            // In a real app, you would save this to your API
-        };
-
-        const incrementQuantity = () => {
-            if (selectedQuantity.value < livestock.value.quantity) {
-                selectedQuantity.value++;
-            }
-        };
-
-        const decrementQuantity = () => {
-            if (selectedQuantity.value > 1) {
-                selectedQuantity.value--;
-            }
-        };
-
-        const contactSeller = () => {
-            contactDialogVisible.value = true;
-        };
-
-        const sendMessage = () => {
-            // In a real app, this would send the message to your backend
-            alert(`Message sent: ${contactMessage.value}`);
-            contactMessage.value = '';
-            contactDialogVisible.value = false;
-        };
-
-        const buyNow = () => {
-            // In a real app, this would redirect to checkout or payment page
-            alert(`Proceeding to purchase ${selectedQuantity.value} item(s) for $${formatPrice(livestock.value.price * selectedQuantity.value)}`);
-        };
-
-        const goBack = () => {
-            // In a real app, this would navigate back to the listings page
-            alert('Going back to listings page');
-        };
-
-        const viewSellerProfile = () => {
-            // In a real app, this would navigate to the seller's profile
-            alert(`Viewing profile for seller: ${seller.value.name}`);
-        };
-
-        const callSeller = () => {
-            // In a real app, this would use the device's call functionality
-            if (seller.value.phoneNumber) {
-                alert(`Calling seller at: ${seller.value.phoneNumber}`);
-            }
-        };
-
-        const reportListing = () => {
-            // In a real app, this would open a report dialog
-            alert('Opening report listing form');
-        };
-
-        const playVideo = () => {
-            videoDialogVisible.value = true;
-        };
-
-        const viewListing = (id: number) => {
-            // In a real app, this would navigate to the selected listing
-            alert(`Navigating to listing with ID: ${id}`);
-        };
-
-        const formatDate = (date: Date) => {
-            // Calculate days difference
-            const now = new Date();
-            const diffTime = Math.abs(now.getTime() - date.getTime());
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 0) {
-                return 'Today';
-            } else if (diffDays === 1) {
-                return 'Yesterday';
-            } else if (diffDays < 7) {
-                return `${diffDays} days ago`;
-            } else if (diffDays < 30) {
-                return `${Math.floor(diffDays / 7)} weeks ago`;
-            } else {
-                return `${Math.floor(diffDays / 30)} months ago`;
-            }
-        };
-
-        const formatPrice = (price: number) => {
-            return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        };
-
-        return {
-            loading,
-            livestock,
-            seller,
-            reviews,
-            similarListings,
-            selectedImage,
-            additionalImages,
-            selectedQuantity,
-            contactDialogVisible,
-            videoDialogVisible,
-            contactMessage,
-            livestockDetails,
-
-            // Methods
-            selectImage,
-            toggleFavorite,
-            incrementQuantity,
-            decrementQuantity,
-            contactSeller,
-            sendMessage,
-            buyNow,
-            goBack,
-            viewSellerProfile,
-            callSeller,
-            reportListing,
-            playVideo,
-            viewListing,
-            formatDate,
-            formatPrice
-        };
-    }
-});
-</script>
 
 <style scoped>
 .livestock-card {
