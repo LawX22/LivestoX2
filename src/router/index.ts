@@ -13,6 +13,7 @@ import UserManagement from '../views/admin/UserManagement.vue';
 import LivestockMarket from '../views/main/LivestockMarket.vue';
 import Message from '../views/main/Message.vue';
 import LivestockForum from '../views/main/LivestockForum.vue';
+import ViewListings from '../views/main/ViewListings.vue';
 
 // Define Routes
 const routes = [
@@ -25,6 +26,7 @@ const routes = [
   { path: '/main/LivestockMarket', component: LivestockMarket, name: 'LivestockMarket' },
   { path: '/main/Message', component: Message, name: 'Message' },
   { path: '/main/LivestockForum', component: LivestockForum, name: 'LivestockForum' },
+  { path: '/main/ViewListings', component: ViewListings, name: 'ViewListings' },
 
   // Admin Routes
   { path: '/admin/adminDashboard', component: AdminDashboard, name: 'AdminDashboard' },

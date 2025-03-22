@@ -2,8 +2,8 @@
 // Script remains the same as your current implementation
 import { defineComponent, reactive, ref, computed } from 'vue';
 import NavBar from '../../components/Main/NavBar.vue';
-import Filters from '../../components/Main/Filters.vue';
-import LivestockListing from '../../components/Main/LivestockListings.vue'; 
+import Filters from '../../components/Main/Market/Filters.vue';
+import LivestockListing from '../../components/Main/Market/LivestockListings.vue'; 
 
 export default defineComponent({
   name: 'LivestockMarket',
