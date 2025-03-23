@@ -15,6 +15,9 @@ import Message from '../views/main/Message.vue';
 import LivestockForum from '../views/main/LivestockForum.vue';
 import ViewListings from '../views/main/ViewListings.vue';
 
+// Utility Pages
+import UnderConstructionPage from '../views/utility/UnderConstructionPage.vue';
+
 // Define Routes
 const routes = [
   // Auth Routes
@@ -22,7 +25,7 @@ const routes = [
   { path: '/signin', component: SignIn, name: 'SignIn' },
   { path: '/signup', component: SignUp, name: 'SignUp' },
 
-  // Main Route
+  // Main Routes
   { path: '/main/LivestockMarket', component: LivestockMarket, name: 'LivestockMarket' },
   { path: '/main/Message', component: Message, name: 'Message' },
   { path: '/main/LivestockForum', component: LivestockForum, name: 'LivestockForum' },
@@ -30,13 +33,24 @@ const routes = [
 
   // Admin Routes
   { path: '/admin/adminDashboard', component: AdminDashboard, name: 'AdminDashboard' },
-  { path: '/admin/userManagement', component: UserManagement, name: 'UserManagement' }
+  { path: '/admin/userManagement', component: UserManagement, name: 'UserManagement' },
+
+  // Under Construction Routes
+  { path: '/coming-soon', component: UnderConstructionPage, name: 'ComingSoon' },
+  { path: '/under-development/:feature', component: UnderConstructionPage, name: 'UnderDevelopment', props: true },
+
+  // Catch-all route for 404
+  { path: '/:pathMatch(.*)*', component: UnderConstructionPage, name: 'NotFound', props: { isError: true } }
 ];
 
 // Create Router
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior() {
+    // Always scroll to top when navigating
+    return { top: 0 }
+  }
 });
 
 export default router;

@@ -403,9 +403,9 @@ export default defineComponent({
                             <i class="pi pi-users mr-2"></i> Forum
                             <span class="nav-indicator"></span>
                         </router-link>
-                        <router-link to="/resources"
+                        <router-link to="/Announcements"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i class="pi pi-book mr-2"></i> Resources
+                            <i class="pi pi-book mr-2"></i> Announcements
                             <span class="nav-indicator"></span>
                         </router-link>
                     </nav>

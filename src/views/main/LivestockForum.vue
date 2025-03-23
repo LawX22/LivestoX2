@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import NavBar from '../../components/Main/NavBar.vue';
 import MainContent from '../../components/Main/Forum/MainContent.vue';
-import Sidebar from '../../components/Main/Forum/SideBar.vue'; 
+import Sidebar from '../../components/Main/Forum/SideBar.vue';
 import Footer from '../../components/Main/Forum/Footer.vue';
 
 // State management
@@ -119,8 +119,8 @@ onMounted(() => {
                 <p class="text-green-100 text-xl max-w-3xl leading-relaxed">Connect with fellow farmers, ranchers, and
                     livestock enthusiasts to share knowledge and best practices in animal husbandry.</p>
             </div>
-<!-- Decorative farm silhouette with parallax effect -->
-<div
+            <!-- Decorative farm silhouette with parallax effect -->
+            <div
                 class="absolute bottom-0 right-0 text-green-700 opacity-20 text-9xl transform translate-y-1/4 -translate-x-1/4">
                 <div class="flex space-x-4">
                     <span>🐄</span>
@@ -136,21 +136,14 @@ onMounted(() => {
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex-grow flex flex-col md:flex-row gap-6">
             <!-- Sidebar -->
             <div class="md:w-1/4 w-full">
-                <Sidebar 
-                    :selectedCategory="selectedCategory" 
-                    :topics="allTopics"
-                    @category-selected="handleCategorySelected" 
-                />
+                <Sidebar :selectedCategory="selectedCategory" :topics="allTopics"
+                    @category-selected="handleCategorySelected" />
             </div>
 
             <!-- Main content -->
             <div class="md:w-3/4 w-full">
-                <MainContent 
-                    :topics="filteredTopics" 
-                    :selectedCategory="selectedCategory"
-                    @view-topic="incrementViews" 
-                    @add-topic="addNewTopic" 
-                />
+                <MainContent :topics="filteredTopics" :selectedCategory="selectedCategory" @view-topic="incrementViews"
+                    @add-topic="addNewTopic" />
             </div>
         </div>
 
