@@ -35,7 +35,7 @@ interface Livestock {
 }
 
 export default defineComponent({
-    name: 'LivestockMarketplace',
+    name: 'LivestockListings',
     components: {
         Button,
         InputText,
