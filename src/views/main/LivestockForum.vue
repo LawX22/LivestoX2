@@ -113,7 +113,7 @@ onMounted(() => {
         </div>
 
         <!-- Hero section with parallax effect -->
-        <div class="relative bg-gradient-to-r from-green-800 to-green-700 py-12 px-4 mb-8 shadow-xl overflow-hidden">
+        <div class="relative bg-gradient-to-r from-green-500 to-green-800 py-12 px-4 mb-8 shadow-xl overflow-hidden">
             <div class="container mx-auto max-w-full px-4 sm:px-6 lg:px-8 relative z-10">
                 <h1 class="text-5xl font-bold text-white mb-3 tracking-tight">Livestock Forum</h1>
                 <p class="text-green-100 text-xl max-w-3xl leading-relaxed">Connect with fellow farmers, ranchers, and

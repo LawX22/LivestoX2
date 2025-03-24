@@ -238,7 +238,7 @@ export default defineComponent({
 <template>
     <div class="livestock-marketplace">
         <!-- Hero/Banner Section with pastel colors -->
-        <div class="relative bg-gradient-to-br from-green-400 to-green-700 text-white overflow-hidden">
+        <div class="relative bg-gradient-to-br from-green-500 to-green-800 text-white overflow-hidden">
             <!-- Background Pattern -->
             <div class="absolute inset-0 opacity-10">
                 <div class="absolute inset-0"

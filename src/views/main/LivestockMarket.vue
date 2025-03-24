@@ -3,14 +3,16 @@
 import { defineComponent, reactive, ref, computed } from 'vue';
 import NavBar from '../../components/Main/NavBar.vue';
 import Filters from '../../components/Main/Market/Filters.vue';
-import LivestockListing from '../../components/Main/Market/LivestockListings.vue'; 
+import LivestockListing from '../../components/Main/Market/LivestockListings.vue';
+import FarmerLivestockListings from '../../components/Main/Market/FarmerLivestockListings.vue';
 
 export default defineComponent({
   name: 'LivestockMarket',
   components: {
     NavBar,
     Filters,
-    LivestockListing 
+    LivestockListing,
+    FarmerLivestockListings
   },
   setup() {
     const loading = ref(false);
@@ -205,11 +207,10 @@ export default defineComponent({
         </div>
         <div class="main-content">
           <!-- Replace the existing content with the LivestockListing component -->
-          <LivestockListing 
-            :loading="loading" 
-            :filters="filters" 
-            @refresh-listings="handleApplyFilters" 
-          />
+          <!-- <LivestockListing :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
+
+          <!-- This is for FarmerLivestockListing component -->
+          <FarmerLivestockListings :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
         </div>
       </div>
     </div>

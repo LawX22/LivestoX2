@@ -362,7 +362,7 @@ export default defineComponent({
     <div class="messages-page bg-slate-100 h-screen w-screen flex flex-col overflow-hidden">
         <!-- Page Header -->
         <header
-            class="bg-gradient-to-br from-green-400 to-green-700 text-white p-4 shadow-lg sticky top-0 z-10 overflow-hidden">
+            class="bg-gradient-to-br from-green-500 to-green-700 text-white p-4 shadow-lg sticky top-0 z-10 overflow-hidden">
             <!-- Background Pattern -->
             <div class="absolute inset-0 opacity-10">
                 <div class="absolute inset-0"
