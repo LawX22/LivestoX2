@@ -15,6 +15,7 @@ import Message from '../views/main/Message.vue';
 import LivestockForum from '../views/main/LivestockForum.vue';
 import ViewListings from '../views/main/ViewListings.vue';
 import PostLivestockForms from '../views/main/PostLivestockForms.vue';
+import FarmerSignupForm from '../views/main/FarmerSignupForm.vue';
 
 // Utility Pages
 import UnderConstructionPage from '../views/utility/UnderConstructionPage.vue';
@@ -32,6 +33,7 @@ const routes = [
   { path: '/main/LivestockForum', component: LivestockForum, name: 'LivestockForum' },
   { path: '/main/ViewListings', component: ViewListings, name: 'ViewListings' },
   { path: '/main/PostLivestockForms', component: PostLivestockForms, name: 'PostLivestockForms' },
+  { path: '/main/FarmerSignupForm', component: FarmerSignupForm, name: 'FarmerSignupForm' },
 
   // Admin Routes
   { path: '/admin/adminDashboard', component: AdminDashboard, name: 'AdminDashboard' },
