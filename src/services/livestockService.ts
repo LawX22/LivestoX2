@@ -28,7 +28,22 @@ const getListingsByFarmAndSeller = async (farmId: number, sellerId: string) => {
     return data;
 };
 
+const updateListing = async (listingId: number, updatedData: Partial<AnimalListing>) => {
+    const { data, error } = await supabase
+        .from("livestock")
+        .update(updatedData)
+        .eq("id", listingId);
+
+    if (error) {
+        console.error("Update failed:", error);
+        throw error;
+    }
+
+    return data;
+};
+
 export const livestock = {
     saveListing,
     getListingsByFarmAndSeller,
+    updateListing,
 };
