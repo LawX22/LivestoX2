@@ -1,607 +1,811 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
-      <Card class="w-full max-w-5xl shadow-2xl rounded-2xl overflow-hidden">
-        <!-- Progress Tracker -->
-        <template #header>
-          <div class="bg-white p-6 pb-0 border-b border-gray-200">
-            <div class="flex flex-col space-y-4">
-              <div class="flex justify-between items-center">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-100 to-emerald-900 flex items-center justify-center p-4 font-sans">
+    <div class="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-[1.01]">
+      <!-- Form Container -->
+      <div v-if="!formReviewed" class="p-10 lg:p-16">
+        <div class="text-center mb-10">
+          <h1 class="text-5xl font-extrabold text-emerald-700 mb-4 tracking-tight drop-shadow-md">
+            Livestock Marketplace
+          </h1>
+          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            Create a comprehensive and compelling listing to showcase your premium livestock to discerning buyers. Provide detailed information to attract serious investors and farmers.
+          </p>
+        </div>
+
+        <form @submit.prevent="proceedToReview" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Listing Title Section -->
+          <div class="md:col-span-2 bg-emerald-50 p-6 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2 flex items-center">
+              <span class="mr-3">🏷️</span> Listing Title
+              <span class="ml-2 text-sm text-gray-500">(Make it descriptive and attention-grabbing)</span>
+            </h2>
+            <input 
+              v-model="title" 
+              placeholder="Premium Angus Cattle - High-Quality Breeding Stock"
+              class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 text-lg focus:ring-2 focus:ring-emerald-400 transition"
+              required
+              maxlength="120"
+            />
+            <p class="text-sm text-gray-500 mt-2">{{ title.length }}/120 characters</p>
+          </div>
+
+          <!-- Livestock Details Section -->
+          <div class="bg-emerald-50 p-6 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2">
+              🐄 Livestock Details
+            </h2>
+            <div class="space-y-4">
+              <!-- Category Selection -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Livestock Category
+                  <span class="text-red-500">*</span>
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button 
+                    v-for="cat in categoryOptions" 
+                    :key="cat.value" 
+                    type="button"
+                    @click="category = cat.value"
+                    :class="{
+                      'bg-emerald-600 text-white': category === cat.value, 
+                      'bg-gray-200 text-gray-700 hover:bg-emerald-100': category !== cat.value
+                    }"
+                    class="px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                  >
+                    <span>{{ cat.label }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Breed Selection -->
+              <div v-if="category">
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Breed
+                  <span class="text-red-500">*</span>
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button 
+                    v-for="b in availableBreeds" 
+                    :key="b.value" 
+                    type="button"
+                    @click="breed = b.value"
+                    :class="{
+                      'bg-emerald-600 text-white': breed === b.value, 
+                      'bg-gray-200 text-gray-700 hover:bg-emerald-100': breed !== b.value
+                    }"
+                    class="px-3 py-2 rounded-lg transition-all duration-200"
+                  >
+                    {{ b.label }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing & Availability Section -->
+          <div class="bg-emerald-50 p-6 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2">
+              💰 Pricing & Availability
+            </h2>
+            <div class="space-y-4">
+              <!-- Price -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Price
+                  <span class="text-red-500">*</span>
+                </label>
                 <div class="flex items-center space-x-3">
-                  <Badge 
-                    :value="`Step ${currentStep + 1} of ${stepLabels.length}`" 
-                    severity="info" 
-                    class="p-mr-2"
-                  />
-                  <span class="text-sm font-medium text-gray-600">
-                    {{ stepLabels[currentStep] }}
-                  </span>
+                  <div class="relative flex-grow">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                    <input 
+                      v-model.number="price" 
+                      type="number"
+                      placeholder="Enter price" 
+                      class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 pl-7 focus:ring-2 focus:ring-emerald-400 transition"
+                      min="0"
+                      required
+                    />
+                  </div>
+                  <label class="flex items-center space-x-2">
+                    <input 
+                      v-model="negotiable" 
+                      type="checkbox"
+                      class="h-5 w-5 text-emerald-600 rounded focus:ring-emerald-500"
+                    />
+                    <span>Negotiable</span>
+                  </label>
                 </div>
               </div>
-              
-              <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                <div 
-                  class="bg-gradient-to-r from-blue-500 to-blue-700 h-2.5 rounded-full transition-all duration-500 ease-in-out" 
-                  :style="{ width: `${(currentStep + 1) * (100 / stepLabels.length)}%` }"
-                ></div>
+
+              <!-- Quantity -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Quantity
+                  <span class="text-red-500">*</span>
+                </label>
+                <input 
+                  v-model.number="quantity" 
+                  type="number"
+                  placeholder="Number of animals" 
+                  class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                  min="1"
+                  required
+                />
               </div>
-              
-              <div class="flex justify-between -mt-1">
-                <div 
-                  v-for="(label, index) in stepLabels" 
-                  :key="index" 
-                  class="text-xs font-medium"
-                  :class="{
-                    'text-blue-600 font-bold': index <= currentStep,
-                    'text-gray-400': index > currentStep
-                  }"
-                >
-                  {{ label }}
+            </div>
+          </div>
+
+          <!-- Physical Characteristics Section -->
+          <div class="bg-emerald-50 p-6 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2">
+              📏 Physical Characteristics
+            </h2>
+            <div class="space-y-4">
+              <!-- Age -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Age
+                </label>
+                <div class="flex space-x-2">
+                  <input 
+                    v-model.number="age" 
+                    type="number"
+                    placeholder="Enter age" 
+                    class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                    min="0"
+                  />
+                  <select 
+                    v-model="ageUnit" 
+                    class="w-1/3 border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                  >
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
+                  </select>
                 </div>
               </div>
-            </div>
-          </div>
-        </template>
-  
-        <template #content>
-          <!-- Livestock Details Step -->
-          <div v-if="currentStep === 0" class="p-6 space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Livestock Details</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Livestock Type *</label>
-                <Dropdown 
-                  v-model="livestockForm.category" 
-                  :options="livestockTypes" 
-                  optionLabel="name" 
-                  optionValue="value"
-                  placeholder="Select Type" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Breed *</label>
-                <InputText 
-                  v-model="livestockForm.breed" 
-                  placeholder="Enter Breed" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Title *</label>
-                <InputText 
-                  v-model="livestockForm.title" 
-                  placeholder="Descriptive Title" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Age *</label>
-                <InputNumber 
-                  v-model="livestockForm.age" 
-                  :min="0" 
-                  placeholder="Age in months" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Gender *</label>
-                <Dropdown 
-                  v-model="livestockForm.gender" 
-                  :options="genderOptions" 
-                  optionLabel="name" 
-                  optionValue="value"
-                  placeholder="Select Gender" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Weight (kg) *</label>
-                <InputNumber 
-                  v-model="livestockForm.weight" 
-                  :min="0" 
-                  placeholder="Enter Weight" 
-                  class="w-full"
-                />
-              </div>
-            </div>
-          </div>
-  
-          <!-- Pricing and Availability Step -->
-          <div v-if="currentStep === 1" class="p-6 space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Pricing & Availability</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Price *</label>
-                <InputNumber 
-                  v-model="livestockForm.price" 
-                  mode="currency" 
-                  currency="USD" 
-                  placeholder="Enter Price"
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Negotiable?</label>
-                <div class="flex items-center space-x-4">
-                  <RadioButton 
-                    v-model="livestockForm.negotiable" 
-                    :value="true" 
-                    inputId="negotiable-yes"
-                  />
-                  <label for="negotiable-yes" class="mr-4">Yes</label>
-                  
-                  <RadioButton 
-                    v-model="livestockForm.negotiable" 
-                    :value="false" 
-                    inputId="negotiable-no"
-                  />
-                  <label for="negotiable-no">No</label>
-                </div>
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Quantity *</label>
-                <InputNumber 
-                  v-model="livestockForm.quantity" 
-                  :min="1"
-                  class="w-full"
-                />
-              </div>
-            </div>
-  
-            <div class="mt-4">
-              <label class="mb-2 font-medium block text-gray-700">Description *</label>
-              <Textarea 
-                v-model="livestockForm.description" 
-                :rows="4" 
-                class="w-full"
-                placeholder="Provide comprehensive details about the livestock..."
-              />
-            </div>
-          </div>
-  
-          <!-- Location & Delivery Step -->
-          <div v-if="currentStep === 2" class="p-6 space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Location & Delivery</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Farm/Ranch Location *</label>
-                <InputText 
-                  v-model="livestockForm.location" 
-                  placeholder="City, State" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Delivery Options</label>
-                <MultiSelect 
-                  v-model="livestockForm.deliveryOptions" 
-                  :options="deliveryOptionsList" 
-                  optionLabel="name" 
-                  optionValue="value"
-                  placeholder="Select Delivery Options" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Shipping Distance *</label>
-                <InputNumber 
-                  v-model="livestockForm.shippingDistance" 
-                  :min="0" 
-                  placeholder="Max km" 
-                  class="w-full"
-                />
-              </div>
-            </div>
-          </div>
-  
-          <!-- Health & Certification Step -->
-          <div v-if="currentStep === 3" class="p-6 space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Health & Certification</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Health Certificates</label>
-                <MultiSelect 
-                  v-model="livestockForm.healthCertificates" 
-                  :options="healthCertificatesList" 
-                  optionLabel="name" 
-                  optionValue="value"
-                  placeholder="Select Certificates" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Vaccination Status</label>
-                <Dropdown 
-                  v-model="livestockForm.vaccinationStatus" 
-                  :options="vaccinationStatusOptions" 
-                  optionLabel="name" 
-                  optionValue="value"
-                  placeholder="Select Status" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Additional Health Notes</label>
-                <Textarea 
-                  v-model="livestockForm.healthNotes" 
-                  :rows="3" 
-                  class="w-full"
-                  placeholder="Any additional health information..."
-                />
-              </div>
-            </div>
-          </div>
-  
-          <!-- Media Showcase Step -->
-          <div v-if="currentStep === 4" class="p-6 space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Media Showcase</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Main Image *</label>
-                <FileUpload 
-                  mode="basic" 
-                  name="mainImage" 
-                  url="/upload" 
-                  accept="image/*" 
-                  :maxFileSize="1000000"
-                  @upload="onUpload" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Additional Images</label>
-                <FileUpload 
-                  mode="multiple" 
-                  name="additionalImages" 
-                  url="/upload" 
-                  accept="image/*" 
-                  :maxFileSize="1000000"
-                  @upload="onUpload" 
-                  class="w-full"
-                />
-              </div>
-  
-              <div class="flex flex-col">
-                <label class="mb-2 font-medium text-gray-700">Video Showcase</label>
-                <FileUpload 
-                  mode="basic" 
-                  name="videoShowcase" 
-                  url="/upload" 
-                  accept="video/*" 
-                  :maxFileSize="10000000"
-                  @upload="onUpload" 
-                  class="w-full"
-                />
-              </div>
-            </div>
-          </div>
-  
-          <!-- Final Review Step -->
-          <div v-if="currentStep === 5" class="p-6 space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Final Review</h2>
-            
-            <Panel header="Livestock Details" class="mb-4">
+
+              <!-- Gender & Weight -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <p><strong>Type:</strong> {{ livestockForm.category }}</p>
-                  <p><strong>Breed:</strong> {{ livestockForm.breed }}</p>
-                  <p><strong>Title:</strong> {{ livestockForm.title }}</p>
-                  <p><strong>Age:</strong> {{ livestockForm.age }} months</p>
-                  <p><strong>Gender:</strong> {{ livestockForm.gender }}</p>
-                  <p><strong>Weight:</strong> {{ livestockForm.weight }} kg</p>
+                  <label class="block text-gray-700 font-semibold mb-2">
+                    Gender
+                  </label>
+                  <select 
+                    v-model="gender" 
+                    class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold mb-2">Pricing & Availability</h3>
-                  <p><strong>Price:</strong> ${{ livestockForm.price }}</p>
-                  <p><strong>Negotiable:</strong> {{ livestockForm.negotiable ? 'Yes' : 'No' }}</p>
-                  <p><strong>Quantity:</strong> {{ livestockForm.quantity }}</p>
-                  <p><strong>Description:</strong> {{ livestockForm.description }}</p>
+                  <label class="block text-gray-700 font-semibold mb-2">
+                    Weight
+                  </label>
+                  <div class="flex space-x-2">
+                    <input 
+                      v-model.number="weight" 
+                      type="number"
+                      placeholder="Enter weight" 
+                      class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                      min="0"
+                    />
+                    <select 
+                      v-model="weightUnit" 
+                      class="w-1/3 border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                    >
+                      <option value="lbs">lbs</option>
+                      <option value="kg">kg</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-            </Panel>
-  
-            <Panel header="Location & Delivery" class="mb-4">
-              <p><strong>Location:</strong> {{ livestockForm.location }}</p>
-              <p><strong>Delivery Options:</strong> {{ livestockForm.deliveryOptions.join(', ') }}</p>
-              <p><strong>Shipping Distance:</strong> {{ livestockForm.shippingDistance }} km</p>
-            </Panel>
-  
-            <Panel header="Health & Certification">
-              <p><strong>Health Certificates:</strong> {{ livestockForm.healthCertificates.join(', ') || 'None' }}</p>
-              <p><strong>Vaccination Status:</strong> {{ livestockForm.vaccinationStatus }}</p>
-              <p><strong>Health Notes:</strong> {{ livestockForm.healthNotes || 'No additional notes' }}</p>
-            </Panel>
+            </div>
           </div>
-        </template>
-  
-        <!-- Navigation Buttons -->
-        <template #footer>
-          <div class="flex justify-between p-4 bg-gray-100">
-            <Button 
-              v-if="currentStep > 0" 
-              label="Previous" 
-              icon="pi pi-arrow-left" 
-              class="p-button-secondary" 
-              @click="previousStep"
-            />
-            
-            <Button 
-              v-if="currentStep < 5" 
-              label="Next" 
-              icon-pos="right" 
-              icon="pi pi-arrow-right" 
-              class="p-button-primary ml-auto" 
-              @click="nextStep"
-            />
-            
-            <Button 
-              v-if="currentStep === 5" 
-              label="Publish Listing" 
-              icon="pi pi-check" 
-              class="p-button-success ml-auto" 
-              @click="submitListing"
-            />
+
+          <!-- Health & Additional Information Section -->
+          <div class="bg-emerald-50 p-6 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2">
+              🩺 Health & Additional Information
+            </h2>
+            <div class="space-y-4">
+              <!-- Health Status -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Health Status
+                </label>
+                <select 
+                  v-model="healthStatus" 
+                  class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                >
+                  <option value="">Select Health Status</option>
+                  <option value="excellent">Excellent</option>
+                  <option value="good">Good</option>
+                  <option value="fair">Fair</option>
+                </select>
+              </div>
+
+              <!-- Feeding Type -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Feeding Type
+                </label>
+                <input 
+                  v-model="feedingType" 
+                  placeholder="E.g., Grass-fed, Grain-fed"
+                  class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                />
+              </div>
+            </div>
           </div>
-        </template>
-      </Card>
-  
-      <Toast position="top-right" />
+
+          <!-- Location & Delivery Section -->
+          <div class="md:col-span-2 bg-emerald-50 p-6 rounded-xl shadow-inner mt-8">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2">
+              🚚 Location & Delivery
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+              <!-- Detailed Location -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Detailed Location
+                  <span class="text-red-500">*</span>
+                </label>
+                <input 
+                  v-model="detailedLocation" 
+                  placeholder="Farm/Ranch Address"
+                  class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                  required
+                />
+              </div>
+
+              <!-- Delivery Options -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Delivery Options
+                </label>
+                <div class="space-y-2">
+                  <label class="flex items-center space-x-2">
+                    <input 
+                      v-model="deliveryOptions" 
+                      type="checkbox"
+                      value="on-site-pickup"
+                      class="h-4 w-4 text-emerald-600 rounded focus:ring-emerald-500"
+                    />
+                    <span>On-site Pickup</span>
+                  </label>
+                  <label class="flex items-center space-x-2">
+                    <input 
+                      v-model="deliveryOptions" 
+                      type="checkbox"
+                      value="local-delivery"
+                      class="h-4 w-4 text-emerald-600 rounded focus:ring-emerald-500"
+                    />
+                    <span>Local Delivery</span>
+                  </label>
+                  <label class="flex items-center space-x-2">
+                    <input 
+                      v-model="deliveryOptions" 
+                      type="checkbox"
+                      value="transportation-services"
+                      class="h-4 w-4 text-emerald-600 rounded focus:ring-emerald-500"
+                    />
+                    <span>Transportation Services</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Delivery Restrictions -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Delivery Restrictions
+                </label>
+                <textarea 
+                  v-model="deliveryRestrictions" 
+                  placeholder="Describe any specific delivery limitations, conditions, or requirements"
+                  class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 h-24 focus:ring-2 focus:ring-emerald-400 transition"
+                ></textarea>
+              </div>
+
+              <!-- Delivery Range -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Maximum Delivery Distance
+                </label>
+                <div class="flex space-x-2">
+                  <input 
+                    v-model.number="maxDeliveryDistance" 
+                    type="number"
+                    placeholder="Distance" 
+                    class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                    min="0"
+                  />
+                  <select 
+                    v-model="deliveryDistanceUnit" 
+                    class="w-1/3 border-2 border-emerald-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-400 transition"
+                  >
+                    <option value="miles">Miles</option>
+                    <option value="kilometers">Kilometers</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Description -->
+          <div class="md:col-span-2 bg-emerald-50 p-6 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2">
+              📝 Detailed Description
+            </h2>
+            <textarea 
+              v-model="description" 
+              placeholder="Provide comprehensive details about your livestock. Include age, health, special characteristics, and any unique selling points."
+              class="w-full border-2 border-emerald-200 rounded-lg px-4 py-3 h-40 focus:ring-2 focus:ring-emerald-400 transition"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Media Upload Section -->
+          <div class="md:col-span-2 bg-emerald-50 p-6 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2">
+              📸 Media Upload
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+              <!-- Multiple Image Upload -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Upload Images (Up to 5)
+                </label>
+                <div 
+                  @click="$refs.multiImageUpload.click()" 
+                  class="w-full h-64 border-2 border-dashed border-emerald-300 flex items-center justify-center cursor-pointer hover:bg-emerald-50 transition"
+                >
+                  <input 
+                    type="file" 
+                    ref="multiImageUpload"
+                    @change="handleMultiImageUpload"
+                    accept="image/*"
+                    multiple
+                    class="hidden"
+                  />
+                  <div v-if="imagePreviewUrls.length === 0" class="text-center text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Click to Upload Multiple Images
+                  </div>
+                  <div v-else class="grid grid-cols-3 gap-2 p-2">
+                    <img 
+                      v-for="(url, index) in imagePreviewUrls" 
+                      :key="index" 
+                      :src="url" 
+                      class="w-full h-20 object-cover rounded"
+                    />
+                  </div>
+                </div>
+                <button 
+                  v-if="imagePreviewUrls.length > 0"
+                  type="button" 
+                  @click="clearImages" 
+                  class="mt-2 text-red-500 hover:text-red-700"
+                >
+                  Clear All Images
+                </button>
+              </div>
+
+              <!-- Video Upload -->
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">
+                  Upload Video
+                </label>
+                <div class="flex items-center space-x-4">
+                  <input 
+                    type="file" 
+                    ref="videoUpload"
+                    @change="handleVideoUpload"
+                    accept="video/*"
+                    class="hidden"
+                  />
+                  <div 
+                    @click="$refs.videoUpload.click()" 
+                    class="w-full h-48 border-2 border-dashed border-emerald-300 flex items-center justify-center cursor-pointer hover:bg-emerald-50 transition"
+                  >
+                    <video 
+                      v-if="videoPreview" 
+                      :src="videoPreview" 
+                      class="w-full h-full object-cover"
+                      controls
+                    ></video>
+                    <div v-else class="text-center text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Click to Upload Video
+                    </div>
+                  </div>
+                  <button 
+                    type="button" 
+                    @click="clearVideo" 
+                    v-if="videoPreview"
+                    class="text-red-500 hover:text-red-700"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Flags Section -->
+          <div class="md:col-span-2 bg-emerald-50 p-6 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b-2 border-emerald-200 pb-2">
+              🚩 Additional Flags
+            </h2>
+            <div class="flex space-x-6">
+              <label class="flex items-center space-x-2">
+                <input 
+                  v-model="certified" 
+                  type="checkbox"
+                  class="h-5 w-5 text-emerald-600 rounded focus:ring-emerald-500"
+                />
+                <span>Certified</span>
+              </label>
+              <label class="flex items-center space-x-2">
+                <input 
+                  v-model="auction" 
+                  type="checkbox"
+                  class="h-5 w-5 text-emerald-600 rounded focus:ring-emerald-500"
+                />
+                <span>Auction</span>
+              </label>
+              <label class="flex items-center space-x-2">
+                <input 
+                  v-model="availableImmediate" 
+                  type="checkbox"
+                  class="h-5 w-5 text-emerald-600 rounded focus:ring-emerald-500"
+                />
+                <span>Available Immediately</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="md:col-span-2 flex justify-end mt-6">
+            <button 
+              type="submit" 
+              class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+            >
+              Review Listing
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Review Page -->
+      <div v-else class="p-8 lg:p-12">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold text-emerald-700 mb-3">
+            Review Your Listing
+          </h2>
+          <p class="text-gray-600">
+            Please review the details of your livestock listing
+          </p>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg space-y-6">
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-xl font-semibold text-emerald-700 mb-3">Listing Details</h3>
+              <p><strong>Title:</strong> {{ title }}</p>
+              <p><strong>Category:</strong> {{ category }}</p>
+              <p><strong>Breed:</strong> {{ breed }}</p>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-emerald-700 mb-3">Pricing</h3>
+              <p><strong>Price:</strong> ${{ price }} {{ negotiable ? '(Negotiable)' : '' }}</p>
+              <p><strong>Quantity:</strong> {{ quantity }}</p>
+              <p><strong>Location:</strong> {{ detailedLocation }}</p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-xl font-semibold text-emerald-700 mb-3">Physical Characteristics</h3>
+              <p><strong>Age:</strong> {{ age }} {{ ageUnit }}</p>
+              <p><strong>Gender:</strong> {{ gender }}</p>
+              <p><strong>Weight:</strong> {{ weight }} {{ weightUnit }}</p>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-emerald-700 mb-3">Health Information</h3>
+              <p><strong>Health Status:</strong> {{ healthStatus }}</p>
+              <p><strong>Feeding Type:</strong> {{ feedingType }}</p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-xl font-semibold text-emerald-700 mb-3">Location & Delivery</h3>
+              <p><strong>Detailed Location:</strong> {{ detailedLocation }}</p>
+              <p><strong>Delivery Options:</strong> {{ deliveryOptions.join(', ') }}</p>
+              <p><strong>Max Delivery Distance:</strong> {{ maxDeliveryDistance }} {{ deliveryDistanceUnit }}</p>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-emerald-700 mb-3">Additional Details</h3>
+              <p><strong>Certified:</strong> {{ certified ? 'Yes' : 'No' }}</p>
+              <p><strong>Auction:</strong> {{ auction ? 'Yes' : 'No' }}</p>
+              <p><strong>Available Immediately:</strong> {{ availableImmediate ? 'Yes' : 'No' }}</p>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-semibold text-emerald-700 mb-3">Detailed Description</h3>
+            <p>{{ description }}</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-xl font-semibold text-emerald-700 mb-3">Image Preview</h3>
+              <div v-if="imagePreviewUrls.length" class="grid grid-cols-3 gap-2">
+                <img 
+                  v-for="(url, index) in imagePreviewUrls" 
+                  :key="index" 
+                  :src="url" 
+                  class="w-full h-20 object-cover rounded"
+                />
+              </div>
+              <p v-else>No images uploaded</p>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-emerald-700 mb-3">Video Preview</h3>
+              <video v-if="videoPreview" :src="videoPreview" class="w-full h-64 object-cover rounded-lg" controls></video>
+              <p v-else>No video uploaded</p>
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-8">
+            <button 
+              @click="formReviewed = false" 
+              class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg transition"
+            >
+              Edit Listing
+            </button>
+            <button 
+              @click="submitForm" 
+              class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg transition"
+            >
+              Confirm and Submit
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </template>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      // Listing Details
+      title: '',
+      description: '',
+      category: '',
+      breed: '',
+      
+      // Pricing
+      price: null,
+      negotiable: false,
+      quantity: 1,
+      
+      // Physical Characteristics
+      age: null,
+      ageUnit: 'months',
+      gender: '',
+      weight: null,
+      weightUnit: 'lbs',
+      
+      // Health Information
+      healthStatus: '',
+      feedingType: '',
+      
+      // Location & Delivery
+      detailedLocation: '',
+      deliveryOptions: [],
+      deliveryRestrictions: '',
+      maxDeliveryDistance: null,
+      deliveryDistanceUnit: 'miles',
+      
+      // Additional Flags
+      certified: false,
+      auction: false,
+      availableImmediate: false,
+      
+      // Media Upload
+      imagePreviewUrls: [],
+      videoPreview: null,
+      maxImageUploadCount: 5,
+      
+      // Form State
+      formReviewed: false,
+      
+      // Options for Dropdowns
+      categoryOptions: [
+        { label: 'Cattle', value: 'cattle' },
+        { label: 'Sheep', value: 'sheep' },
+        { label: 'Goats', value: 'goats' },
+        { label: 'Pigs', value: 'pigs' },
+        { label: 'Horses', value: 'horses' }
+      ],
+      availableBreeds: []
+    }
+  },
   
-  <script>
-  import Card from 'primevue/card';
-  import Button from 'primevue/button';
-  import Dropdown from 'primevue/dropdown';
-  import InputText from 'primevue/inputtext';
-  import InputNumber from 'primevue/inputnumber';
-  import RadioButton from 'primevue/radiobutton';
-  import Textarea from 'primevue/textarea';
-  import MultiSelect from 'primevue/multiselect';
-  import FileUpload from 'primevue/fileupload';
-  import Panel from 'primevue/panel';
-  import Badge from 'primevue/badge';
-  import Toast from 'primevue/toast';
+  watch: {
+    category(newCategory) {
+      // Dynamically update breeds based on selected category
+      const breedMap = {
+        cattle: [
+          { label: 'Angus', value: 'angus' },
+          { label: 'Hereford', value: 'hereford' },
+          { label: 'Holstein', value: 'holstein' }
+        ],
+        sheep: [
+          { label: 'Merino', value: 'merino' },
+          { label: 'Suffolk', value: 'suffolk' }
+        ],
+        goats: [
+          { label: 'Boer', value: 'boer' },
+          { label: 'Alpine', value: 'alpine' }
+        ],
+        pigs: [
+          { label: 'Berkshire', value: 'berkshire' },
+          { label: 'Yorkshire', value: 'yorkshire' }
+        ],
+        horses: [
+          { label: 'Quarter Horse', value: 'quarter-horse' },
+          { label: 'Arabian', value: 'arabian' },
+          { label: 'Thoroughbred', value: 'thoroughbred' }
+        ]
+      };
+      
+      // Reset breed when category changes
+      this.breed = '';
+      
+      // Set available breeds for the selected category
+      this.availableBreeds = breedMap[newCategory] || [];
+    }
+  },
   
-  export default {
-    components: {
-      Card,
-      Button,
-      Dropdown,
-      InputText,
-      InputNumber,
-      RadioButton,
-      Textarea,
-      MultiSelect,
-      FileUpload,
-      Panel,
-      Badge,
-      Toast
+  methods: {
+    // Image Upload Handling
+    handleMultiImageUpload(event) {
+      const files = event.target.files;
+      
+      // Reset previous preview URLs
+      this.imagePreviewUrls = [];
+      
+      // Limit to maximum upload count
+      const filesToProcess = Array.from(files).slice(0, this.maxImageUploadCount);
+      
+      filesToProcess.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreviewUrls.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
     },
-    data() {
-      return {
-        currentStep: 0,
-        stepLabels: [
-          'Livestock Details', 
-          'Pricing & Availability', 
-          'Location & Delivery', 
-          'Health & Certification', 
-          'Media Showcase', 
-          'Final Review'
-        ],
-        livestockTypes: [
-          { name: 'Beef Cattle', value: 'Beef Cattle' },
-          { name: 'Dairy Cattle', value: 'Dairy Cattle' },
-          { name: 'Sheep', value: 'Sheep' },
-          { name: 'Goats', value: 'Goats' },
-          { name: 'Pigs', value: 'Pigs' },
-          { name: 'Horses', value: 'Horses' }
-        ],
-        genderOptions: [
-          { name: 'Male', value: 'male' },
-          { name: 'Female', value: 'female' },
-          { name: 'Other', value: 'other' }
-        ],
-        deliveryOptionsList: [
-          { name: 'Local Pickup', value: 'local_pickup' },
-          { name: 'Truck Transport', value: 'truck_transport' },
-          { name: 'Specialized Livestock Trailer', value: 'livestock_trailer' }
-        ],
-        healthCertificatesList: [
-          { name: 'Health Certificate', value: 'health_cert' },
-          { name: 'Veterinary Inspection', value: 'vet_inspection' },
-          { name: 'Genetic Testing', value: 'genetic_testing' }
-        ],
-        vaccinationStatusOptions: [
-          { name: 'Fully Vaccinated', value: 'fully_vaccinated' },
-          { name: 'Partially Vaccinated', value: 'partially_vaccinated' },
-          { name: 'Not Vaccinated', value: 'not_vaccinated' }
-        ],
-        livestockForm: {
-          category: '',
-          breed: '',
-          title: '',
-          age: null,
-          gender: '',
-          weight: null,
-          price: null,
-          negotiable: false,
-          quantity: 1,
-          description: '',
-          location: '',
-          deliveryOptions: [],
-          shippingDistance: null,
-          healthCertificates: [],
-          vaccinationStatus: '',
-          healthNotes: '',
-          mainImage: null,
-          additionalImages: [],
-          videoShowcase: null
-        }
+    
+    // Clear Images
+    clearImages() {
+      this.imagePreviewUrls = [];
+      // Reset file input
+      if (this.$refs.multiImageUpload) {
+        this.$refs.multiImageUpload.value = '';
       }
     },
-    methods: {
-      nextStep() {
-        if (this.validateCurrentStep()) {
-          if (this.currentStep < 5) {
-            this.currentStep++;
-          }
-        }
-      },
-      previousStep() {
-        if (this.currentStep > 0) {
-          this.currentStep--;
-        }
-      },
-      validateCurrentStep() {
-        switch(this.currentStep) {
-          case 0:
-            return this.validateLivestockDetails();
-          case 1:
-            return this.validatePricingAvailability();
-          case 2:
-            return this.validateLocationDelivery();
-          case 3:
-            return this.validateHealthCertification();
-          case 4:
-            return this.validateMediaShowcase();
-          default:
-            return true;
-        }
-      },
-      validateLivestockDetails() {
-        const { category, breed, title, age, gender, weight } = this.livestockForm;
-        if (!category || !breed || !title || !age || !gender || !weight) {
-          this.$toast.add({
-            severity: 'error', 
-            summary: 'Validation Error', 
-            detail: 'Please fill in all required livestock details.', 
-            life: 3000
-          });
+    
+    // Video Upload Handling
+    handleVideoUpload(event) {
+      const file = event.target.files[0];
+      
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.videoPreview = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    
+    // Clear Video
+    clearVideo() {
+      this.videoPreview = null;
+      // Reset file input
+      if (this.$refs.videoUpload) {
+        this.$refs.videoUpload.value = '';
+      }
+    },
+    
+    // Proceed to Review Page
+    proceedToReview() {
+      // Validate form before proceeding
+      if (this.validateForm()) {
+        this.formReviewed = true;
+      }
+    },
+    
+    // Form Validation
+    validateForm() {
+      // Add custom validation logic here
+      // You can check required fields, formats, etc.
+      
+      // Example basic validation
+      const requiredFields = [
+        'title', 'category', 'breed', 'price', 
+        'quantity', 'detailedLocation', 'description'
+      ];
+      
+      for (let field of requiredFields) {
+        if (!this[field]) {
+          alert(`Please fill out the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
           return false;
         }
-        return true;
-      },
-      validatePricingAvailability() {
-        const { price, quantity, description } = this.livestockForm;
-        if (!price || !quantity || !description) {
-          this.$toast.add({
-            severity: 'error', 
-            summary: 'Validation Error', 
-            detail: 'Please complete pricing and description fields.', 
-            life: 3000
-          });
-          return false;
-        }
-        return true;
-      },
-      validateLocationDelivery() {
-        const { location, shippingDistance } = this.livestockForm;
-        if (!location || !shippingDistance) {
-          this.$toast.add({
-            severity: 'error', 
-            summary: 'Validation Error', 
-            detail: 'Please provide location and shipping distance.', 
-            life: 3000
-          });
-          return false;
-        }
-        return true;
-      },
-      validateHealthCertification() {
-        // Add validation if needed
-        return true;
-      },
-      validateMediaShowcase() {
-        // Optionally validate media uploads
-        return true;
-      },
-      onUpload(event) {
-        // Handle file uploads
-        this.$toast.add({
-          severity: 'success', 
-          summary: 'Upload Successful', 
-          detail: 'File uploaded successfully.', 
-          life: 3000
-        });
-      },
-      submitListing() {
-        const formData = new FormData();
+      }
+      
+      return true;
+    },
+    
+    // Submit Form
+    submitForm() {
+      // Validate form again before submission
+      if (this.validateForm()) {
+        // Collect all form data
+        const formData = {
+          title: this.title,
+          category: this.category,
+          breed: this.breed,
+          price: this.price,
+          negotiable: this.negotiable,
+          quantity: this.quantity,
+          age: this.age,
+          ageUnit: this.ageUnit,
+          gender: this.gender,
+          weight: this.weight,
+          weightUnit: this.weightUnit,
+          healthStatus: this.healthStatus,
+          feedingType: this.feedingType,
+          detailedLocation: this.detailedLocation,
+          deliveryOptions: this.deliveryOptions,
+          deliveryRestrictions: this.deliveryRestrictions,
+          maxDeliveryDistance: this.maxDeliveryDistance,
+          deliveryDistanceUnit: this.deliveryDistanceUnit,
+          certified: this.certified,
+          auction: this.auction,
+          availableImmediate: this.availableImmediate,
+          description: this.description,
+          images: this.imagePreviewUrls,
+          video: this.videoPreview
+        };
         
-        // Append form fields
-        Object.keys(this.livestockForm).forEach(key => {
-          formData.append(key, this.livestockForm[key]);
-        });
-  
-        // TODO: Replace with actual API endpoint
-        fetch('/api/livestock/listings', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          this.$toast.add({
-            severity: 'success', 
-            summary: 'Listing Published', 
-            detail: 'Your livestock listing has been successfully published.', 
-            life: 3000
-          });
-        })
-        .catch(error => {
-          this.$toast.add({
-            severity: 'error', 
-            summary: 'Submission Error', 
-            detail: 'There was an error submitting your listing.', 
-            life: 3000
-          });
-          console.error('Error submitting listing:', error);
-        });
+        // TODO: Replace with actual API call to submit listing
+        console.log('Submitting Listing:', formData);
+        alert('Listing submitted successfully!');
+        
+        // Optional: Reset form or redirect
+        this.resetForm();
       }
+    },
+    
+    // Reset Form
+    resetForm() {
+      // Reset all data properties to their initial state
+      Object.keys(this.$data).forEach(key => {
+        this.$data[key] = this.$options.data.call(this)[key];
+      });
     }
   }
-  </script>
-  
-  <style scoped>
-  .p-card {
-    width: 100%;
-    max-width: 64rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  
-  .p-card-content {
-    padding: 0;
-  }
-  
-  /* Additional styling for form elements */
-  .p-dropdown, 
-  .p-inputtext, 
-  .p-inputnumber,
-  .p-multiselect,
-  .p-textarea {
-    width: 100%;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .grid-cols-3 {
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-    }
-  }
-  </style>
+}
+</script>

@@ -46,6 +46,7 @@ export default defineComponent({
         // New document upload and terms fields
         const idDocuments = ref<File[]>([]);
         const termsAccepted = ref<boolean>(false);
+        const uploadedImagePreview = ref<string | null>(null);
 
         // Verification fields
         const verificationCode = ref<string>('');
@@ -134,18 +135,10 @@ export default defineComponent({
             return true;
         };
 
-        // New validation for document upload and terms
+        // Modified validation for documents and terms
         const validateDocumentsAndTerms = (): boolean => {
-            if (idDocuments.value.length === 0) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Missing Documents',
-                    detail: 'Please upload at least one valid identification document',
-                    life: 3000
-                });
-                return false;
-            }
-
+            // Always allow proceeding to next step
+            // Only check terms acceptance
             if (!termsAccepted.value) {
                 toast.add({
                     severity: 'warn',
@@ -189,12 +182,27 @@ export default defineComponent({
             const files = event.files;
             idDocuments.value = files;
 
+            // Create image preview
+            if (files && files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = (e: any) => {
+                    uploadedImagePreview.value = e.target.result;
+                };
+                reader.readAsDataURL(files[0]);
+            }
+
             toast.add({
                 severity: 'success',
                 summary: 'Documents Uploaded',
                 detail: `${files.length} document(s) uploaded successfully`,
                 life: 3000
             });
+        };
+
+        // Remove uploaded image
+        const removeUploadedImage = () => {
+            uploadedImagePreview.value = null;
+            idDocuments.value = [];
         };
 
         // Send verification code
@@ -355,6 +363,8 @@ export default defineComponent({
             idDocuments,
             termsAccepted,
             onFileUpload,
+            uploadedImagePreview,
+            removeUploadedImage,
 
             // Verification fields
             verificationCode,
@@ -382,13 +392,13 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="flex min-h-screen bg-gradient-to-b from-green-200 to-green-900">
+    <div class="flex min-h-screen bg-gradient-to-b from-green-100 to-green-800">
         <Toast position="top-right" />
         <div class="flex flex-col md:flex-row bg-white rounded-3xl shadow-2xl m-auto w-full max-w-6xl overflow-hidden">
             <div class="w-full p-8 md:p-12 flex flex-col justify-center relative">
                 <div class="mb-8 text-center">
-                    <h1 class="text-3xl font-bold mb-3 text-green-700">Upgrade to Farm Account</h1>
-                    <p class="text-gray-600">Complete your farm profile</p>
+                    <h1 class="text-4xl font-extrabold mb-3 text-green-700 animate-fade-in">Upgrade to Farm Account</h1>
+                    <p class="text-gray-600 text-lg">Complete your farm profile with detailed information</p>
                 </div>
 
                 <!-- Steps indicator -->
@@ -401,7 +411,7 @@ export default defineComponent({
                             </span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300 ease-in-out"
+                            <div class="bg-green-600 h-2.5 rounded-full transition-all duration-500 ease-in-out"
                                 :style="{ width: `${(currentStep + 1) * 25}%` }"></div>
                         </div>
                     </div>
@@ -412,32 +422,19 @@ export default defineComponent({
                     <div v-if="currentStep === 0">
                         <div class="mb-6">
                             <label class="block text-gray-700 font-medium mb-2">Full Name</label>
-                            <InputText 
-                                v-model="fullName" 
-                                class="w-full p-3" 
-                                disabled 
-                            />
+                            <InputText v-model="fullName" class="w-full p-3" disabled />
                         </div>
 
                         <div class="mb-6">
                             <label class="block text-gray-700 font-medium mb-2">Email</label>
-                            <InputText 
-                                v-model="email" 
-                                class="w-full p-3" 
-                                disabled 
-                            />
+                            <InputText v-model="email" class="w-full p-3" disabled />
                         </div>
 
                         <div class="mb-6">
                             <label for="phoneNumber" class="block text-gray-700 font-medium mb-2">Phone Number *</label>
-                            <InputMask 
-                                id="phoneNumber"
-                                v-model="phoneNumber" 
-                                mask="(999) 999-9999" 
-                                placeholder="(___) ___-____" 
-                                class="w-full p-3"
-                                :class="{ 'p-invalid': submitted && !phoneNumber }"
-                            />
+                            <InputMask id="phoneNumber" v-model="phoneNumber" mask="(999) 999-9999"
+                                placeholder="(___) ___-____" class="w-full p-3"
+                                :class="{ 'p-invalid': submitted && !phoneNumber }" />
                             <small v-if="submitted && !phoneNumber" class="p-error block mt-1">
                                 Phone number is required.
                             </small>
@@ -448,13 +445,8 @@ export default defineComponent({
                     <div v-if="currentStep === 1">
                         <div class="mb-6">
                             <label for="farmName" class="block text-gray-700 font-medium mb-2">Farm Name *</label>
-                            <InputText 
-                                id="farmName" 
-                                v-model="farmName" 
-                                placeholder="Enter your farm name" 
-                                class="w-full p-3" 
-                                :class="{ 'p-invalid': submitted && !farmName }"
-                            />
+                            <InputText id="farmName" v-model="farmName" placeholder="Enter your farm name"
+                                class="w-full p-3" :class="{ 'p-invalid': submitted && !farmName }" />
                             <small v-if="submitted && !farmName" class="p-error block mt-1">
                                 Farm name is required.
                             </small>
@@ -463,31 +455,20 @@ export default defineComponent({
                         <div class="flex gap-4 mb-6">
                             <div class="flex-1">
                                 <label for="farmType" class="block text-gray-700 font-medium mb-2">Farm Type *</label>
-                                <Dropdown 
-                                    id="farmType" 
-                                    v-model="farmType" 
-                                    :options="farmTypeOptions" 
-                                    optionLabel="label" 
-                                    optionValue="value" 
-                                    placeholder="Select farm type" 
-                                    class="w-full"
-                                    :class="{ 'p-invalid': submitted && !farmType }"
-                                />
+                                <Dropdown id="farmType" v-model="farmType" :options="farmTypeOptions"
+                                    optionLabel="label" optionValue="value" placeholder="Select farm type"
+                                    class="w-full" :class="{ 'p-invalid': submitted && !farmType }" />
                                 <small v-if="submitted && !farmType" class="p-error block mt-1">
                                     Farm type is required.
                                 </small>
                             </div>
 
                             <div class="flex-1">
-                                <label for="farmSize" class="block text-gray-700 font-medium mb-2">Farm Size (acres) *</label>
-                                <InputNumber 
-                                    id="farmSize" 
-                                    v-model="farmSize" 
-                                    placeholder="Enter farm size" 
-                                    class="w-full" 
-                                    :min="0"
-                                    :class="{ 'p-invalid': submitted && (!farmSize || farmSize <= 0) }"
-                                />
+                                <label for="farmSize" class="block text-gray-700 font-medium mb-2">Farm Size (acres)
+                                    *</label>
+                                <InputNumber id="farmSize" v-model="farmSize" placeholder="Enter farm size"
+                                    class="w-full" :min="0"
+                                    :class="{ 'p-invalid': submitted && (!farmSize || farmSize <= 0) }" />
                                 <small v-if="submitted && (!farmSize || farmSize <= 0)" class="p-error block mt-1">
                                     Valid farm size is required.
                                 </small>
@@ -495,42 +476,31 @@ export default defineComponent({
                         </div>
 
                         <div class="mb-6">
-                            <label for="farmLocation" class="block text-gray-700 font-medium mb-2">Farm Location *</label>
-                            <InputText 
-                                id="farmLocation" 
-                                v-model="farmLocation" 
-                                placeholder="City, State/Province, Country" 
-                                class="w-full p-3" 
-                                :class="{ 'p-invalid': submitted && !farmLocation }"
-                            />
+                            <label for="farmLocation" class="block text-gray-700 font-medium mb-2">Farm Location
+                                *</label>
+                            <InputText id="farmLocation" v-model="farmLocation"
+                                placeholder="City, State/Province, Country" class="w-full p-3"
+                                :class="{ 'p-invalid': submitted && !farmLocation }" />
                             <small v-if="submitted && !farmLocation" class="p-error block mt-1">
                                 Farm location is required.
                             </small>
                         </div>
 
                         <div class="mb-6">
-                            <label for="farmDescription" class="block text-gray-700 font-medium mb-2">Farm Description</label>
-                            <Textarea 
-                                id="farmDescription" 
-                                v-model="farmDescription" 
-                                placeholder="Tell us about your farm" 
-                                class="w-full" 
-                                rows="3"
-                            />
+                            <label for="farmDescription" class="block text-gray-700 font-medium mb-2">Farm
+                                Description</label>
+                            <Textarea id="farmDescription" v-model="farmDescription"
+                                placeholder="Tell us about your farm" class="w-full" rows="3" />
                         </div>
 
                         <div class="flex gap-4 mb-6">
                             <div class="flex-1">
                                 <label class="block text-gray-700 font-medium mb-2">Livestock Types</label>
                                 <div class="flex flex-wrap gap-3">
-                                    <div v-for="option in livestockTypeOptions" :key="option.value" class="flex items-center">
-                                        <Checkbox 
-                                            :id="option.value" 
-                                            :value="option.value" 
-                                            v-model="livestockTypes" 
-                                            binary 
-                                            class="mr-2"
-                                        />
+                                    <div v-for="option in livestockTypeOptions" :key="option.value"
+                                        class="flex items-center">
+                                        <Checkbox :id="option.value" :value="option.value" v-model="livestockTypes"
+                                            binary class="mr-2" />
                                         <label :for="option.value">{{ option.label }}</label>
                                     </div>
                                 </div>
@@ -540,14 +510,10 @@ export default defineComponent({
                         <div class="mb-6">
                             <label class="block text-gray-700 font-medium mb-2">Farm Certifications</label>
                             <div class="flex flex-wrap gap-3">
-                                <div v-for="option in farmCertificationOptions" :key="option.value" class="flex items-center">
-                                    <Checkbox 
-                                        :id="option.value" 
-                                        :value="option.value" 
-                                        v-model="farmCertifications" 
-                                        binary 
-                                        class="mr-2"
-                                    />
+                                <div v-for="option in farmCertificationOptions" :key="option.value"
+                                    class="flex items-center">
+                                    <Checkbox :id="option.value" :value="option.value" v-model="farmCertifications"
+                                        binary class="mr-2" />
                                     <label :for="option.value">{{ option.label }}</label>
                                 </div>
                             </div>
@@ -560,49 +526,48 @@ export default defineComponent({
                             <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-left">
                                 <h3 class="text-green-700 font-medium mb-2">Document Verification</h3>
                                 <p class="text-gray-600 text-sm">
-                                    Please upload a valid government-issued ID or farm registration document 
+                                    Please upload a valid government-issued ID or farm registration document
                                     to verify your farm account.
                                 </p>
                             </div>
 
                             <div class="mb-6">
                                 <label class="block text-gray-700 font-medium mb-2 text-left">
-                                    Upload Documents *
+                                    Upload Documents
                                 </label>
-                                <FileUpload 
-                                    mode="basic" 
-                                    name="idDocuments" 
-                                    url="/upload" 
-                                    accept=".pdf,.jpg,.jpeg,.png" 
-                                    :maxFileSize="5000000"
-                                    @upload="onFileUpload"
-                                    chooseLabel="Select Files"
-                                    multiple
-                                />
+
+                                <!-- Image Preview Section -->
+                                <div v-if="uploadedImagePreview" class="mb-4 relative">
+                                    <div class="relative">
+                                        <img :src="uploadedImagePreview" alt="Uploaded Document"
+                                            class="w-full max-h-64 object-cover rounded-lg shadow-md" />
+                                        <button type="button" @click="removeUploadedImage"
+                                            class="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition">
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <FileUpload v-if="!uploadedImagePreview" mode="basic" name="idDocuments" url="/upload"
+                                    accept="image/*" :maxFileSize="5000000" @upload="onFileUpload"
+                                    chooseLabel="Select Image" multiple />
                                 <small class="text-gray-500 block mt-2">
-                                    Accepted formats: PDF, JPG, PNG (max 5MB per file)
+                                    Accepted formats: Any Image (max 5MB per file)
                                 </small>
                             </div>
 
                             <div class="mb-6">
                                 <div class="flex items-center">
-                                    <Checkbox 
-                                        id="termsAndConditions" 
-                                        v-model="termsAccepted" 
-                                        :binary="true" 
-                                        class="mr-2"
-                                    />
+                                    <Checkbox id="termsAndConditions" v-model="termsAccepted" :binary="true"
+                                        class="mr-2" />
                                     <label for="termsAndConditions" class="text-sm">
-                                        I accept the 
+                                        I accept the
                                         <a href="#" class="text-green-600 underline">
                                             Terms and Conditions
                                         </a>
                                     </label>
                                 </div>
-                                <small 
-                                    v-if="submitted && !termsAccepted" 
-                                    class="p-error block mt-1"
-                                >
+                                <small v-if="submitted && !termsAccepted" class="p-error block mt-1">
                                     You must accept the terms and conditions.
                                 </small>
                             </div>
@@ -615,7 +580,7 @@ export default defineComponent({
                             <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-left">
                                 <h3 class="text-green-700 font-medium mb-2">Verification Required</h3>
                                 <p class="text-gray-600 text-sm">
-                                    We've sent a 6-digit verification code to your registered email. 
+                                    We've sent a 6-digit verification code to your registered email.
                                     Please enter the code below to verify your farm account upgrade.
                                 </p>
                             </div>
@@ -624,26 +589,17 @@ export default defineComponent({
                                 <label for="verificationCode" class="block text-gray-700 font-medium mb-2 text-left">
                                     Verification Code *
                                 </label>
-                                <InputMask 
-                                    id="verificationCode" 
-                                    v-model="verificationCode" 
-                                    mask="999999" 
-                                    placeholder="Enter 6-digit code" 
+                                <InputMask id="verificationCode" v-model="verificationCode" mask="999999"
+                                    placeholder="Enter 6-digit code"
                                     class="w-full p-3 text-center tracking-widest text-lg"
-                                    :class="{ 'p-invalid': submitted && !verificationCode }" 
-                                />
+                                    :class="{ 'p-invalid': submitted && !verificationCode }" />
                                 <small v-if="submitted && !verificationCode" class="p-error block mt-1 text-left">
                                     Verification code is required.
                                 </small>
                             </div>
 
-                            <Button 
-                                type="button" 
-                                label="Resend Code" 
-                                class="p-button-text p-3" 
-                                @click="resendVerificationCode" 
-                                :loading="loading" 
-                            />
+                            <Button type="button" label="Resend Code" class="p-button-text p-3"
+                                @click="resendVerificationCode" :loading="loading" />
 
                             <p class="text-sm text-gray-500 mt-4">
                                 Didn't receive the code? Check your spam folder or try resending after 60 seconds.
@@ -653,24 +609,33 @@ export default defineComponent({
 
                     <!-- Navigation buttons -->
                     <div class="flex justify-between mt-8">
-                        <Button 
-                            v-if="currentStep > 0" 
-                            type="button" 
-                            label="Previous" 
-                            class="p-button-outlined p-3" 
-                            @click="prevStep" 
-                        />
+                        <Button v-if="currentStep > 0" type="button" label="Previous" class="p-button-outlined p-3"
+                            @click="prevStep" />
                         <div v-else class="flex-1"></div>
 
-                        <Button 
-                            type="submit" 
-                            :label="currentStep < 3 ? 'Next' : 'Upgrade Account'" 
-                            class="p-3 shadow-lg" 
-                            :loading="loading" 
-                        />
+                        <Button type="submit" :label="currentStep < 3 ? 'Next' : 'Upgrade Account'"
+                            class="p-3 shadow-lg bg-green-600 hover:bg-green-700 transition" :loading="loading" />
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
