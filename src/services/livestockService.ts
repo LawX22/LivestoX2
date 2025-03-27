@@ -42,8 +42,22 @@ const updateListing = async (listingId: number, updatedData: Partial<AnimalListi
     return data;
 };
 
+const deleteListing = async (listingId: number) => {
+    const { data, error } = await supabase
+        .from("livestock")
+        .delete()
+        .eq("id", listingId);
+    if (error) {
+        console.error("Delete failed:", error);
+        throw error;
+    }
+
+    return data;
+};
+
 export const livestock = {
     saveListing,
     getListingsByFarmAndSeller,
     updateListing,
+    deleteListing,
 };
