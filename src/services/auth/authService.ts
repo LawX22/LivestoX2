@@ -1,6 +1,6 @@
 import { supabase } from "../../supabase";
 
-export const signUpBuyer = async (
+const signUpBuyer = async (
   email: string,
   password: string,
   additionalInfo = {}
@@ -19,7 +19,7 @@ export const signUpBuyer = async (
   return data;
 };
 
-export const resendEmailOtp = async (email: string) => {
+const resendEmailOtp = async (email: string) => {
   const { error } = await supabase.auth.resend({
     type: "signup",
     email: email,
@@ -29,7 +29,7 @@ export const resendEmailOtp = async (email: string) => {
   }
 };
 
-export const verifyEmailOtp = async (email: string, token: string) => {
+const verifyEmailOtp = async (email: string, token: string) => {
   const { data, error } = await supabase.auth.verifyOtp({
     email,
     token,
@@ -42,7 +42,7 @@ export const verifyEmailOtp = async (email: string, token: string) => {
   return data;
 };
 
-export const checkUsernameAvailable = async (username: string) => {
+const checkUsernameAvailable = async (username: string) => {
   const { data, error } = await supabase
     .rpc('is_username_exist', { username })
     .single();
@@ -53,7 +53,7 @@ export const checkUsernameAvailable = async (username: string) => {
   return !data;
 };
 
-export const checkEmailAvailable = async (email: string) => {
+const checkEmailAvailable = async (email: string) => {
   const { data, error } = await supabase
     .rpc('is_email_exist', { email })
     .single();
@@ -64,7 +64,7 @@ export const checkEmailAvailable = async (email: string) => {
   return !data;
 };
 
-export const signIn = async (email: string, password: string) => {
+const signIn = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -74,4 +74,13 @@ export const signIn = async (email: string, password: string) => {
     throw error;
   }
   return data;
+};
+
+export const auth = {
+    signUpBuyer,
+    resendEmailOtp,
+    verifyEmailOtp,
+    checkUsernameAvailable,
+    checkEmailAvailable,
+    signIn
 };
