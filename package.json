@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.3",
     "chart.js": "^4.4.8",
     "primeicons": "^7.0.0",
     "primevue": "^3.53.1",
