@@ -207,10 +207,11 @@ export default defineComponent({
         </div>
         <div class="main-content">
           <!-- Replace the existing content with the LivestockListing component -->
-          <!-- <LivestockListing :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
+          <LivestockListing :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
 
           <!-- This is for FarmerLivestockListing component -->
-          <FarmerLivestockListings :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+          <!-- <FarmerLivestockListings :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
+          
         </div>
       </div>
     </div>
