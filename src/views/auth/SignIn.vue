@@ -10,6 +10,7 @@ import Checkbox from 'primevue/checkbox';
 import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
 import Carousel from '../../components/Landing/Carousel.vue';
+import { signIn } from '../../lib/aut';
 
 export default defineComponent({
     name: 'SignInPage',
@@ -86,7 +87,8 @@ export default defineComponent({
                 loading.value = true;
 
                 // Replace with your actual authentication logic
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // await new Promise(resolve => setTimeout(resolve, 1000));
+                await signIn(email.value, password.value);
 
                 // Mock successful login
                 toast.add({
