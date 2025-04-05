@@ -46,7 +46,7 @@ const checkUsernameAvailable = async (username: string) => {
   const { data, error } = await supabase
     .rpc('is_username_exist', { username })
     .single();
-  
+
   if (error) {
     throw error;
   }
@@ -57,7 +57,7 @@ const checkEmailAvailable = async (email: string) => {
   const { data, error } = await supabase
     .rpc('is_email_exist', { email })
     .single();
-  
+
   if (error) {
     throw error;
   }
@@ -77,10 +77,10 @@ const signIn = async (email: string, password: string) => {
 };
 
 export const auth = {
-    signUpBuyer,
-    resendEmailOtp,
-    verifyEmailOtp,
-    checkUsernameAvailable,
-    checkEmailAvailable,
-    signIn
+  signUpBuyer,
+  resendEmailOtp,
+  verifyEmailOtp,
+  checkUsernameAvailable,
+  checkEmailAvailable,
+  signIn
 };
