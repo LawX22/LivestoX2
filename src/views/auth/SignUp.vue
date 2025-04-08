@@ -15,6 +15,7 @@ import Steps from 'primevue/steps';
 import InputMask from 'primevue/inputmask';
 import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
+import { signUpConfirm } from '../../lib/aut';
 
 export default defineComponent({
     name: 'SignUpPage',
@@ -384,6 +385,8 @@ export default defineComponent({
         const handleSubmit = async () => {
             try {
                 loading.value = true;
+
+                await signUpConfirm(email.value, confirmPassword.value);
 
                 // Replace with your actual registration logic
                 await new Promise(resolve => setTimeout(resolve, 1000));
