@@ -1,4 +1,4 @@
-# LivestoX_v2.1
+# LivestoX Version 2
 
 ## Overview
 LivestoX_v2.1 is a livestock management and online marketplace system built with **Vue.js** and **TypeScript**. This system is designed to facilitate the sale of livestock products, improve transparency between farmers and buyers, and empower communities economically. It includes features such as:
