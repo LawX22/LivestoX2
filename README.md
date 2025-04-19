@@ -1,8 +1,8 @@
 # LivestoX_v2.1
 
-```markdown
 ## Overview
 LivestoX_v2.1 is a livestock management and online marketplace system built with **Vue.js** and **TypeScript**. This system is designed to facilitate the sale of livestock products, improve transparency between farmers and buyers, and empower communities economically. It includes features such as:
+
 - User authentication with Firebase
 - Livestock listing and management
 - Buyer-seller chat functionality
@@ -19,6 +19,7 @@ Before setting up the project, ensure you have the following installed:
 - **Firebase SDK** (for authentication and database management)
 
 ## Installation
+
 ```sh
 # Clone the repository
 git clone https://github.com/your-repo/LivestoX_v2.1.git
@@ -29,6 +30,7 @@ npm install
 ```
 
 Create an `.env` file and configure Firebase settings:
+
 ```sh
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
@@ -39,6 +41,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 ```
 
 Start the development server:
+
 ```sh
 npm run dev
 ```
@@ -97,6 +100,7 @@ app.mount("#app");
 ```
 
 ## Running the Project
+
 ### Start development server:
 ```sh
 npm run dev
@@ -120,9 +124,8 @@ git commit -m 'Add new feature'
 # Push to the branch
 git push origin feature-branch
 ```
+
 Then, open a pull request.
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
-```
-
