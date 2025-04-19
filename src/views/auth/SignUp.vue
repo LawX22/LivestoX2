@@ -167,10 +167,21 @@ export default defineComponent({
                 return false;
             }
 
+            // Phone number validation for Philippines (basic check)
+            const phoneValue = phoneNumber.value.replace(/[^0-9]/g, '');
+            if (phoneValue.length !== 12 || !phoneValue.startsWith('63')) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Invalid Phone Number',
+                    detail: 'Please enter a valid Philippines phone number starting with +63',
+                    life: 3000
+                });
+                return false;
+            }
+
             return true;
         };
 
-        // Replace the validateSecurityInfo function with this updated version:
         const validateSecurityInfo = (): boolean => {
             if (!password.value || !confirmPassword.value) {
                 toast.add({
@@ -353,22 +364,14 @@ export default defineComponent({
                     isValid = validateSecurityInfo();
                     break;
                 case 2:
-                    isValid = validateVerification();
-                    break;
-                case 3:
                     isValid = validateAgreements();
                     break;
             }
 
             if (isValid) {
-                if (currentStep.value < 3) {
+                if (currentStep.value < 2) {
                     currentStep.value++;
                     submitted.value = false;
-
-                    // If moving to verification step, automatically send code
-                    if (currentStep.value === 2 && !verificationSent.value) {
-                        sendVerificationCode();
-                    }
                 } else {
                     handleSubmit();
                 }
@@ -516,13 +519,13 @@ export default defineComponent({
                     <div class="mb-8">
                         <div class="flex flex-col space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Step {{ currentStep + 1 }} of 4</span>
-                                <span class="text-sm text-gray-600">{{ ['Personal', 'Security', 'Verification',
+                                <span class="text-sm text-gray-600">Step {{ currentStep + 1 }} of 3</span>
+                                <span class="text-sm text-gray-600">{{ ['Personal', 'Security',
                                     'Agreement'][currentStep] }}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2.5">
                                 <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300 ease-in-out"
-                                    :style="{ width: `${(currentStep + 1) * 25}%` }"></div>
+                                    :style="{ width: `${(currentStep + 1) * 33.33}%` }"></div>
                             </div>
                         </div>
                     </div>
@@ -593,12 +596,15 @@ export default defineComponent({
                                 <div class="flex-1">
                                     <label for="phoneNumber" class="block text-gray-700 font-medium mb-2">Phone Number
                                         *</label>
-                                    <InputMask id="phoneNumber" v-model="phoneNumber" mask="+99 (999) 999-9999"
-                                        placeholder="+1 (234) 567-8901" class="w-full p-3"
+                                    <InputMask id="phoneNumber" v-model="phoneNumber" mask="+63 999-999-9999"
+                                        placeholder="+63 917-123-4567" class="w-full p-3"
                                         :class="{ 'p-invalid': submitted && !phoneNumber }"
                                         aria-describedby="phone-error" />
                                     <small id="phone-error" v-if="submitted && !phoneNumber"
                                         class="p-error block mt-1">Phone number is required.</small>
+                                    <small class="text-gray-500 block mt-1">
+                                        Philippines format: +63 followed by 10 digits
+                                    </small>
                                 </div>
 
                                 <div class="flex-1">
@@ -614,7 +620,6 @@ export default defineComponent({
 
                         <!-- Step 2: Security Information -->
                         <div v-if="currentStep === 1">
-                            <!-- Replace the password and confirm password fields in your template with these: -->
                             <div class="mb-6">
                                 <label for="password" class="block text-gray-700 font-medium mb-2">Password *</label>
                                 <Password id="password" v-model="password" placeholder="Create a strong password"
@@ -657,43 +662,8 @@ export default defineComponent({
                             </div>
                         </div>
 
-                        <!-- Step 3: Verification -->
+                        <!-- Step 3: Agreements (formerly Step 4) -->
                         <div v-if="currentStep === 2">
-                            <div class="mb-6 text-center">
-                                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-left">
-                                    <h3 class="text-green-700 font-medium mb-2">Verification Required</h3>
-                                    <p class="text-gray-600 text-sm">
-                                        We've sent a 6-digit verification code to your email {{ email }} and phone {{
-                                            phoneNumber }}.
-                                        Please enter the code below to verify your identity.
-                                    </p>
-                                </div>
-
-                                <div class="mb-6">
-                                    <label for="verificationCode"
-                                        class="block text-gray-700 font-medium mb-2 text-left">Verification Code
-                                        *</label>
-                                    <InputMask id="verificationCode" v-model="verificationCode" mask="999999"
-                                        placeholder="Enter 6-digit code"
-                                        class="w-full p-3 text-center tracking-widest text-lg"
-                                        :class="{ 'p-invalid': submitted && !verificationCode }" />
-                                    <small id="verificationCode-error" v-if="submitted && !verificationCode"
-                                        class="p-error block mt-1 text-left">
-                                        Verification code is required.
-                                    </small>
-                                </div>
-
-                                <Button type="button" label="Resend Code" class="p-button-text p-3"
-                                    @click="resendVerificationCode" :loading="loading" />
-
-                                <p class="text-sm text-gray-500 mt-4">
-                                    Didn't receive the code? Check your spam folder or try resending after 60 seconds.
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Step 4: Agreements -->
-                        <div v-if="currentStep === 3">
                             <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
                                 <h3 class="text-blue-700 font-medium mb-2">Almost Done!</h3>
                                 <p class="text-gray-600 text-sm">
@@ -752,7 +722,7 @@ export default defineComponent({
                                 @click="prevStep" />
                             <div v-else class="flex-1"></div>
 
-                            <Button type="submit" :label="currentStep < 3 ? 'Next' : 'Create Account'"
+                            <Button type="submit" :label="currentStep < 2 ? 'Next' : 'Create Account'"
                                 class="p-3 shadow-lg" :loading="loading" />
                         </div>
 

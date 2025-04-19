@@ -10,6 +10,8 @@ import AdminDashboard from '../views/admin/AdminDashboard.vue';
 import UserManagement from '../views/admin/UserManagement.vue';
 
 // Main Pages
+import LivestockDashboard from '../views/main/LivestockDashboard.vue';  
+import FarmerLivestockDashboard from '../views/main/FarmerLivestockDashboard.vue';  
 import LivestockMarket from '../views/main/LivestockMarket.vue';
 import Message from '../views/main/Message.vue';
 import LivestockForum from '../views/main/LivestockForum.vue';
@@ -29,6 +31,8 @@ const routes = [
 
   // Main Routes
   { path: '/main/LivestockMarket', component: LivestockMarket, name: 'LivestockMarket' },
+  { path: '/main/FarmerLivestockDashboard', component: FarmerLivestockDashboard, name: 'FarmerLivestockDashboard' },
+  { path: '/main/LivestockDashboard', component: LivestockDashboard, name: 'LivestockDashboard' },
   { path: '/main/Message', component: Message, name: 'Message' },
   { path: '/main/LivestockForum', component: LivestockForum, name: 'LivestockForum' },
   { path: '/main/ViewListings', component: ViewListings, name: 'ViewListings' },
