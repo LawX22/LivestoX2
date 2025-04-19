@@ -33,6 +33,44 @@ const getListingsBySeller = async (sellerId: string, limiter?: number) => {
   return data;
 };
 
+const getListingsForMarket = async (limiter?: number) => {
+  let query = supabase
+    .from("livestock")
+    .select("*")
+    .eq("status", "Active")
+    .eq("auction", false)
+    .order("listed_date", { ascending: false });
+
+  if (limiter !== undefined) {
+    query = query.limit(limiter);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching filtered listings:", error);
+    throw error;
+  }
+
+  return data;
+};
+
+const getListingsById = async (id: string) => {
+  const { data, error } = await supabase
+    .from("livestock")
+    .select("*")
+    .eq("id", id)
+    .eq("auction", false)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching filtered listings:", error);
+    throw error;
+  }
+
+  return data;
+};
+
 const updateListing = async (
   listingId: number,
   updatedData: Partial<AnimalListing>
@@ -66,6 +104,8 @@ const deleteListing = async (listingId: number) => {
 export const livestock = {
   saveListing,
   getListingsBySeller,
+  getListingsForMarket,
+  getListingsById,
   updateListing,
   deleteListing,
 };
