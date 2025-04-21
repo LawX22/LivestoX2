@@ -229,31 +229,6 @@ export default defineComponent({
             return true;
         };
 
-        const validateVerification = (): boolean => {
-            if (!verificationCode.value) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Missing Information',
-                    detail: 'Please enter the verification code sent to your email/phone',
-                    life: 3000
-                });
-                return false;
-            }
-
-            // In a real application, you would validate the code against a server
-            // This is just a mock validation
-            if (verificationCode.value.length !== 6) {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Invalid Code',
-                    detail: 'Verification code must be 6 digits',
-                    life: 3000
-                });
-                return false;
-            }
-
-            return true;
-        };
 
         const validateAgreements = (): boolean => {
             if (!agreeToTerms.value) {
@@ -267,34 +242,6 @@ export default defineComponent({
             }
 
             return true;
-        };
-
-        // Send verification code
-        const sendVerificationCode = async () => {
-            try {
-                loading.value = true;
-
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                verificationSent.value = true;
-
-                toast.add({
-                    severity: 'success',
-                    summary: 'Verification Code Sent',
-                    detail: 'A verification code has been sent to your email and phone',
-                    life: 3000
-                });
-            } catch (error) {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Failed to Send Code',
-                    detail: 'There was an error sending the verification code',
-                    life: 3000
-                });
-            } finally {
-                loading.value = false;
-            }
         };
 
         // Check username availability
