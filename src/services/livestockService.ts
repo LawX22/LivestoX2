@@ -58,7 +58,12 @@ const getListingsForMarket = async (limiter?: number) => {
 const getListingsById = async (id: string) => {
   const { data, error } = await supabase
     .from("livestock")
-    .select("*")
+    .select(
+      `
+      *,
+      farms (*)
+    `
+    )
     .eq("id", id)
     .eq("auction", false)
     .maybeSingle();
