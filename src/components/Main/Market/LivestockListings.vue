@@ -182,6 +182,12 @@ export default defineComponent({
             console.log('Redirecting to /main/ViewListings without ID parameter');
         };
 
+        // New method to navigate to FarmerSignupForm
+        const becomeFarmer = () => {
+            router.push('/main/FarmerSignupForm');
+            console.log('Redirecting to /main/FarmerSignupForm');
+        };
+
         const toggleFavorite = (listing: Livestock) => {
             listing.isFavorite = !listing.isFavorite;
             // In a real app, you would save this to your API
@@ -227,6 +233,7 @@ export default defineComponent({
             filteredListings,
 
             viewListing,
+            becomeFarmer,
             toggleFavorite,
             formatPrice,
             formatDate
@@ -270,6 +277,7 @@ export default defineComponent({
                     <!-- CTA Buttons - Adding multiple options -->
                     <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
                         <button
+                            @click="becomeFarmer"
                             class="bg-white text-green-700 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 hover:text-green-800 transform hover:scale-105 transition duration-300 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
                                 fill="currentColor">
@@ -562,46 +570,38 @@ export default defineComponent({
                         </div>
 
                         <!-- Specs grid -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
-                            <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-tags text-green-600 mr-1.5"></i>
-                                    <span class="text-gray-500">Breed</span>
-                                </div>
-                                <span class="font-semibold text-gray-700">{{ listing.breed }}</span>
+              <!-- Specs grid -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
+                            <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <i class="pi pi-tag text-green-600 mr-1.5"></i>
+                                <span>{{ listing.breed }}</span>
                             </div>
-                            <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-heart text-green-600 mr-1.5"></i>
-                                    <span class="text-gray-500">Health</span>
-                                </div>
-                                <span class="font-semibold text-gray-700">{{ listing.healthStatus }}</span>
+                            <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <i class="pi pi-heart text-green-600 mr-1.5"></i>
+                                <span>{{ listing.healthStatus }}</span>
                             </div>
-                            <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-box text-green-600 mr-1.5"></i>
-                                    <span class="text-gray-500">Weight</span>
-                                </div>
-                                <span class="font-semibold text-gray-700">{{ listing.weight }} {{ listing.weightUnit }}</span>
+                            <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <i class="pi pi-weight text-green-600 mr-1.5"></i>
+                                <span>{{ listing.weight }} {{ listing.weightUnit }}</span>
                             </div>
-                            <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-send text-green-600 mr-1.5"></i>
-                                    <span class="text-gray-500">Feeding</span>
-                                </div>
-                                <span class="font-semibold text-gray-700">{{ listing.feedingType }}</span>
+                            <div v-if="listing.quantity > 1"
+                                class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <i class="pi pi-th-large text-green-600 mr-1.5"></i>
+                                <span>{{ listing.quantity }} Left</span>
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
-                        <div class="flex items-center justify-between mt-auto">
-                            <div class="flex items-center">
-                                <Button icon="pi pi-heart" :class="listing.isFavorite ? 'p-button-danger' : 'p-button-outlined p-button-secondary'" 
-                                        class="p-button-rounded mr-2" @click="toggleFavorite(listing)" />
-                                <Button icon="pi pi-share-alt" class="p-button-rounded p-button-outlined p-button-secondary" />
-                            </div>
-                            <Button label="View Details" icon="pi pi-arrow-right" iconPos="right" 
-                                    class="p-button-rounded p-button-success" @click="viewListing(listing)" />
+                        <!-- Action buttons -->
+                        <div class="mt-auto flex items-center gap-3">
+                            <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
+                                class="p-button-rounded p-button-success flex-1 text-sm"
+                                @click="viewListing(listing)" />
+                            <button
+                                class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-colors"
+                                :class="[listing.isFavorite ? 'bg-red-500 border-red-500 text-white' : 'text-gray-400']"
+                                @click="toggleFavorite(listing)" aria-label="Toggle favorite">
+                                <i class="pi pi-heart-fill"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -609,89 +609,87 @@ export default defineComponent({
 
             <!-- Compact View -->
             <div v-else-if="viewMode === 'compact'" class="overflow-x-auto">
-                <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Livestock</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category/Breed</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age/Gender</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <table class="min-w-full bg-white rounded-lg shadow-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700 text-sm">
+                            <th class="py-3 px-4 text-left">Livestock</th>
+                            <th class="py-3 px-4 text-left">Category</th>
+                            <th class="py-3 px-4 text-left">Breed</th>
+                            <th class="py-3 px-4 text-left">Location</th>
+                            <th class="py-3 px-4 text-left">Price</th>
+                            <th class="py-3 px-4 text-left">Age</th>
+                            <th class="py-3 px-4 text-center">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        <tr v-for="listing in filteredListings" :key="listing.id" class="hover:bg-gray-50">
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="w-12 h-12 relative rounded-lg overflow-hidden">
-                                    <img :src="listing.imageUrl" :alt="listing.title" class="w-full h-full object-cover" />
-                                    <button @click="toggleFavorite(listing)" 
-                                            class="absolute top-0 right-0 w-5 h-5 rounded-bl-lg flex items-center justify-center transition-all duration-200"
-                                            :class="[listing.isFavorite ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-red-500 hover:text-white']">
-                                        <i class="pi pi-heart-fill text-xs"></i>
+                    <tbody>
+                        <tr v-for="listing in filteredListings" :key="listing.id"
+                            class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-md overflow-hidden">
+                                        <img :src="listing.imageUrl" :alt="listing.title"
+                                            class="w-full h-full object-cover" />
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">{{ listing.title }}</div>
+                                        <div class="text-xs text-gray-500">{{ formatDate(listing.listedDate) }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                    {{ listing.category }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-sm text-gray-700">{{ listing.breed }}</td>
+                            <td class="py-3 px-4 text-sm text-gray-700">{{ listing.location }}</td>
+                            <td class="py-3 px-4 text-sm font-medium text-green-600">
+                                ${{ formatPrice(listing.price) }}
+                            </td>
+                            <td class="py-3 px-4 text-sm text-gray-700">
+                                {{ listing.age }} {{ listing.ageUnit }}
+                            </td>
+                            <td class="py-3 px-4">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <button class="text-green-600 hover:text-green-800 transition-colors p-1"
+                                        @click="viewListing(listing)" title="View Details">
+                                        <i class="pi pi-eye"></i>
+                                    </button>
+                                    <button class="transition-colors p-1"
+                                        :class="[listing.isFavorite ? 'text-red-500 hover:text-red-700' : 'text-gray-400 hover:text-red-500']"
+                                        @click="toggleFavorite(listing)" title="Add to Favorites">
+                                        <i class="pi pi-heart-fill"></i>
                                     </button>
                                 </div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900 hover:text-green-600 cursor-pointer" @click="viewListing(listing)">
-                                    {{ listing.title }}
-                                </div>
-                                <div class="text-xs text-gray-500">{{ formatDate(listing.listedDate) }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ listing.category }}</div>
-                                <div class="text-xs text-gray-500">{{ listing.breed }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ listing.location }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ listing.age }} {{ listing.ageUnit }}</div>
-                                <div class="text-xs text-gray-500">{{ listing.gender }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm font-medium text-green-600">${{ formatPrice(listing.price) }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-right">
-                                <Button icon="pi pi-arrow-right" 
-                                      class="p-button-rounded p-button-success p-button-sm" 
-                                      @click="viewListing(listing)" />
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Empty State -->
-            <div v-if="filteredListings.length === 0" class="py-12 flex flex-col items-center justify-center text-center">
-                <div class="text-gray-400 mb-4">
-                    <i class="pi pi-search text-5xl"></i>
+            <!-- No results message -->
+            <div v-if="filteredListings.length === 0" class="text-center py-16">
+                <div class="mb-4">
+                    <i class="pi pi-search text-5xl text-gray-300"></i>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Livestock Found</h3>
-                <p class="text-gray-500 mb-6 max-w-md">We couldn't find any livestock matching your criteria. Try adjusting your filters or search terms.</p>
-                <Button label="Clear Filters" icon="pi pi-filter-slash" @click="searchQuery = ''; selectedCategory = null" />
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No livestock found</h3>
+                <p class="text-gray-500 mb-6">Try adjusting your search or filters to find what you're looking for.</p>
+                <Button label="Clear Filters" icon="pi pi-filter-slash" class="p-button-outlined"
+                    @click="searchQuery = ''; selectedCategory = null" />
             </div>
 
             <!-- Pagination -->
-            <Paginator v-model:first="first" :rows="12" :totalRecords="filteredListings.length" 
-                      class="p-paginator-top-border mt-8 border-t border-gray-200 pt-6" />
+            <div class="mt-6 flex justify-center">
+                <Paginator v-model:first="first" :rows="10" :totalRecords="filteredListings.length"
+                    class="border rounded-lg shadow-sm" />
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-.livestock-card {
-    transform: translateY(0);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.livestock-card:hover {
-    transform: translateY(-5px);
-}
-
-.p-paginator-top-border .p-paginator {
-    background: transparent;
-    border: none;
+/* Add any additional styles here */
+.p-dropdown {
+    height: auto !important;
 }
 </style>
