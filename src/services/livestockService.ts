@@ -33,7 +33,7 @@ const getListingsBySeller = async (sellerId: string, limiter?: number) => {
   return data;
 };
 
-const getListingsForMarket = async (limiter?: number) => {
+const getListingsForMarket = async (limiter?: number, category?: string) => {
   let query = supabase
     .from("livestock")
     .select("*")
@@ -43,6 +43,10 @@ const getListingsForMarket = async (limiter?: number) => {
 
   if (limiter !== undefined) {
     query = query.limit(limiter);
+  }
+
+  if (category !== undefined) {
+    query = query.eq("category", category);
   }
 
   const { data, error } = await query;
