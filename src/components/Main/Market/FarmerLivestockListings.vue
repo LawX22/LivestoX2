@@ -172,6 +172,12 @@ export default defineComponent({
       return result;
     });
 
+    // Function to navigate to the PostLivestockForms page
+    const navigateToPostForm = () => {
+      router.push('/farmer/PostLivestockForms');
+      console.log('Redirecting to /farmer/PostLivestockForms');
+    };
+
     // Updated method to view a listing - redirects to the ViewListings route without using ID
     const viewListing = (listing: Livestock) => {
       // Store the selected listing in localStorage
@@ -226,6 +232,7 @@ export default defineComponent({
       listings,
       filteredListings,
 
+      navigateToPostForm,
       viewListing,
       toggleFavorite,
       formatPrice,
@@ -268,6 +275,7 @@ export default defineComponent({
           <!-- CTA Buttons - Adding multiple options -->
           <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
             <button
+              @click="navigateToPostForm"
               class="bg-white text-green-700 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 hover:text-green-800 transform hover:scale-105 transition duration-300 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
@@ -579,23 +587,22 @@ export default defineComponent({
               </div>
               <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
                 <div class="flex items-center mb-1">
-                  <i class="pi pi-send text-green-600 mr-1.5"></i>
-                  <span class="text-gray-500">Feeding</span>
+                  <i class="pi pi-th-large text-green-600 mr-1.5"></i>
+                  <span class="text-gray-500">Quantity</span>
                 </div>
-                <span class="font-semibold text-gray-700">{{ listing.feedingType }}</span>
+                <span class="font-semibold text-gray-700">{{ listing.quantity }} Available</span>
               </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex items-center justify-between mt-auto">
-              <div class="flex items-center">
-                <Button icon="pi pi-heart"
-                  :class="listing.isFavorite ? 'p-button-danger' : 'p-button-outlined p-button-secondary'"
-                  class="p-button-rounded mr-2" @click="toggleFavorite(listing)" />
-                <Button icon="pi pi-share-alt" class="p-button-rounded p-button-outlined p-button-secondary" />
-              </div>
-              <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
-                class="p-button-rounded p-button-success" @click="viewListing(listing)" />
+            <!-- Buttons row -->
+            <div class="flex items-center gap-3 mt-auto">
+              <Button label="View Details" icon="pi pi-arrow-right" iconPos="right" 
+                class="p-button-rounded p-button-success flex-1 font-medium text-sm" @click="viewListing(listing)" />
+              <button class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 hover:border-red-200 transition-all duration-200"
+                :class="[listing.isFavorite ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-500']"
+                @click="toggleFavorite(listing)">
+                <i class="pi pi-heart-fill"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -603,91 +610,216 @@ export default defineComponent({
 
       <!-- Compact View -->
       <div v-else-if="viewMode === 'compact'" class="overflow-x-auto">
-        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200 border rounded-lg">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Livestock</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category/Breed
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Livestock
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age/Gender</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Category
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Age
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Price
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Location
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Listed
+              </th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200">
+          <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="listing in filteredListings" :key="listing.id" class="hover:bg-gray-50">
-              <td class="px-4 py-3 whitespace-nowrap">
-                <div class="w-12 h-12 relative rounded-lg overflow-hidden">
-                  <img :src="listing.imageUrl" :alt="listing.title" class="w-full h-full object-cover" />
-                  <button @click="toggleFavorite(listing)"
-                    class="absolute top-0 right-0 w-5 h-5 rounded-bl-lg flex items-center justify-center transition-all duration-200"
-                    :class="[listing.isFavorite ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-red-500 hover:text-white']">
-                    <i class="pi pi-heart-fill text-xs"></i>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="h-10 w-10 flex-shrink-0">
+                    <img class="h-10 w-10 rounded-full object-cover" :src="listing.imageUrl" :alt="listing.title" />
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900 cursor-pointer hover:text-green-600" @click="viewListing(listing)">
+                      {{ listing.title }}
+                    </div>
+                    <div class="text-xs text-gray-500">{{ listing.breed }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                  {{ listing.category }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ listing.age }} {{ listing.ageUnit }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
+                ${{ formatPrice(listing.price) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ listing.location }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ formatDate(listing.listedDate) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end gap-2">
+                  <button class="text-green-600 hover:text-green-900" @click="viewListing(listing)">
+                    <i class="pi pi-eye"></i>
+                  </button>
+                  <button class="text-gray-400 hover:text-red-500" 
+                    :class="{'text-red-500': listing.isFavorite}"
+                    @click="toggleFavorite(listing)">
+                    <i class="pi pi-heart-fill"></i>
                   </button>
                 </div>
-              </td>
-              <td class="px-4 py-3 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900 hover:text-green-600 cursor-pointer"
-                  @click="viewListing(listing)">
-                  {{ listing.title }}
-                </div>
-                <div class="text-xs text-gray-500">{{ formatDate(listing.listedDate) }}</div>
-              </td>
-              <td class="px-4 py-3 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ listing.category }}</div>
-                <div class="text-xs text-gray-500">{{ listing.breed }}</div>
-              </td>
-              <td class="px-4 py-3 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ listing.location }}</div>
-              </td>
-              <td class="px-4 py-3 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ listing.age }} {{ listing.ageUnit }}</div>
-                <div class="text-xs text-gray-500">{{ listing.gender }}</div>
-              </td>
-              <td class="px-4 py-3 whitespace-nowrap">
-                <div class="text-sm font-medium text-green-600">${{ formatPrice(listing.price) }}</div>
-              </td>
-              <td class="px-4 py-3 whitespace-nowrap text-right">
-                <Button icon="pi pi-arrow-right" class="p-button-rounded p-button-success p-button-sm"
-                  @click="viewListing(listing)" />
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Empty State -->
-      <div v-if="filteredListings.length === 0" class="py-12 flex flex-col items-center justify-center text-center">
-        <div class="text-gray-400 mb-4">
-          <i class="pi pi-search text-5xl"></i>
+      <!-- Empty state -->
+      <div v-if="filteredListings.length === 0" class="text-center py-16">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </div>
-        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Livestock Found</h3>
-        <p class="text-gray-500 mb-6 max-w-md">We couldn't find any livestock matching your criteria. Try adjusting your
-          filters or search terms.</p>
-        <Button label="Clear Filters" icon="pi pi-filter-slash" @click="searchQuery = ''; selectedCategory = null" />
+        <h3 class="text-lg font-medium text-gray-900 mb-1">No livestock found</h3>
+        <p class="text-gray-500 mb-4">Try adjusting your search or filters</p>
+        <button class="text-green-600 font-medium hover:text-green-800 flex items-center mx-auto"
+          @click="searchQuery = ''; selectedCategory = null;">
+          <i class="pi pi-refresh mr-2"></i> Reset all filters
+        </button>
       </div>
 
       <!-- Pagination -->
-      <Paginator v-model:first="first" :rows="12" :totalRecords="filteredListings.length"
-        class="p-paginator-top-border mt-8 border-t border-gray-200 pt-6" />
+      <div class="mt-6">
+        <Paginator :rows="12" :totalRecords="filteredListings.length" v-model:first="first" template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink" />
+      </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-green-800 text-white py-12 mt-16">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Logo and about -->
+          <div class="col-span-1 md:col-span-1">
+            <div class="flex items-center mb-4">
+              <div class="bg-white p-2 rounded-full mr-3">
+                <img src="/src/assets/vue.svg" alt="Logo" class="w-8 h-8" />
+              </div>
+              <h3 class="text-xl font-bold">AgriTrade</h3>
+            </div>
+            <p class="text-green-100 text-sm mb-4">
+              The Philippines' premier livestock marketplace for farmers and breeders.
+            </p>
+            <div class="flex gap-4">
+              <a href="#" class="text-white hover:text-green-300 transition-colors">
+                <i class="pi pi-facebook"></i>
+              </a>
+              <a href="#" class="text-white hover:text-green-300 transition-colors">
+                <i class="pi pi-twitter"></i>
+              </a>
+              <a href="#" class="text-white hover:text-green-300 transition-colors">
+                <i class="pi pi-instagram"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div>
+            <h4 class="text-white font-bold mb-4">Quick Links</h4>
+            <ul class="space-y-2 text-green-100">
+              <li><a href="#" class="hover:text-white transition-colors">Home</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">Browse Listings</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">Post Livestock</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
+            </ul>
+          </div>
+
+          <!-- Categories -->
+          <div>
+            <h4 class="text-white font-bold mb-4">Categories</h4>
+            <ul class="space-y-2 text-green-100">
+              <li><a href="#" class="hover:text-white transition-colors">Cattle</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">Pigs</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">Goats</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">Sheep</a></li>
+              <li><a href="#" class="hover:text-white transition-colors">Poultry</a></li>
+            </ul>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <h4 class="text-white font-bold mb-4">Contact Us</h4>
+            <ul class="space-y-2 text-green-100">
+              <li class="flex items-start">
+                <i class="pi pi-map-marker mt-1 mr-2"></i>
+                <span>123 Main Street, Cebu City, Philippines</span>
+              </li>
+              <li class="flex items-center">
+                <i class="pi pi-phone mr-2"></i>
+                <span>+63 9123 456 789</span>
+              </li>
+              <li class="flex items-center">
+                <i class="pi pi-envelope mr-2"></i>
+                <span>support@agritrade.ph</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="border-t border-green-700 mt-8 pt-8 text-center text-green-100 text-sm">
+          <p>© 2025 AgriTrade. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
 <style scoped>
-.livestock-card {
-  transform: translateY(0);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+.livestock-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Ensure images maintain aspect ratio in cards */
+.livestock-card img {
+  object-fit: cover;
+  aspect-ratio: 16/9;
+}
+
+/* Custom hover effects */
 .livestock-card:hover {
   transform: translateY(-5px);
 }
 
-.p-paginator-top-border .p-paginator {
-  background: transparent;
-  border: none;
+/* Line clamp for multi-line text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

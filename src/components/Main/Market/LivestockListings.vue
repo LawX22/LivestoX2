@@ -184,8 +184,8 @@ export default defineComponent({
 
         // New method to navigate to FarmerSignupForm
         const becomeFarmer = () => {
-            router.push('/main/FarmerSignupForm');
-            console.log('Redirecting to /main/FarmerSignupForm');
+            router.push('/FarmerUpgradeAccount');
+            console.log('Redirecting to /FarmerUpgradeAccount');
         };
 
         const toggleFavorite = (listing: Livestock) => {

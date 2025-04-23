@@ -208,7 +208,8 @@ export default defineComponent({
         <div class="main-content">
   
           <LivestockListing :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
-          
+          <!-- <FarmerLivestockListings :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
+
         </div>
       </div>
     </div>
