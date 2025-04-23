@@ -274,8 +274,7 @@ export default defineComponent({
 
           <!-- CTA Buttons - Adding multiple options -->
           <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-            <button
-              @click="navigateToPostForm"
+            <button @click="navigateToPostForm"
               class="bg-white text-green-700 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 hover:text-green-800 transform hover:scale-105 transition duration-300 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
@@ -333,17 +332,18 @@ export default defineComponent({
     <div class="bg-white border-b shadow-sm sticky top-0 z-10">
       <div class="container mx-auto px-4 py-3">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div class="w-full md:w-1/2">
+          <div class="w-full md:w-2/5">
             <span class="p-input-icon-left w-full relative">
               <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
               <InputText v-model="searchQuery" placeholder="Search by type, breed, or location..."
                 class="w-full pl-10 py-2 rounded-full border-gray-300" />
             </span>
           </div>
-          <div class="w-full md:w-auto flex items-center gap-3">
+          <div class="w-full md:w-auto flex flex-wrap items-center gap-3">
             <Dropdown v-model="selectedCategory" :options="categories" optionLabel="name" placeholder="All Categories"
-              class="w-40" />
-            <Dropdown v-model="sortOption" :options="sortOptions" optionLabel="label" class="w-48" />
+              class="w-48" optionClass="text-ellipsis whitespace-nowrap overflow-hidden" />
+            <Dropdown v-model="sortOption" :options="sortOptions" optionLabel="label" class="w-52"
+              optionClass="text-ellipsis whitespace-nowrap overflow-hidden" />
             <!-- View Toggle -->
             <div class="flex items-center border rounded-full p-1 bg-gray-100">
               <button @click="viewMode = 'grid'" class="p-2 rounded-full transition-colors"
@@ -596,9 +596,10 @@ export default defineComponent({
 
             <!-- Buttons row -->
             <div class="flex items-center gap-3 mt-auto">
-              <Button label="View Details" icon="pi pi-arrow-right" iconPos="right" 
+              <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
                 class="p-button-rounded p-button-success flex-1 font-medium text-sm" @click="viewListing(listing)" />
-              <button class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 hover:border-red-200 transition-all duration-200"
+              <button
+                class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 hover:border-red-200 transition-all duration-200"
                 :class="[listing.isFavorite ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-500']"
                 @click="toggleFavorite(listing)">
                 <i class="pi pi-heart-fill"></i>
@@ -644,7 +645,8 @@ export default defineComponent({
                     <img class="h-10 w-10 rounded-full object-cover" :src="listing.imageUrl" :alt="listing.title" />
                   </div>
                   <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900 cursor-pointer hover:text-green-600" @click="viewListing(listing)">
+                    <div class="text-sm font-medium text-gray-900 cursor-pointer hover:text-green-600"
+                      @click="viewListing(listing)">
                       {{ listing.title }}
                     </div>
                     <div class="text-xs text-gray-500">{{ listing.breed }}</div>
@@ -673,8 +675,7 @@ export default defineComponent({
                   <button class="text-green-600 hover:text-green-900" @click="viewListing(listing)">
                     <i class="pi pi-eye"></i>
                   </button>
-                  <button class="text-gray-400 hover:text-red-500" 
-                    :class="{'text-red-500': listing.isFavorite}"
+                  <button class="text-gray-400 hover:text-red-500" :class="{ 'text-red-500': listing.isFavorite }"
                     @click="toggleFavorite(listing)">
                     <i class="pi pi-heart-fill"></i>
                   </button>
@@ -702,7 +703,8 @@ export default defineComponent({
 
       <!-- Pagination -->
       <div class="mt-6">
-        <Paginator :rows="12" :totalRecords="filteredListings.length" v-model:first="first" template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink" />
+        <Paginator :rows="12" :totalRecords="filteredListings.length" v-model:first="first"
+          template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink" />
       </div>
     </div>
 
@@ -793,6 +795,7 @@ export default defineComponent({
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

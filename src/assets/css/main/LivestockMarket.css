@@ -1,0 +1,57 @@
+.livestock-market {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .navbar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .main-container {
+    margin-top: 60px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .content-container {
+    display: flex;
+    flex: 1;
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .sidebar {
+    width: 350px;
+    flex-shrink: 0;
+  }
+  
+  .main-content {
+    flex: 1;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  .loading-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+  }
+  
+  @media (max-width: 768px) {
+    .content-container {
+      flex-direction: column;
+    }
+  
+    .sidebar {
+      width: 100%;
+    }
+  }

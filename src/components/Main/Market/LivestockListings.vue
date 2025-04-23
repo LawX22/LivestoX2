@@ -176,7 +176,7 @@ export default defineComponent({
         const viewListing = (listing: Livestock) => {
             // Store the selected listing in localStorage
             localStorage.setItem('selectedListing', JSON.stringify(listing));
-            
+
             // Navigate to the view page without ID parameter
             router.push('/main/ViewListings');
             console.log('Redirecting to /main/ViewListings without ID parameter');
@@ -276,8 +276,7 @@ export default defineComponent({
 
                     <!-- CTA Buttons - Adding multiple options -->
                     <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                        <button
-                            @click="becomeFarmer"
+                        <button @click="becomeFarmer"
                             class="bg-white text-green-700 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 hover:text-green-800 transform hover:scale-105 transition duration-300 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
                                 fill="currentColor">
@@ -338,7 +337,7 @@ export default defineComponent({
         <div class="bg-white border-b shadow-sm sticky top-0 z-10">
             <div class="container mx-auto px-4 py-3">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="w-full md:w-1/2">
+                    <div class="w-full md:w-2/5">
                         <span class="p-input-icon-left w-full relative">
                             <i
                                 class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -346,10 +345,12 @@ export default defineComponent({
                                 class="w-full pl-10 py-2 rounded-full border-gray-300" />
                         </span>
                     </div>
-                    <div class="w-full md:w-auto flex items-center gap-3">
+                    <div class="w-full md:w-auto flex flex-wrap items-center gap-3">
                         <Dropdown v-model="selectedCategory" :options="categories" optionLabel="name"
-                            placeholder="All Categories" class="w-40" />
-                        <Dropdown v-model="sortOption" :options="sortOptions" optionLabel="label" class="w-48" />
+                            placeholder="All Categories" class="w-48"
+                            optionClass="text-ellipsis whitespace-nowrap overflow-hidden" />
+                        <Dropdown v-model="sortOption" :options="sortOptions" optionLabel="label" class="w-52"
+                            optionClass="text-ellipsis whitespace-nowrap overflow-hidden" />
                         <!-- View Toggle -->
                         <div class="flex items-center border rounded-full p-1 bg-gray-100">
                             <button @click="viewMode = 'grid'" class="p-2 rounded-full transition-colors"
@@ -501,8 +502,7 @@ export default defineComponent({
                         <div class="relative h-48 md:h-full overflow-hidden">
                             <img :src="listing.imageUrl" :alt="listing.title"
                                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-                            <div
-                                class="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent md:opacity-40">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent md:opacity-40">
                             </div>
 
                             <!-- Price badge -->
@@ -570,8 +570,8 @@ export default defineComponent({
                         </div>
 
                         <!-- Specs grid -->
-              <!-- Specs grid -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
+                        <!-- Specs grid -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
                             <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
                                 <i class="pi pi-tag text-green-600 mr-1.5"></i>
                                 <span>{{ listing.breed }}</span>
