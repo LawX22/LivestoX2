@@ -201,15 +201,15 @@ export default defineComponent({
     </div>
     <div class="main-container">
       <div class="content-container">
-        <div class="sidebar">
+        <!-- <div class="sidebar">
           <Filters :filters="filters" :categories="categories" :breeds="breeds" :loading="loading"
             :savedLocations="savedLocations" @apply-filters="handleApplyFilters" @clear-filters="handleClearFilters"
             @update:filters="updateFilters" @save-preset="handleSavePreset" @category-change="handleCategoryChange"
             @save-location="handleSaveLocation" />
-        </div>
+        </div> -->
         <div class="main-content">
-          <!-- <Header :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
-          <FarmerHeader :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+          <Header :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+          <!-- <FarmerHeader :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
           <Cards :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
         </div>
       </div>
