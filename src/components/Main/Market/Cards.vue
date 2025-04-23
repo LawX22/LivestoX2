@@ -6,6 +6,7 @@ import Dropdown from 'primevue/dropdown';
 import Badge from 'primevue/badge';
 import Paginator from 'primevue/paginator';
 import router from '../../../router';
+import imageUrl from '/src/assets/Bull.jpg';
 
 interface Livestock {
     id: number;
@@ -109,7 +110,7 @@ export default defineComponent({
                     location: location,
                     healthStatus: "Vaccinated",
                     feedingType: "Grass-fed",
-                    imageUrl: `/src/assets/Bull.jpg?text=${breeds[breedIndex]}+${i}`,
+                    imageUrl: imageUrl,
                     certified: Math.random() > 0.7,
                     auction: Math.random() > 0.8,
                     availableImmediate: Math.random() > 0.3,
