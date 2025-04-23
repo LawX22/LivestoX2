@@ -1,18 +1,20 @@
 <script lang="ts">
-// Script remains the same as your current implementation
 import { defineComponent, reactive, ref, computed } from 'vue';
 import NavBar from '../../components/Main/NavBar.vue';
 import Filters from '../../components/Main/Market/Filters.vue';
-import LivestockListing from '../../components/Main/Market/LivestockListings.vue';
-import FarmerLivestockListings from '../../components/Main/Market/FarmerLivestockListings.vue';
-
+import Header from '../../components/Main/Market/Header.vue';
+import Cards from '../../components/Main/Market/Cards.vue';
+import FarmerHeader from '../../components/Main/Market/FarmerHeader.vue';
+import Footer from '../../components/Main/Market/Footer.vue'; 
 export default defineComponent({
   name: 'LivestockMarket',
   components: {
     NavBar,
     Filters,
-    LivestockListing,
-    FarmerLivestockListings
+    Header,
+    Cards,
+    FarmerHeader,
+    Footer
   },
   setup() {
     const loading = ref(false);
@@ -206,12 +208,12 @@ export default defineComponent({
             @save-location="handleSaveLocation" />
         </div>
         <div class="main-content">
-  
-          <LivestockListing :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
-          <!-- <FarmerLivestockListings :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
-
+          <!-- <Header :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
+          <FarmerHeader :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+          <Cards :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
         </div>
       </div>
     </div>
+    <Footer /> 
   </div>
 </template>
