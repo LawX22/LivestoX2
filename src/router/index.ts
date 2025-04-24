@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 // Auth Pages
-import LandingPage from '../views/auth/LandingPage.vue';
 import SignIn from '../views/auth/SignIn.vue';
 import SignUp from '../views/auth/SignUp.vue';
 import FarmerUpgradeAccount from '../views/auth/FarmerUpgradeAccount.vue';
@@ -11,6 +10,7 @@ import AdminDashboard from '../views/admin/AdminDashboard.vue';
 import UserManagement from '../views/admin/UserManagement.vue';
 
 // Main Pages
+import LandingPage from '../views/main/LandingPage.vue';
 import LivestockDashboard from '../views/main/LivestockDashboard.vue';   
 import LivestockMarket from '../views/main/LivestockMarket.vue';
 import Message from '../views/main/Message.vue';
@@ -27,12 +27,12 @@ import UnderConstructionPage from '../views/utility/UnderConstructionPage.vue';
 // Define Routes
 const routes = [
   // Auth Routes
-  { path: '/', component: LandingPage, name: 'LandingPage' },
   { path: '/signin', component: SignIn, name: 'SignIn' },
   { path: '/signup', component: SignUp, name: 'SignUp' },
   { path: '/FarmerUpgradeAccount', component: FarmerUpgradeAccount, name: 'FarmerUpgradeAccount.vue' },
 
   // Main Routes
+  { path: '/', component: LandingPage, name: 'LandingPage' },
   { path: '/main/LivestockMarket', component: LivestockMarket, name: 'LivestockMarket' },
   { path: '/main/LivestockDashboard', component: LivestockDashboard, name: 'LivestockDashboard' },
   { path: '/main/Message', component: Message, name: 'Message' },
