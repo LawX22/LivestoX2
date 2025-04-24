@@ -100,12 +100,13 @@ export default defineComponent({
                 });
 
                 // Navigate to dashboard or home page
-                router.push('/dashboard');
+                router.push('/main/LivestockMarket');
             } catch (error) {
+                const errorMessage = (error instanceof Error) ? error.message : 'Authentication Failed. Please try again.';
                 toast.add({
                     severity: 'error',
                     summary: 'Authentication Failed',
-                    detail: 'Please check your email and password',
+                    detail: errorMessage,
                     life: 3000
                 });
             } finally {
