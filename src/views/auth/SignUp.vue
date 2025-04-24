@@ -16,6 +16,7 @@ import InputMask from 'primevue/inputmask';
 import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
 import { signUpConfirm } from '../../lib/aut';
+import imageUrl from '/src/assets/vue.svg';
 
 export default defineComponent({
     name: 'SignUpPage',
@@ -431,7 +432,7 @@ export default defineComponent({
             debouncedCheckUsernameAvailability,
             // Other data
             carouselSlides,
-            logoPath: "/src/assets/vue.svg"
+            logoPath: imageUrl
         };
     }
 });
