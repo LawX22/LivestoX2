@@ -11,6 +11,7 @@ import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
 import Carousel from '../../components/Landing/Carousel.vue';
 import { signIn } from '../../lib/aut';
+import imageUrl from '/src/assets/vue.svg';
 
 export default defineComponent({
     name: 'SignInPage',
@@ -132,7 +133,7 @@ export default defineComponent({
             rememberMe,
             handleSubmit,
             carouselSlides,
-            logoPath: "/src/assets/vue.svg" // Make sure this path is correct
+            logoPath: imageUrl
         };
     }
 });
