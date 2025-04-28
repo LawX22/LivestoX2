@@ -11,6 +11,7 @@ import Checkbox from 'primevue/checkbox';
 import Textarea from 'primevue/textarea';
 import FileUpload from 'primevue/fileupload';
 import Calendar from 'primevue/calendar';
+import { useAuthStore } from '../../stores/authContext';
 
 export default defineComponent({
     name: 'FarmSignupForm',
@@ -28,11 +29,12 @@ export default defineComponent({
     setup() {
         const router = useRouter();
         const toast = useToast();
+        const authStore = useAuthStore();
 
         // User Personal Information (pre-filled)
-        const fullName = ref<string>('John Doe'); // This would typically come from user's existing account
-        const email = ref<string>('john.doe@example.com'); // Pre-filled from existing account
-        const phoneNumber = ref<string>(''); // Philippines phone number field
+        const fullName = ref<string>(`${authStore?.user?.user_metadata.firstname} ${authStore?.user?.user_metadata.firstname}`); // This would typically come from user's existing account
+        const email = ref<string>(authStore?.user?.user_metadata.email); // Pre-filled from existing account
+        const phoneNumber = ref<string>(authStore?.user?.user_metadata.phone); // Philippines phone number field
 
         // Farm-specific form fields
         const farmName = ref<string>('');
