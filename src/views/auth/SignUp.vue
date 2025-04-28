@@ -15,7 +15,7 @@ import Steps from 'primevue/steps';
 import InputMask from 'primevue/inputmask';
 import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
-import { signUpConfirm } from '../../lib/aut';
+import { checkEmailAvailable, checkUsernameAvailable, resendEmailOtp, signUpBuyer, verifyEmailOtp } from '../../lib/aut';
 import imageUrl from '/src/assets/vue.svg';
 
 export default defineComponent({
@@ -59,6 +59,12 @@ export default defineComponent({
         const verificationSent = ref<boolean>(false);
         const usernameAvailable = ref<boolean>(false);
         const usernameError = ref<string>('');
+        const additionalInfo = ref({
+            firstname: '',
+            lastname: '',
+            username: '',
+            gender: '',
+        });
 
         // Form options
         const genderOptions = [
@@ -122,7 +128,7 @@ export default defineComponent({
 
 
         // Validation functions
-        const validatePersonalInfo = (): boolean => {
+        const validatePersonalInfo = async (): Promise<boolean> => {
             if (!firstName.value || !lastName.value || !username.value || !email.value || !phoneNumber.value || !gender.value) {
                 toast.add({
                     severity: 'warn',
@@ -163,6 +169,17 @@ export default defineComponent({
                     severity: 'error',
                     summary: 'Invalid Email',
                     detail: 'Please enter a valid email address',
+                    life: 3000
+                });
+                return false;
+            }
+
+            let validEmail = await checkEmailAvailable(email.value);
+            if(!validEmail) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Invalid Email',
+                    detail: 'Email already use',
                     life: 3000
                 });
                 return false;
@@ -230,7 +247,21 @@ export default defineComponent({
             return true;
         };
 
-        const validateVerificationCode = (): boolean => {
+        const validateVerificationCode = async (): Promise<boolean> => {
+
+            try {
+                await verifyEmailOtp(email.value, verificationCode.value);
+            } catch(error) {
+                const errorMessage = (error instanceof Error) ? error.message : 'Token has expired or is invalid.';
+                toast.add({
+                    severity: 'error',
+                    summary: 'Invalid Verification Code',
+                    detail: errorMessage,
+                    life: 3000
+                });
+                return false;
+            };
+
             if (!verificationCode.value || verificationCode.value.length !== 6) {
                 toast.add({
                     severity: 'warn',
@@ -291,10 +322,10 @@ export default defineComponent({
                 usernameError.value = '';
 
                 // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 800));
+                let validUsername = await checkUsernameAvailable(username.value);
 
                 // For demo purposes, let's pretend usernames ending with "taken" are already taken
-                if (username.value.endsWith('taken')) {
+                if (!validUsername) {
                     usernameError.value = 'This username is already taken';
                     usernameAvailable.value = false;
 
@@ -327,8 +358,15 @@ export default defineComponent({
             try {
                 loading.value = true;
 
+                await signUpBuyer(email.value, confirmPassword.value, additionalInfo.value = {
+                    firstname: firstName.value,
+                    lastname: lastName.value,
+                    username: username.value,
+                    gender: "test",
+                });
+
                 // Simulate API call to send verification code
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // await new Promise(resolve => setTimeout(resolve, 1500));
 
                 verificationSent.value = true;
 
@@ -356,7 +394,7 @@ export default defineComponent({
         };
 
         // Navigation functions
-        const nextStep = () => {
+        const nextStep = async () => {
             submitted.value = true;
 
             // Validate current step
@@ -364,7 +402,7 @@ export default defineComponent({
 
             switch (currentStep.value) {
                 case 0:
-                    isValid = validatePersonalInfo();
+                    isValid = await validatePersonalInfo();
                     break;
                 case 1:
                     isValid = validateSecurityInfo();
@@ -375,7 +413,7 @@ export default defineComponent({
                     }
                     break;
                 case 2:
-                    isValid = validateVerificationCode();
+                    isValid = await validateVerificationCode();
                     break;
                 case 3:
                     isValid = validateAgreements();
@@ -402,8 +440,6 @@ export default defineComponent({
         const handleSubmit = async () => {
             try {
                 loading.value = true;
-
-                await signUpConfirm(email.value, confirmPassword.value);
 
                 // Replace with your actual registration logic
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -434,8 +470,10 @@ export default defineComponent({
             try {
                 loading.value = true;
 
+                await resendEmailOtp(email.value);
+                
                 // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // await new Promise(resolve => setTimeout(resolve, 1000));
 
                 toast.add({
                     severity: 'success',
@@ -480,6 +518,7 @@ export default defineComponent({
             verificationCode,
             agreeToTerms,
             receiveMarketingEmails,
+            additionalInfo,
             // Form states
             loading,
             submitted,
