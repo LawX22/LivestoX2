@@ -17,6 +17,7 @@ import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
 import { checkEmailAvailable, checkUsernameAvailable, resendEmailOtp, signUpBuyer, verifyEmailOtp } from '../../lib/aut';
 import imageUrl from '/src/assets/vue.svg';
+import { useAuthStore } from '../../stores/authContext';
 
 export default defineComponent({
     name: 'SignUpPage',
@@ -75,6 +76,8 @@ export default defineComponent({
             { label: 'Non-binary', value: 'non-binary' },
             { label: 'Prefer not to say', value: 'not-specified' }
         ];
+
+        const authStore = useAuthStore();
 
         // Carousel slides data
         const carouselSlides = [
@@ -498,6 +501,9 @@ export default defineComponent({
         };
 
         onMounted(() => {
+            if(authStore.session) {
+                router.push('/main/LivestockMarket');
+            };
             // Show a welcome toast when component mounts
             setTimeout(() => {
                 toast.add({

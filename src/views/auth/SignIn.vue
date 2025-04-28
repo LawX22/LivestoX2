@@ -12,6 +12,7 @@ import ProgressSpinner from 'primevue/progressspinner';
 import Carousel from '../../components/Landing/Carousel.vue';
 import { signIn } from '../../lib/aut';
 import imageUrl from '/src/assets/vue.svg';
+import { useAuthStore } from '../../stores/authContext';
 
 export default defineComponent({
     name: 'SignInPage',
@@ -71,6 +72,8 @@ export default defineComponent({
             }
         ];
 
+        const authStore = useAuthStore();
+
         const handleSubmit = async () => {
             submitted.value = true;
 
@@ -115,6 +118,9 @@ export default defineComponent({
         };
 
         onMounted(() => {
+            if(authStore.session) {
+                router.push('/main/LivestockMarket');
+            };
             // Show a welcome toast when component mounts
             setTimeout(() => {
                 toast.add({

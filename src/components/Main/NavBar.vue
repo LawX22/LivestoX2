@@ -445,7 +445,7 @@ export default defineComponent({
                 </div>
 
                 <!-- Right Side - User Controls -->
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2" v-if="authStore.session">
                     <!-- Search -->
                     <div class="hidden md:flex relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
