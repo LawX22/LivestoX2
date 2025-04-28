@@ -64,6 +64,8 @@ export default defineComponent({
             lastname: '',
             username: '',
             gender: '',
+            phone: '',
+            role: ''
         });
 
         // Form options
@@ -362,7 +364,9 @@ export default defineComponent({
                     firstname: firstName.value,
                     lastname: lastName.value,
                     username: username.value,
-                    gender: "test",
+                    gender: gender.value,
+                    phone: phoneNumber.value,
+                    role: "Buyer"
                 });
 
                 // Simulate API call to send verification code

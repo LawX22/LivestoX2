@@ -6,6 +6,7 @@ import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 import Tooltip from 'primevue/tooltip';
 import Badge from 'primevue/badge';
+import { useAuthStore } from '../../stores/authContext';
 
 interface User {
     id: string;
@@ -69,6 +70,8 @@ export default defineComponent({
             role: 'Farmer',
             lastActive: '2 minutes ago'
         });
+
+        const authStore = useAuthStore();
 
         // Enhanced chat notifications
         const chatNotifications = ref<ChatNotification[]>([
@@ -308,12 +311,14 @@ export default defineComponent({
             // Close all menus before logout
             closeAllMenus();
 
+            authStore.logout();
+
             // Implement logout functionality
             console.log('Logging out...');
             // In a real app, you would call your auth service here
             // Then redirect to login page
             setTimeout(() => {
-                router.push('/login');
+                router.push('/signin');
             }, 500);
         };
 
@@ -327,6 +332,21 @@ export default defineComponent({
                 .toUpperCase()
                 .substring(0, 2);
         };
+
+        onMounted(async () => {
+
+            if (!authStore.session) {
+                await authStore.getSession();
+            }
+
+            let ses = authStore?.user?.user_metadata;
+
+            user.value.name = `${ses?.firstname} ${ses?.lastname}`;
+            user.value.role = ses?.role;
+            user.value.email = ses?.email;
+
+            console.log(ses);
+        });
 
         // Close mobile menu when route changes
         onMounted(() => {
@@ -369,6 +389,7 @@ export default defineComponent({
             markAllNotificationsAsRead,
             handleNotificationClick,
             openChat,
+            authStore,
             logout
         };
     }
@@ -399,13 +420,15 @@ export default defineComponent({
                             <span class="nav-indicator"></span>
                         </router-link>
                         <router-link to="/farmer/FarmerLivestockDashboard"
-                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i class="pi pi-list mr-2"></i> Farmer Dashboard
+                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
+                            v-if="authStore?.user?.user_metadata.role === 'Farmer'">
+                            <i class="pi pi-list mr-2"></i>Dashboard
                             <span class="nav-indicator"></span>
                         </router-link>
                         <router-link to="/main/LivestockDashboard"
-                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i class="pi pi-list mr-2"></i> Buyer Dashboard
+                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
+                            v-if="authStore?.user?.user_metadata.role === 'Buyer'">
+                            <i class="pi pi-list mr-2"></i>Dashboard
                             <span class="nav-indicator"></span>
                         </router-link>
                         <router-link to="/main/LivestockForum"

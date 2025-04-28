@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import NavBar from '../../components/Main/NavBar.vue';
+import { useAuthStore } from '../../stores/authContext';
 
 export default defineComponent({
     name: 'BuyerDashboard',
@@ -132,11 +133,14 @@ export default defineComponent({
             }
         ]);
 
+        const authStore = useAuthStore();
+
         return {
             recentActivities,
             watchlistItems,
             upcomingAuctions,
-            recommendedListings
+            recommendedListings,
+            authStore
         };
     }
 });
@@ -154,7 +158,7 @@ export default defineComponent({
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Welcome Section -->
                 <div class="py-6">
-                    <h2 class="text-2xl font-semibold text-gray-800">Welcome back, John!</h2>
+                    <h2 class="text-2xl font-semibold text-gray-800">Welcome back, {{authStore?.user?.user_metadata.firstname}}</h2>
                     <p class="mt-1 text-sm text-gray-600">Here's what's happening with your livestock purchases today.
                     </p>
                 </div>
