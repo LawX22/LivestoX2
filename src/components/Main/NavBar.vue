@@ -333,6 +333,14 @@ export default defineComponent({
                 .substring(0, 2);
         };
 
+        const handleSignIn = () => {
+            router.push('/signin');
+        };
+
+        const handleSignUp = () => {
+            router.push('/signup');
+        };
+
         onMounted(async () => {
 
             if (!authStore.session) {
@@ -388,6 +396,8 @@ export default defineComponent({
             markAllChatsAsRead,
             markAllNotificationsAsRead,
             handleNotificationClick,
+            handleSignIn,
+            handleSignUp,
             openChat,
             authStore,
             logout
@@ -503,8 +513,8 @@ export default defineComponent({
                                 </div>
                             </div>
                             <div class="p-3 border-t border-gray-100 text-center">
-                                <router-link to="/main/Message" class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    @click="hideChatMenu">
+                                <router-link to="/main/Message"
+                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium" @click="hideChatMenu">
                                     View All Messages
                                 </router-link>
                             </div>
@@ -651,6 +661,23 @@ export default defineComponent({
                             </button>
                         </div>
                     </div>
+
+                    <!-- Mobile Menu Button -->
+                    <Button icon="pi pi-bars"
+                        class="p-button-rounded p-button-text p-button-plain md:hidden hover:bg-blue-50 transition-colors duration-200"
+                        @click="showMobileMenu = !showMobileMenu" />
+                </div>
+                
+                <!-- Auth Links -->
+                <div class="flex items-center space-x-4" v-else>
+                    <a @click="handleSignIn"
+                        class="hidden md:flex text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 text-sm font-medium cursor-pointer">
+                        Sign In
+                    </a>
+                    <a @click="handleSignUp"
+                        class="hidden md:flex bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium cursor-pointer transition-all duration-300">
+                        Sign Up
+                    </a>
 
                     <!-- Mobile Menu Button -->
                     <Button icon="pi pi-bars"
