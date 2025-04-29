@@ -198,7 +198,7 @@ export default defineComponent({
                                 <label for="rememberMe" class="text-gray-700">Remember me</label>
                             </div>
 
-                            <router-link to="/forgot-password"
+                            <router-link to="/forgotpassword"
                                 class="text-green-600 hover:text-green-800 font-medium transition-colors">
                                 Forgot password?
                             </router-link>

@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 // Auth Pages
 import SignIn from '../views/auth/SignIn.vue';
 import SignUp from '../views/auth/SignUp.vue';
+import ForgotPassword from '../views/auth/ForgotPassword.vue';
 import FarmerUpgradeAccount from '../views/auth/FarmerUpgradeAccount.vue';
 
 // Admin Pages
@@ -29,6 +30,7 @@ const routes = [
   // Auth Routes
   { path: '/signin', component: SignIn, name: 'SignIn' },
   { path: '/signup', component: SignUp, name: 'SignUp' },
+  { path: '/forgotpassword', component: ForgotPassword, name: 'ForgotPassword' },
   { path: '/FarmerUpgradeAccount', component: FarmerUpgradeAccount, name: 'FarmerUpgradeAccount.vue' },
 
   // Main Routes
