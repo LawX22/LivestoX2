@@ -6,6 +6,7 @@ import Header from '../../components/Main/Market/Header.vue';
 import Cards from '../../components/Main/Market/Cards.vue';
 import FarmerHeader from '../../components/Main/Market/FarmerHeader.vue';
 import Footer from '../../components/Main/Market/Footer.vue'; 
+
 export default defineComponent({
   name: 'LivestockMarket',
   components: {
@@ -16,6 +17,7 @@ export default defineComponent({
     FarmerHeader,
     Footer
   },
+
   setup() {
     const loading = ref(false);
     const filteredListings = ref([]);
@@ -209,7 +211,10 @@ export default defineComponent({
         </div> -->
         <div class="main-content">
           <!-- <Header :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
+          
           <FarmerHeader :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+
+
           <Cards :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
         </div>
       </div>
