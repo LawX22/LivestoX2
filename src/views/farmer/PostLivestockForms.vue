@@ -84,6 +84,10 @@ watch(category, (newCategory) => {
 });
 
 // Methods
+const goBack = () => {
+  window.location.href = '/main/LivestockMarket';
+};
+
 const nextStep = () => {
   if (currentStep.value < totalSteps && currentStepValid.value) {
     currentStep.value++;
@@ -201,385 +205,613 @@ const editForm = () => {
 
 const getDeliveryOptionLabel = (value: string) => deliveryOptionItems.value.find(item => item.value === value)?.label || '';
 const getDeliveryOptionIcon = (value: string) => deliveryOptionItems.value.find(item => item.value === value)?.icon || '';
-const formatPrice = (value: number | null) => value === null ? "₱0.00" : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+const formatPrice = (value: number | null) => value === null ? "$0.00" : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 const getHealthStatusColor = (status: string) => ({
   excellent: 'text-green-600', good: 'text-green-600', fair: 'text-yellow-600'
 }[status] || 'text-gray-600');
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-50 to-green-900 font-sans antialiased text-gray-900">
-    <div class="container mx-auto py-8 px-4 lg:px-8">
-      <div class="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <!-- Header -->
-        <div class="relative bg-green-800 py-10 px-8">
-          <div class="absolute top-0 left-0 w-full h-full opacity-10">
-            <div
-              class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1516467508483-a7212febe31a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center">
-            </div>
-          </div>
+  <div
+    class="min-h-screen bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 font-sans antialiased text-gray-900">
+    <!-- Back button -->
+    <div class="fixed top-4 left-4 z-50">
+      <button @click="goBack"
+        class="flex items-center gap-2 bg-white bg-opacity-90 hover:bg-opacity-100 text-green-800 px-4 py-2 rounded-full shadow-lg transition-all duration-300 font-medium transform hover:scale-105">
+        <span class="i-heroicons-arrow-left text-lg"></span>
+        <span>Back to Market</span>
+      </button>
+    </div>
 
-          <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
-            <div class="mb-6 md:mb-0">
-              <h1 class="text-4xl font-bold tracking-tight text-white">
-                Livestock <span class="text-green-300">Marketplace</span>
-              </h1>
-              <p class="mt-2 text-green-200 max-w-md">
-                Create a premium listing to showcase your quality livestock to buyers around the country
-              </p>
-            </div>
-
-            <div v-if="!formReviewed" class="bg-white/10 backdrop-blur-md rounded-xl p-4">
-              <div class="flex items-center justify-between">
-                <div class="flex flex-col">
-                  <span class="text-xs font-medium text-green-200">STEP</span>
-                  <span class="text-2xl font-bold text-white">{{ currentStep }} <span class="text-green-300">/ {{
-                      totalSteps }}</span></span>
-                </div>
-                <div class="h-12 w-px bg-green-300/30 mx-4"></div>
-                <div class="flex flex-col">
-                  <span class="text-xs font-medium text-green-200">PROGRESS</span>
-                  <div class="mt-1 w-32 bg-green-800/50 rounded-full h-2.5">
-                    <div class="bg-green-300 h-2.5 rounded-full" :style="`width: ${progressPercentage}%`"></div>
-                  </div>
-                </div>
-              </div>
+    <!-- Fixed sidebar and main content layout -->
+    <div class="flex flex-col lg:flex-row">
+      <!-- Sidebar - Fixed on large screens -->
+      <div class="lg:w-80 lg:fixed lg:top-0 lg:left-0 lg:bottom-0 bg-white lg:shadow-xl z-20 border-r border-green-100">
+        <!-- Brand -->
+        <div class="px-6 py-8 bg-gradient-to-r from-green-700 to-green-900 text-white">
+          <div class="flex items-center space-x-3">
+            <span class="i-heroicons-square-3-stack-3d text-4xl text-green-200"></span>
+            <div>
+              <h1 class="text-2xl font-bold">Livestock Market</h1>
+              <p class="text-green-200 text-sm">Premium Listing Portal</p>
             </div>
           </div>
         </div>
 
-        <!-- Main Content Area -->
-        <div class="p-6 md:p-10">
-          <!-- Form Steps Navigation -->
-          <div v-if="!formReviewed" class="mb-10">
-            <div class="grid grid-cols-5 gap-2">
-              <button v-for="(step, index) in stepsItems" :key="index" @click="goToStep(index + 1)" :class="[
-                'flex flex-col items-center justify-center py-4 rounded-xl transition-all',
-                currentStep === index + 1
-                  ? 'bg-green-100 text-green-900'
-                  : index + 1 < currentStep
-                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    : 'bg-gray-50 text-gray-400'
-              ]">
-                <div :class="[
-                  'w-10 h-10 flex items-center justify-center rounded-full mb-1',
+        <!-- Progress indicator -->
+        <div class="p-6 border-b border-gray-100">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm font-medium text-gray-600">LISTING PROGRESS</span>
+            <span class="text-sm font-bold text-green-600">{{ Math.round(progressPercentage) }}%</span>
+          </div>
+          <div class="h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+            <div class="h-full bg-gradient-to-r from-green-500 to-teal-500 transition-all duration-500 rounded-full"
+              :style="`width: ${progressPercentage}%`"></div>
+          </div>
+          <div class="mt-2 text-xs font-medium text-gray-500 flex justify-between">
+            <span>Step {{ currentStep }} of {{ totalSteps }}</span>
+            <span v-if="progressPercentage === 100" class="text-green-600">Ready for review!</span>
+          </div>
+        </div>
+
+        <!-- Step navigation -->
+        <nav class="p-4">
+          <ul class="space-y-2">
+            <li v-for="(step, index) in stepsItems" :key="index">
+              <button @click="goToStep(index + 1)"
+                :disabled="index + 1 > currentStep && !stepValidation[index + 1 as keyof typeof stepValidation]" :class="[
+                  'w-full flex items-center py-3 px-4 rounded-xl transition-all duration-300',
                   currentStep === index + 1
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-gradient-to-r from-green-600 to-green-700 text-white font-medium shadow-md'
                     : index + 1 < currentStep
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-gray-200 text-gray-500'
+                      ? 'bg-green-50 text-green-800 hover:bg-green-100'
+                      : 'text-gray-500 hover:bg-gray-100'
                 ]">
-                  <span v-if="index + 1 < currentStep" class="i-heroicons-check text-lg"></span>
-                  <span v-else class="text-sm font-bold">{{ index + 1 }}</span>
-                </div>
-                <div class="text-xs font-medium">{{ step.title }}</div>
+                <span
+                  :class="[step.icon, 'mr-3 text-xl', currentStep === index + 1 ? 'text-white' : 'text-green-600']"></span>
+                <span>{{ step.title }}</span>
+
+                <span v-if="index + 1 < currentStep" class="ml-auto i-heroicons-check-circle text-green-500"></span>
+                <span v-else-if="index + 1 === currentStep" class="ml-auto w-2 h-2 rounded-full bg-white"></span>
               </button>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Tips section -->
+        <div class="mx-4 mt-6 p-4 bg-amber-50 rounded-xl border border-amber-100">
+          <h4 class="font-medium text-amber-800 flex items-center mb-2">
+            <span class="i-heroicons-light-bulb text-amber-600 mr-2"></span>
+            Listing Tips
+          </h4>
+          <p class="text-sm text-amber-700">
+            High-quality listings with clear photos and detailed descriptions get up to 3x more buyer interest.
+          </p>
+        </div>
+      </div>
+
+      <!-- Main content - Adjusts based on sidebar -->
+      <div class="lg:ml-80 w-full lg:px-10 py-8">
+        <div class="max-w-4xl mx-auto">
+          <!-- Header -->
+          <div class="mb-8">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-white drop-shadow-md">Create Livestock Listing</h1>
+                <p class="mt-2 text-lg text-white text-opacity-90">Showcase your quality livestock to buyers nationwide
+                </p>
+              </div>
+
+              <div class="hidden md:block">
+                <img src="/src/assets/Bull.jpg" alt="Livestock illustration"
+                  class="h-20 rounded-xl shadow-xl opacity-95" />
+              </div>
             </div>
           </div>
 
-          <!-- Form Content -->
-          <div v-if="!formReviewed">
-            <!-- Step 1: Basic Information -->
-            <div v-if="currentStep === 1" class="space-y-8">
-              <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-1">
-                <div class="bg-white rounded-xl p-6 md:p-8">
-                  <div class="flex items-center mb-6">
-                    <span class="i-heroicons-identification text-2xl text-green-600 mr-3"></span>
-                    <h2 class="text-2xl font-bold text-gray-900">Basic Information</h2>
+          <!-- Main Form Card -->
+          <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-white border-opacity-30">
+            <!-- Form Review Mode -->
+            <div v-if="formReviewed" class="p-8">
+              <div class="flex items-center justify-between mb-8 pb-5 border-b border-gray-100">
+                <div class="flex items-center">
+                  <span
+                    class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-4 shadow-sm">
+                    <span class="i-heroicons-check text-xl"></span>
+                  </span>
+                  <h2 class="text-2xl font-bold text-gray-800">Review Your Listing</h2>
+                </div>
+                <button @click="editForm"
+                  class="text-green-600 hover:text-green-800 flex items-center text-sm font-medium bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg transition-colors">
+                  <span class="i-heroicons-pencil-square mr-1"></span>
+                  Edit Listing
+                </button>
+              </div>
+
+              <!-- Review Content -->
+              <div class="space-y-8">
+                <!-- Preview card with image -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100">
+                  <div class="aspect-video bg-gray-100 relative">
+                    <img :src="imagePreviewUrls.length ? imagePreviewUrls[0] : '/src/assets/Bull.jpg'"
+                      alt="Listing preview" class="w-full h-full object-cover" />
+                    <div class="absolute top-0 left-0 m-4 flex flex-col gap-2">
+                      <span class="px-3 py-1.5 rounded-full bg-green-600 text-white text-sm font-medium shadow-md">
+                        {{ getCategoryName }}
+                      </span>
+                      <span v-if="certified"
+                        class="px-3 py-1.5 rounded-full bg-blue-600 bg-opacity-80 text-white text-sm font-medium shadow-md flex items-center">
+                        <span class="i-heroicons-badge-check mr-1"></span>
+                        Certified
+                      </span>
+                    </div>
+                  </div>
+                  <div class="p-6">
+                    <h3 class="font-bold text-2xl text-gray-800">{{ title }}</h3>
+                    <div class="flex items-center gap-3 mt-3">
+                      <span class="font-bold text-xl text-green-700">{{ formatPrice(price) }}</span>
+                      <span v-if="negotiable"
+                        class="text-xs bg-green-100 rounded-full px-3 py-1 text-green-800 font-medium">Negotiable</span>
+                      <span v-if="auction"
+                        class="text-xs bg-amber-100 rounded-full px-3 py-1 text-amber-800 font-medium flex items-center">
+                        <span class="i-heroicons-hand-raised mr-1"></span>
+                        Auction
+                      </span>
+                    </div>
+                    <div class="mt-3 flex items-center text-gray-600">
+                      <span class="i-heroicons-map-pin mr-2 text-green-600"></span>
+                      {{ detailedLocation }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Details sections -->
+                <div class="space-y-8">
+                  <!-- Basic Info Section -->
+                  <div class="review-section bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center mb-4 pb-2 border-b border-gray-100">
+                      <span class="i-heroicons-identification mr-2 text-green-600"></span>
+                      Basic Information
+                    </h3>
+                    <div class="grid grid-cols-2 gap-6">
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Category</span>
+                        <div class="flex items-center">
+                          <span class="text-2xl mr-2">{{ getCategoryIcon }}</span>
+                          <span class="font-medium text-gray-800">{{ getCategoryName }}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Breed</span>
+                        <span class="font-medium text-gray-800">{{ getBreedName }}</span>
+                      </div>
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Quantity</span>
+                        <span class="font-medium text-gray-800">{{ quantity }}</span>
+                      </div>
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Features</span>
+                        <div class="flex flex-wrap gap-2">
+                          <span v-if="certified"
+                            class="py-1 px-3 rounded-full bg-green-100 text-green-800 text-xs font-medium">Certified</span>
+                          <span v-if="auction"
+                            class="py-1 px-3 rounded-full bg-amber-100 text-amber-800 text-xs font-medium">Auction</span>
+                          <span v-if="availableImmediate"
+                            class="py-1 px-3 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">Available
+                            Now</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <!-- Listing Title -->
-                  <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">Listing Title <span
+                  <!-- Physical Details Section -->
+                  <div class="review-section bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center mb-4 pb-2 border-b border-gray-100">
+                      <span class="i-heroicons-clipboard-document-list mr-2 text-green-600"></span>
+                      Physical Characteristics
+                    </h3>
+                    <div class="grid grid-cols-3 gap-6">
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Age</span>
+                        <span class="font-medium text-gray-800">{{ age !== null ? `${age} ${ageUnit}` : '—' }}</span>
+                      </div>
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Gender</span>
+                        <span class="font-medium text-gray-800">{{ gender ? gender.charAt(0).toUpperCase() +
+                          gender.slice(1) : '—' }}</span>
+                      </div>
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Weight</span>
+                        <span class="font-medium text-gray-800">{{ weight !== null ? `${weight} ${weightUnit}` : '—'
+                        }}</span>
+                      </div>
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Health Status</span>
+                        <span :class="[healthStatus ? getHealthStatusColor(healthStatus) : '', 'font-medium']">
+                          {{ healthStatus ? healthStatus.charAt(0).toUpperCase() + healthStatus.slice(1) : '—' }}
+                        </span>
+                      </div>
+                      <div>
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Feeding Type</span>
+                        <span class="font-medium text-gray-800">{{ feedingType || '—' }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Delivery Section -->
+                  <div class="review-section bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center mb-4 pb-2 border-b border-gray-100">
+                      <span class="i-heroicons-truck mr-2 text-green-600"></span>
+                      Delivery Options
+                    </h3>
+                    <div>
+                      <div class="flex flex-wrap gap-2 mb-3">
+                        <span v-for="option in deliveryOptions" :key="option"
+                          class="py-1.5 px-3 rounded-full bg-green-100 text-green-800 flex items-center text-sm font-medium">
+                          <span :class="getDeliveryOptionIcon(option)" class="mr-1"></span>
+                          {{ getDeliveryOptionLabel(option) }}
+                        </span>
+                      </div>
+
+                      <div v-if="deliveryOptions.includes('local-delivery') && maxDeliveryDistance !== null"
+                        class="mt-3 bg-gray-50 p-3 rounded-lg">
+                        <span class="text-gray-700 font-medium">Maximum delivery distance:</span>
+                        <span class="text-green-700 font-bold">{{ maxDeliveryDistance }} {{ deliveryDistanceUnit
+                        }}</span>
+                      </div>
+
+                      <div v-if="deliveryRestrictions" class="mt-4">
+                        <span class="text-sm font-medium text-gray-500 block mb-1">Delivery Notes:</span>
+                        <p class="text-gray-700 bg-gray-50 p-3 rounded-lg">{{ deliveryRestrictions }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Description Section -->
+                  <div class="review-section bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center mb-4 pb-2 border-b border-gray-100">
+                      <span class="i-heroicons-document-text mr-2 text-green-600"></span>
+                      Description
+                    </h3>
+                    <p class="text-gray-700 whitespace-pre-line leading-relaxed">{{ description }}</p>
+                  </div>
+
+                  <!-- Media Section -->
+                  <div v-if="imagePreviewUrls.length > 0 || videoPreview"
+                    class="review-section bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center mb-4 pb-2 border-b border-gray-100">
+                      <span class="i-heroicons-photo mr-2 text-green-600"></span>
+                      Media Gallery
+                    </h3>
+
+                    <div v-if="imagePreviewUrls.length > 0" class="mb-6">
+                      <h4 class="text-sm font-medium text-gray-700 mb-3">Images ({{ imagePreviewUrls.length }})</h4>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div v-for="(url, index) in imagePreviewUrls" :key="index"
+                          class="aspect-square rounded-xl overflow-hidden shadow-lg border border-gray-200 transform hover:scale-105 transition-transform">
+                          <img :src="url" class="w-full h-full object-cover" :alt="`Listing image ${index + 1}`" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-if="videoPreview">
+                      <h4 class="text-sm font-medium text-gray-700 mb-3">Video</h4>
+                      <div class="aspect-video rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                        <video controls class="w-full h-full object-cover">
+                          <source :src="videoPreview" type="video/mp4">
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit section -->
+                <div class="pt-8 border-t border-gray-200">
+                  <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                    <button @click="editForm"
+                      class="order-2 md:order-1 px-6 py-3 rounded-xl bg-white text-green-700 border border-green-200 hover:bg-green-50 transition-colors shadow-sm font-medium flex items-center">
+                      <span class="i-heroicons-pencil-square mr-2"></span>
+                      Edit Listing
+                    </button>
+
+                    <button @click="submitForm"
+                      class="order-1 md:order-2 w-full md:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white transition-colors shadow-md font-bold flex items-center justify-center">
+                      <span class="i-heroicons-check-circle mr-2"></span>
+                      Submit Listing
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Form Steps -->
+            <div v-else class="p-8">
+              <!-- Step 1: Basic Info -->
+              <div v-if="currentStep === 1">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                  <span
+                    class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3 shadow-sm text-lg">1</span>
+                  Basic Information
+                </h2>
+
+                <div class="space-y-6">
+                  <!-- Title Field -->
+                  <div>
+                    <label for="title" class="block text-gray-700 font-medium mb-2">Listing Title <span
                         class="text-red-500">*</span></label>
-                    <input v-model="title" type="text" placeholder="e.g. Premium Black Angus Calves - Farm Raised"
-                      maxlength="120"
-                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 transition-all"
-                      required />
-                    <div class="flex justify-between mt-1.5">
-                      <p class="text-sm text-gray-500">Make it descriptive and attention-grabbing</p>
-                      <span class="text-xs text-gray-400">{{ title.length }}/120</span>
-                    </div>
+                    <input v-model="title" type="text" id="title" placeholder="e.g. Premium Angus Breeding Bulls"
+                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" />
                   </div>
 
-                  <!-- Category Selection with Icons -->
-                  <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">
-                      Livestock Category <span class="text-red-500">*</span>
-                    </label>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      <button v-for="cat in categoryOptions" :key="cat.value" type="button"
-                        @click="category = cat.value" :class="[
-                          'p-4 rounded-xl transition-all duration-200 flex flex-col items-center justify-center',
-                          category === cat.value
-                            ? 'bg-green-600 text-white shadow-md transform scale-105'
-                            : `${cat.color} text-gray-700 ${cat.hoverColor} hover:shadow`
+                  <!-- Category Selection -->
+                  <div>
+                    <label class="block text-gray-700 font-medium mb-3">Category <span
+                        class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                      <button v-for="option in categoryOptions" :key="option.value" type="button"
+                        @click="category = option.value" :class="[
+                          'flex items-center p-4 rounded-xl border transition-all',
+                          category === option.value
+                            ? 'border-green-600 bg-green-50 ring-2 ring-green-500 ring-opacity-50'
+                            : 'border-gray-200 hover:border-green-300 ' + option.color + ' ' + option.hoverColor
                         ]">
-                        <span class="text-3xl mb-2">{{ cat.icon }}</span>
-                        <span class="font-medium">{{ cat.label }}</span>
+                        <span class="text-3xl mr-3">{{ option.icon }}</span>
+                        <span :class="[category === option.value ? 'text-green-800' : 'text-gray-700', 'font-medium']">
+                          {{ option.label }}
+                        </span>
                       </button>
                     </div>
                   </div>
 
-                  <!-- Breed Selection with Cards -->
-                  <div v-if="category && availableBreeds.length">
-                    <label class="block text-gray-700 font-medium mb-2">
-                      Breed <span class="text-red-500">*</span>
-                    </label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <button v-for="b in availableBreeds" :key="b.value" @click="breed = b.value" :class="[
-                        'px-4 py-3 rounded-xl border-2 transition-all duration-200',
-                        breed === b.value
-                          ? 'border-green-500 bg-green-50 text-green-700 font-medium shadow'
-                          : 'border-gray-200 hover:border-green-200 hover:bg-green-50/50'
-                      ]">
-                        {{ b.label }}
-                      </button>
+                  <!-- Breed Selection -->
+                  <div v-if="category">
+                    <label for="breed" class="block text-gray-700 font-medium mb-2">Breed <span
+                        class="text-red-500">*</span></label>
+                    <select v-model="breed" id="breed"
+                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white">
+                      <option value="">Select Breed</option>
+                      <option v-for="option in availableBreeds" :key="option.value" :value="option.value">
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Certified, Auction, Available Checkboxes -->
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="flex items-start space-x-3">
+                      <div class="flex items-center h-6 mt-0.5">
+                        <input v-model="certified" id="certified" type="checkbox"
+                          class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500" />
+                      </div>
+                      <div>
+                        <label for="certified" class="font-medium text-gray-800">Certified</label>
+                        <p class="text-sm text-gray-500">Verified health records</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                      <div class="flex items-center h-6 mt-0.5">
+                        <input v-model="auction" id="auction" type="checkbox"
+                          class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500" />
+                      </div>
+                      <div>
+                        <label for="auction" class="font-medium text-gray-800">Auction</label>
+                        <p class="text-sm text-gray-500">Allow bidding</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                      <div class="flex items-center h-6 mt-0.5">
+                        <input v-model="availableImmediate" id="available" type="checkbox"
+                          class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500" />
+                      </div>
+                      <div>
+                        <label for="available" class="font-medium text-gray-800">Available Now</label>
+                        <p class="text-sm text-gray-500">Ready for delivery</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Step 2: Pricing & Quantity -->
-            <div v-if="currentStep === 2" class="space-y-8">
-              <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-1">
-                <div class="bg-white rounded-xl p-6 md:p-8">
-                  <div class="flex items-center mb-6">
-                    <span class="i-heroicons-currency-dollar text-2xl text-green-600 mr-3"></span>
-                    <h2 class="text-2xl font-bold text-gray-900">Pricing Information</h2>
+              <!-- Step 2: Price & Quantity -->
+              <div v-else-if="currentStep === 2">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                  <span
+                    class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3 shadow-sm text-lg">2</span>
+                  Pricing & Quantity
+                </h2>
+
+                <div class="space-y-6">
+                  <!-- Price field -->
+                  <div>
+                    <label for="price" class="block text-gray-700 font-medium mb-2">Price per Unit <span
+                        class="text-red-500">*</span></label>
+                    <div class="flex items-center">
+                      <span class="absolute ml-4 text-gray-500">$</span>
+                      <input v-model="price" type="number" min="0" step="0.01" id="price" placeholder="0.00"
+                        class="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" />
+                    </div>
                   </div>
 
+                  <!-- Negotiable checkbox -->
+                  <div class="flex items-center space-x-3 bg-green-50 p-4 rounded-xl">
+                    <div class="flex items-center h-5">
+                      <input v-model="negotiable" id="negotiable" type="checkbox"
+                        class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500" />
+                    </div>
+                    <div>
+                      <label for="negotiable" class="font-medium text-gray-800">Price is negotiable</label>
+                      <p class="text-sm text-gray-600">Allow buyers to make offers</p>
+                    </div>
+                  </div>
+
+                  <!-- Quantity field -->
+                  <div>
+                    <label for="quantity" class="block text-gray-700 font-medium mb-2">Quantity Available <span
+                        class="text-red-500">*</span></label>
+                    <input v-model="quantity" type="number" min="1" id="quantity"
+                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" />
+                  </div>
+
+                  <!-- Price tips card -->
+                  <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <h4 class="font-medium text-blue-800 flex items-center">
+                      <span class="i-heroicons-information-circle text-blue-600 mr-2"></span>
+                      Pricing Tips
+                    </h4>
+                    <ul class="mt-2 text-sm text-blue-700 space-y-1">
+                      <li class="flex items-start">
+                        <span class="i-heroicons-check-circle text-blue-500 mr-1 mt-0.5"></span>
+                        <span>Research current market prices for similar listings</span>
+                      </li>
+                      <li class="flex items-start">
+                        <span class="i-heroicons-check-circle text-blue-500 mr-1 mt-0.5"></span>
+                        <span>Setting a fair price can lead to faster sales</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 3: Details -->
+              <div v-else-if="currentStep === 3">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                  <span
+                    class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3 shadow-sm text-lg">3</span>
+                  Physical Details
+                </h2>
+
+                <div class="space-y-6">
+                  <!-- Age and Gender -->
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Price -->
                     <div>
-                      <label class="block text-gray-700 font-medium mb-2">
-                        Price <span class="text-red-500">*</span>
-                      </label>
-                      <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                          <span class="text-gray-500">$</span>
-                        </div>
-                        <input v-model.number="price" type="number" min="0" step="0.01" placeholder="0.00"
-                          class="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" />
-                      </div>
-                      <div class="mt-3 flex items-center">
-                        <input type="checkbox" v-model="negotiable" id="negotiable"
-                          class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500" />
-                        <label for="negotiable" class="ml-2 text-gray-700">Price is negotiable</label>
+                      <label for="age" class="block text-gray-700 font-medium mb-2">Age</label>
+                      <div class="flex space-x-3">
+                        <input v-model="age" type="number" min="0" id="age" placeholder="Age"
+                          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" />
+                        <select v-model="ageUnit"
+                          class="w-32 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white">
+                          <option v-for="option in ageUnitOptions" :key="option.value" :value="option.value">
+                            {{ option.label }}
+                          </option>
+                        </select>
                       </div>
                     </div>
 
-                    <!-- Quantity -->
                     <div>
-                      <label class="block text-gray-700 font-medium mb-2">
-                        Quantity <span class="text-red-500">*</span>
-                      </label>
-                      <div class="flex">
-                        <button @click="quantity > 1 ? quantity-- : null" type="button"
-                          class="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-l-xl border border-gray-300">
-                          <span class="i-heroicons-minus text-lg"></span>
-                        </button>
-                        <input v-model.number="quantity" type="number" min="1"
-                          class="w-full px-4 py-3 text-center border-t border-b border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" />
-                        <button @click="quantity++" type="button"
-                          class="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-r-xl border border-gray-300">
-                          <span class="i-heroicons-plus text-lg"></span>
+                      <label for="gender" class="block text-gray-700 font-medium mb-2">Gender</label>
+                      <div class="grid grid-cols-2 gap-3">
+                        <button v-for="option in genderOptions" :key="option.value" type="button"
+                          @click="gender = option.value" :class="[
+                            'flex items-center justify-center p-3 rounded-xl border transition-all',
+                            gender === option.value
+                              ? 'border-green-600 bg-green-50 ring-2 ring-green-500 ring-opacity-50 text-green-800'
+                              : 'border-gray-200 hover:border-green-300 text-gray-700 bg-white'
+                          ]">
+                          {{ option.label }}
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <hr class="my-6 border-gray-200" />
-
+                  <!-- Weight -->
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Additional Options</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div class="relative">
-                        <input type="checkbox" v-model="certified" id="certified" class="sr-only peer" />
-                        <label for="certified"
-                          class="flex p-4 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 peer-checked:border-green-500 peer-checked:bg-green-50">
-                          <div
-                            class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-green-100 text-green-600">
-                            <span class="i-heroicons-check-badge"></span>
-                          </div>
-                          <div>
-                            <h4 class="font-medium text-gray-900">Certified</h4>
-                            <p class="text-xs text-gray-500">Stock with verified quality</p>
-                          </div>
-                        </label>
-                      </div>
-
-                      <div class="relative">
-                        <input type="checkbox" v-model="auction" id="auction" class="sr-only peer" />
-                        <label for="auction"
-                          class="flex p-4 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 peer-checked:border-green-500 peer-checked:bg-green-50">
-                          <div
-                            class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-green-100 text-green-600">
-                            <span class="i-heroicons-hand-raised"></span>
-                          </div>
-                          <div>
-                            <h4 class="font-medium text-gray-900">Auction</h4>
-                            <p class="text-xs text-gray-500">Enable bidding on this listing</p>
-                          </div>
-                        </label>
-                      </div>
-
-                      <div class="relative">
-                        <input type="checkbox" v-model="availableImmediate" id="availableImmediate"
-                          class="sr-only peer" />
-                        <label for="availableImmediate"
-                          class="flex p-4 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 peer-checked:border-green-500 peer-checked:bg-green-50">
-                          <div
-                            class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-green-100 text-green-600">
-                            <span class="i-heroicons-clock"></span>
-                          </div>
-                          <div>
-                            <h4 class="font-medium text-gray-900">Available Now</h4>
-                            <p class="text-xs text-gray-500">Ready for immediate pickup</p>
-                          </div>
-                        </label>
-                      </div>
+                    <label for="weight" class="block text-gray-700 font-medium mb-2">Weight</label>
+                    <div class="flex space-x-3">
+                      <input v-model="weight" type="number" min="0" id="weight" placeholder="Weight"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" />
+                      <select v-model="weightUnit"
+                        class="w-24 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white">
+                        <option v-for="option in weightUnitOptions" :key="option.value" :value="option.value">
+                          {{ option.label }}
+                        </option>
+                      </select>
                     </div>
+                  </div>
+
+                  <!-- Health Status and Feeding -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label for="healthStatus" class="block text-gray-700 font-medium mb-2">Health Status</label>
+                      <select v-model="healthStatus" id="healthStatus"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white">
+                        <option v-for="option in healthStatusOptions" :key="option.value" :value="option.value">
+                          {{ option.label }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label for="feedingType" class="block text-gray-700 font-medium mb-2">Feeding Type</label>
+                      <input v-model="feedingType" type="text" id="feedingType" placeholder="e.g. Grass-fed, Grain-fed"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" />
+                    </div>
+                  </div>
+
+                  <!-- Description field -->
+                  <div>
+                    <label for="description" class="block text-gray-700 font-medium mb-2">Description <span
+                        class="text-red-500">*</span></label>
+                    <textarea v-model="description" id="description" rows="6"
+                      placeholder="Provide detailed information about your livestock..."
+                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"></textarea>
+                    <p class="mt-2 text-sm text-gray-500">Include breed characteristics, health history, temperament,
+                      and any other relevant details</p>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Step 3: Physical & Health Details -->
-            <div v-if="currentStep === 3" class="space-y-8">
-              <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-1">
-                <div class="bg-white rounded-xl p-6 md:p-8">
-                  <div class="flex items-center mb-6">
-                    <span class="i-heroicons-clipboard-document-list text-2xl text-green-600 mr-3"></span>
-                    <h2 class="text-2xl font-bold text-gray-900">Physical & Health Details</h2>
-                  </div>
+              <!-- Step 4: Location & Delivery -->
+              <div v-else-if="currentStep === 4">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                  <span
+                    class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3 shadow-sm text-lg">4</span>
+                  Location & Delivery
+                </h2>
 
-                  <!-- Physical Characteristics -->
-                  <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Physical Characteristics</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <!-- Age -->
-                      <div>
-                        <label class="block text-gray-700 font-medium mb-2">Age</label>
-                        <div class="flex">
-                          <input v-model.number="age" type="number" min="0" placeholder="Age"
-                            class="w-full px-4 py-3 rounded-l-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" />
-                          <select v-model="ageUnit"
-                            class="px-4 py-3 rounded-r-xl border border-gray-300 bg-gray-50 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                            <option v-for="option in ageUnitOptions" :key="option.value" :value="option.value">
-                              {{ option.label }}
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <!-- Gender -->
-                      <div>
-                        <label class="block text-gray-700 font-medium mb-2">Gender</label>
-                        <select v-model="gender"
-                          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                          <option value="">Select Gender</option>
-                          <option v-for="option in genderOptions" :key="option.value" :value="option.value">
-                            {{ option.label }}
-                          </option>
-                        </select>
-                      </div>
-
-                      <!-- Weight -->
-                      <div>
-                        <label class="block text-gray-700 font-medium mb-2">Weight</label>
-                        <div class="flex">
-                          <input v-model.number="weight" type="number" min="0" placeholder="Weight"
-                            class="w-full px-4 py-3 rounded-l-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" />
-                          <select v-model="weightUnit"
-                            class="px-4 py-3 rounded-r-xl border border-gray-300 bg-gray-50 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                            <option v-for="option in weightUnitOptions" :key="option.value" :value="option.value">
-                              {{ option.label }}
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Health Information -->
+                <div class="space-y-6">
+                  <!-- Location field -->
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Health Information</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <!-- Health Status -->
-                      <div>
-                        <label class="block text-gray-700 font-medium mb-2">Health Status</label>
-                        <select v-model="healthStatus"
-                          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                          <option v-for="option in healthStatusOptions" :key="option.value" :value="option.value">
-                            {{ option.label }}
-                          </option>
-                        </select>
-                      </div>
-
-                      <!-- Feeding Type -->
-                      <div>
-                        <label class="block text-gray-700 font-medium mb-2">Feeding Type</label>
-                        <input v-model="feedingType" type="text" placeholder="e.g. Grain-fed, Grass-fed"
-                          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 4: Location & Delivery -->
-            <div v-if="currentStep === 4" class="space-y-8">
-              <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-1">
-                <div class="bg-white rounded-xl p-6 md:p-8">
-                  <div class="flex items-center mb-6">
-                    <span class="i-heroicons-map-pin text-2xl text-green-600 mr-3"></span>
-                    <h2 class="text-2xl font-bold text-gray-900">Location & Description</h2>
+                    <label for="location" class="block text-gray-700 font-medium mb-2">Location <span
+                        class="text-red-500">*</span></label>
+                    <input v-model="detailedLocation" type="text" id="location" placeholder="City, State/Province"
+                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" />
                   </div>
 
-                  <!-- Location -->
-                  <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">
-                      Location <span class="text-red-500">*</span>
-                    </label>
-                    <input v-model="detailedLocation" type="text" placeholder="e.g. Hereford, TX"
-                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" />
-                    <p class="text-sm text-gray-500 mt-1.5">
-                      Add your farm or ranch location (city, state)
-                    </p>
-                  </div>
-
-                  <!-- Delivery Options -->
-                  <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">Delivery Options</label>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div v-for="option in deliveryOptionItems" :key="option.value" class="relative">
-                        <input type="checkbox" :id="option.value" :value="option.value" v-model="deliveryOptions"
-                          class="sr-only peer" />
-                        <label :for="option.value"
-                          class="flex p-4 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 peer-checked:border-green-500 peer-checked:bg-green-50">
-                          <div
-                            class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-green-100 text-green-600">
-                            <span :class="option.icon"></span>
-                          </div>
-                          <div>
-                            <h4 class="font-medium text-gray-900">{{ option.label }}</h4>
-                          </div>
-                        </label>
+                  <!-- Delivery options -->
+                  <div>
+                    <label class="block text-gray-700 font-medium mb-3">Delivery Options</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div v-for="option in deliveryOptionItems" :key="option.value" :class="[
+                        'flex items-center p-4 rounded-xl border cursor-pointer transition-all',
+                        deliveryOptions.includes(option.value)
+                          ? 'border-green-600 bg-green-50 ring-2 ring-green-500 ring-opacity-50'
+                          : 'border-gray-200 hover:border-green-300 bg-white'
+                      ]" @click="deliveryOptions.includes(option.value)
+                        ? deliveryOptions = deliveryOptions.filter(o => o !== option.value)
+                        : deliveryOptions.push(option.value)">
+                        <span
+                          :class="[option.icon, 'mr-3 text-xl', deliveryOptions.includes(option.value) ? 'text-green-600' : 'text-gray-400']"></span>
+                        <span
+                          :class="[deliveryOptions.includes(option.value) ? 'text-green-800' : 'text-gray-700', 'font-medium']">
+                          {{ option.label }}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Max Delivery Distance (conditional) -->
-                  <div v-if="deliveryOptions.includes('local-delivery')" class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">Maximum Delivery Distance</label>
-                    <div class="flex">
-                      <input v-model.number="maxDeliveryDistance" type="number" min="0" placeholder="Distance"
-                        class="w-full px-4 py-3 rounded-l-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" />
+                  <!-- Delivery distance -->
+                  <div v-if="deliveryOptions.includes('local-delivery')">
+                    <label for="deliveryDistance" class="block text-gray-700 font-medium mb-2">Maximum Delivery
+                      Distance</label>
+                    <div class="flex space-x-3">
+                      <input v-model="maxDeliveryDistance" type="number" min="0" id="deliveryDistance"
+                        placeholder="Distance"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" />
                       <select v-model="deliveryDistanceUnit"
-                        class="px-4 py-3 rounded-r-xl border border-gray-300 bg-gray-50 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                        class="w-32 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white">
                         <option v-for="option in deliveryDistanceUnitOptions" :key="option.value" :value="option.value">
                           {{ option.label }}
                         </option>
@@ -587,341 +819,151 @@ const getHealthStatusColor = (status: string) => ({
                     </div>
                   </div>
 
-                  <!-- Delivery Restrictions -->
-                  <div v-if="deliveryOptions.length > 0" class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">Delivery Notes/Restrictions</label>
-                    <textarea v-model="deliveryRestrictions" rows="3" placeholder="Any special delivery requirements or restrictions"
-                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"></textarea>
-                  </div>
-                  
-                  <!-- Description -->
-                  <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-2">
-                      Full Description <span class="text-red-500">*</span>
-                    </label>
-                    <textarea v-model="description" rows="6" placeholder="Provide a detailed description of your livestock..."
-                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"></textarea>
-                    <p class="text-sm text-gray-500 mt-1.5">
-                      Include details about lineage, care history, temperament, and any other relevant information
-                    </p>
+                  <!-- Delivery restrictions -->
+                  <div v-if="deliveryOptions.length > 0">
+                    <label for="deliveryRestrictions" class="block text-gray-700 font-medium mb-2">Delivery
+                      Notes/Restrictions</label>
+                    <textarea v-model="deliveryRestrictions" id="deliveryRestrictions" rows="3"
+                      placeholder="Any special requirements for delivery or pickup..."
+                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"></textarea>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Step 5: Media Upload -->
-            <div v-if="currentStep === 5" class="space-y-8">
-              <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-1">
-                <div class="bg-white rounded-xl p-6 md:p-8">
-                  <div class="flex items-center mb-6">
-                    <span class="i-heroicons-photo text-2xl text-green-600 mr-3"></span>
-                    <h2 class="text-2xl font-bold text-gray-900">Media Upload</h2>
-                  </div>
+              <!-- Step 5: Media -->
+              <div v-else-if="currentStep === 5">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                  <span
+                    class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3 shadow-sm text-lg">5</span>
+                  Photos & Videos
+                </h2>
 
-                  <!-- Image Upload -->
-                  <div class="mb-8">
-                    <label class="block text-gray-700 font-medium mb-2">Image Upload</label>
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
-                      <div v-if="imagePreviewUrls.length < maxImageUploadCount" class="mb-4">
-                        <span class="i-heroicons-photo text-4xl text-gray-400 mb-2"></span>
-                        <h3 class="text-lg font-medium text-gray-700">
-                          Drop images here or <span class="text-green-600">browse</span>
-                        </h3>
-                        <p class="text-sm text-gray-500 mt-1">
-                          High-quality images increase interest in your listing.<br />
-                          Upload up to {{ maxImageUploadCount }} images.
-                        </p>
-                        <input type="file" @change="handleFileUpload" accept="image/*" multiple
-                          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <div class="space-y-8">
+                  <!-- Image upload -->
+                  <div>
+                    <label class="block text-gray-700 font-medium mb-3">Photos ({{ imagePreviewUrls.length }}/{{
+                      maxImageUploadCount }})</label>
+
+                    <div v-if="imagePreviewUrls.length > 0"
+                      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-4">
+                      <div v-for="(url, index) in imagePreviewUrls" :key="index"
+                        class="aspect-square relative rounded-xl overflow-hidden shadow-sm border border-gray-200 group">
+                        <img :src="url" class="w-full h-full object-cover" :alt="`Uploaded image ${index + 1}`" />
+                        <button @click="removeImage(index)"
+                          class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-80 hover:opacity-100 transition-opacity">
+                          <span class="i-heroicons-x-mark text-base"></span>
+                        </button>
                       </div>
+                    </div>
 
-                      <!-- Image Preview -->
-                      <div v-if="imagePreviewUrls.length > 0" class="mt-4">
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div v-for="(url, index) in imagePreviewUrls" :key="index"
-                            class="relative group aspect-square rounded-lg overflow-hidden">
-                            <img :src="url" class="w-full h-full object-cover" />
-                            <div
-                              class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <button @click="removeImage(index)"
-                                class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600">
-                                <span class="i-heroicons-trash text-lg"></span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+                    <div v-if="imagePreviewUrls.length < maxImageUploadCount"
+                      class="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors p-6">
+                      <label class="flex flex-col items-center cursor-pointer w-full">
+                        <span class="i-heroicons-photo text-5xl text-gray-400"></span>
+                        <span class="mt-2 text-gray-600 font-medium">Upload Photos</span>
+                        <span class="text-sm text-gray-500">Click to browse your files</span>
+                        <input type="file" class="hidden" accept="image/*" multiple @change="handleFileUpload" />
+                      </label>
+                    </div>
 
-                        <div class="mt-4 flex justify-between">
-                          <span class="text-sm text-gray-500">{{ imagePreviewUrls.length }} / {{ maxImageUploadCount }}
-                            images</span>
-                          <button @click="clearImages" class="text-sm text-red-500 hover:text-red-700">
-                            Clear all
-                          </button>
-                        </div>
-                      </div>
+                    <p class="mt-2 text-sm text-gray-500">Add up to {{ maxImageUploadCount }} high-quality photos of
+                      your livestock</p>
+
+                    <div v-if="imagePreviewUrls.length > 0" class="flex justify-end mt-3">
+                      <button @click="clearImages"
+                        class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center">
+                        <span class="i-heroicons-trash mr-1"></span>
+                        Clear all photos
+                      </button>
                     </div>
                   </div>
 
-                  <!-- Video Upload -->
+                  <!-- Video upload -->
                   <div>
-                    <label class="block text-gray-700 font-medium mb-2">Video Upload (Optional)</label>
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-6">
-                      <div v-if="!videoPreview" class="text-center">
-                        <span class="i-heroicons-video-camera text-4xl text-gray-400 mb-2"></span>
-                        <h3 class="text-lg font-medium text-gray-700">
-                          Drop video here or <span class="text-green-600">browse</span>
-                        </h3>
-                        <p class="text-sm text-gray-500 mt-1">
-                          Add a video to showcase your livestock in action
-                        </p>
-                        <input type="file" @change="handleVideoUpload" accept="video/*"
-                          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                      </div>
+                    <label class="block text-gray-700 font-medium mb-3">Video (Optional)</label>
 
-                      <!-- Video Preview -->
-                      <div v-if="videoPreview" class="mt-4">
-                        <video :src="videoPreview" controls class="w-full h-auto rounded-lg"></video>
-                        <button @click="clearVideo" class="mt-2 text-sm text-red-500 hover:text-red-700">
+                    <div v-if="videoPreview" class="mb-4">
+                      <div class="aspect-video rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black">
+                        <video controls class="w-full h-full">
+                          <source :src="videoPreview" type="video/mp4">
+                          Your browser does not support video playback.
+                        </video>
+                      </div>
+                      <div class="flex justify-end mt-2">
+                        <button @click="clearVideo"
+                          class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center">
+                          <span class="i-heroicons-trash mr-1"></span>
                           Remove video
                         </button>
                       </div>
                     </div>
+
+                    <div v-if="!videoPreview"
+                      class="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors p-6">
+                      <label class="flex flex-col items-center cursor-pointer w-full">
+                        <span class="i-heroicons-film text-5xl text-gray-400"></span>
+                        <span class="mt-2 text-gray-600 font-medium">Upload Video</span>
+                        <span class="text-sm text-gray-500">Click to browse your files</span>
+                        <input type="file" class="hidden" accept="video/*" @change="handleVideoUpload" />
+                      </label>
+                    </div>
+
+                    <p class="mt-2 text-sm text-gray-500">Upload a video showcasing your livestock (max 100MB)</p>
                   </div>
+
+                  <!-- Tips card -->
+                  <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <h4 class="font-medium text-amber-800 flex items-center">
+                      <span class="i-heroicons-light-bulb text-amber-600 mr-2"></span>
+                      Media Tips
+                    </h4>
+                    <ul class="mt-2 text-sm text-amber-700 space-y-1">
+                      <li class="flex items-start">
+                        <span class="i-heroicons-check-circle text-amber-500 mr-1 mt-0.5"></span>
+                        <span>Use natural lighting for best results</span>
+                      </li>
+                      <li class="flex items-start">
+                        <span class="i-heroicons-check-circle text-amber-500 mr-1 mt-0.5"></span>
+                        <span>Include multiple angles of the livestock</span>
+                      </li>
+                      <li class="flex items-start">
+                        <span class="i-heroicons-check-circle text-amber-500 mr-1 mt-0.5"></span>
+                        <span>Videos showing movement and behavior increase buyer interest</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Navigation Buttons -->
+              <div class="mt-12 pt-6 border-t border-gray-200">
+                <div class="flex justify-between">
+                  <button @click="prevStep" v-if="currentStep > 1"
+                    class="px-6 py-3 rounded-xl bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm font-medium flex items-center">
+                    <span class="i-heroicons-arrow-left mr-2"></span>
+                    Back
+                  </button>
+                  <div v-else></div>
+
+                  <button v-if="currentStep < totalSteps" @click="nextStep" :disabled="!currentStepValid" :class="[
+                    'px-6 py-3 rounded-xl shadow-sm font-medium flex items-center',
+                    currentStepValid
+                      ? 'bg-green-600 hover:bg-green-700 text-white transition-colors'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ]">
+                    Continue
+                    <span class="i-heroicons-arrow-right ml-2"></span>
+                  </button>
+
+                  <button v-else @click="proceedToReview"
+                    class="px-8 py-4 rounded-xl bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white transition-colors shadow-md font-bold flex items-center">
+                    Review Listing
+                    <span class="i-heroicons-check-circle ml-2"></span>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- Form Review -->
-          <div v-if="formReviewed" class="space-y-8">
-            <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-1">
-              <div class="bg-white rounded-xl p-6 md:p-8">
-                <div class="flex items-center mb-6">
-                  <span class="i-heroicons-check-circle text-2xl text-green-600 mr-3"></span>
-                  <h2 class="text-2xl font-bold text-gray-900">Review Your Listing</h2>
-                </div>
-
-                <div class="bg-green-50 rounded-xl p-4 mb-6">
-                  <div class="flex items-center text-green-800">
-                    <span class="i-heroicons-information-circle text-xl mr-2"></span>
-                    <p>Please review your listing details before submitting. All information is correct and ready to be published?</p>
-                  </div>
-                </div>
-
-                <!-- Review Content -->
-                <div class="space-y-6">
-                  <!-- Basic Information -->
-                  <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <h3 class="font-semibold text-gray-800">Basic Information</h3>
-                    </div>
-                    <div class="p-4">
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Title</h4>
-                          <p class="text-gray-900">{{ title }}</p>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Category</h4>
-                          <div class="flex items-center">
-                            <span class="text-xl mr-2">{{ getCategoryIcon }}</span>
-                            <span>{{ getCategoryName }}</span>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Breed</h4>
-                          <p class="text-gray-900">{{ getBreedName }}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Pricing -->
-                  <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <h3 class="font-semibold text-gray-800">Pricing</h3>
-                    </div>
-                    <div class="p-4">
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Price</h4>
-                          <p class="text-gray-900">{{ formatPrice(price) }}
-                            <span v-if="negotiable" class="text-sm text-gray-500 ml-1">(Negotiable)</span>
-                          </p>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Quantity</h4>
-                          <p class="text-gray-900">{{ quantity }}</p>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Options</h4>
-                          <div class="flex flex-wrap gap-2 mt-1">
-                            <span v-if="certified" class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">Certified</span>
-                            <span v-if="auction" class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-md">Auction</span>
-                            <span v-if="availableImmediate" class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">Available Now</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Physical & Health Details -->
-                  <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <h3 class="font-semibold text-gray-800">Physical & Health Details</h3>
-                    </div>
-                    <div class="p-4">
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Age</h4>
-                          <p class="text-gray-900">{{ age !== null ? `${age} ${ageUnit}` : 'Not specified' }}</p>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Gender</h4>
-                          <p class="text-gray-900">{{ gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : 'Not specified' }}</p>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Weight</h4>
-                          <p class="text-gray-900">{{ weight !== null ? `${weight} ${weightUnit}` : 'Not specified' }}</p>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Health Status</h4>
-                          <p :class="[healthStatus ? getHealthStatusColor(healthStatus) : 'text-gray-500']">
-                            {{ healthStatus ? healthStatus.charAt(0).toUpperCase() + healthStatus.slice(1) : 'Not specified' }}
-                          </p>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Feeding Type</h4>
-                          <p class="text-gray-900">{{ feedingType || 'Not specified' }}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Location & Delivery -->
-                  <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <h3 class="font-semibold text-gray-800">Location & Delivery</h3>
-                    </div>
-                    <div class="p-4">
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Location</h4>
-                          <p class="text-gray-900">{{ detailedLocation }}</p>
-                        </div>
-                        <div>
-                          <h4 class="text-sm font-medium text-gray-500">Delivery Options</h4>
-                          <div class="flex flex-wrap gap-2 mt-1">
-                            <span v-for="option in deliveryOptions" :key="option"
-                              class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md flex items-center">
-                              <span :class="getDeliveryOptionIcon(option)" class="mr-1"></span>
-                              {{ getDeliveryOptionLabel(option) }}
-                            </span>
-                          </div>
-                          <div v-if="deliveryOptions.includes('local-delivery') && maxDeliveryDistance !== null"
-                            class="mt-2 text-sm text-gray-700">
-                            Maximum delivery distance: {{ maxDeliveryDistance }} {{ deliveryDistanceUnit }}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div v-if="deliveryRestrictions" class="mt-4">
-                        <h4 class="text-sm font-medium text-gray-500">Delivery Notes/Restrictions</h4>
-                        <p class="text-gray-900">{{ deliveryRestrictions }}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Description -->
-                  <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <h3 class="font-semibold text-gray-800">Description</h3>
-                    </div>
-                    <div class="p-4">
-                      <p class="text-gray-900 whitespace-pre-line">{{ description }}</p>
-                    </div>
-                  </div>
-
-                  <!-- Media Preview -->
-                  <div v-if="imagePreviewUrls.length > 0 || videoPreview" class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <h3 class="font-semibold text-gray-800">Media</h3>
-                    </div>
-                    <div class="p-4">
-                      <div v-if="imagePreviewUrls.length > 0">
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Images ({{ imagePreviewUrls.length }})</h4>
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div v-for="(url, index) in imagePreviewUrls" :key="index"
-                            class="relative aspect-square rounded-lg overflow-hidden">
-                            <img :src="url" class="w-full h-full object-cover" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div v-if="videoPreview" class="mt-4">
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Video</h4>
-                        <video :src="videoPreview" controls class="w-full h-auto rounded-lg"></video>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Navigation Buttons -->
-          <div class="mt-8 flex justify-between">
-            <button v-if="currentStep > 1 && !formReviewed" @click="prevStep"
-              class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-xl flex items-center">
-              <span class="i-heroicons-arrow-left text-lg mr-2"></span>
-              Back
-            </button>
-            <div v-else></div>
-
-            <div class="flex space-x-4">
-              <button v-if="formReviewed" @click="editForm"
-                class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-xl flex items-center">
-                <span class="i-heroicons-pencil text-lg mr-2"></span>
-                Edit Listing
-              </button>
-
-              <button v-if="currentStep < totalSteps && !formReviewed" :disabled="!currentStepValid"
-                @click="nextStep" :class="[
-                  'px-6 py-3 rounded-xl font-medium flex items-center',
-                  currentStepValid 
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                ]">
-                Next
-                <span class="i-heroicons-arrow-right text-lg ml-2"></span>
-              </button>
-
-              <button v-if="currentStep === totalSteps && !formReviewed" :disabled="!currentStepValid"
-                @click="proceedToReview" :class="[
-                  'px-6 py-3 rounded-xl font-medium flex items-center',
-                  currentStepValid 
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                ]">
-                Review Listing
-                <span class="i-heroicons-check text-lg ml-2"></span>
-              </button>
-
-              <button v-if="formReviewed" @click="submitForm"
-                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl flex items-center">
-                <span class="i-heroicons-paper-airplane text-lg mr-2"></span>
-                Submit Listing
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 text-center text-sm text-gray-500">
-          <p>
-            Livestock Marketplace © {{ new Date().getFullYear() }} | 
-            Need help? <a href="#" class="text-green-600 hover:text-green-700">Contact Support</a>
-          </p>
         </div>
       </div>
     </div>
