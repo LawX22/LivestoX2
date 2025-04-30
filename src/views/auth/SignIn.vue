@@ -9,10 +9,10 @@ import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
 import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
-import Carousel from '../../components/Landing/Carousel.vue';
 import { signIn } from '../../lib/aut';
 import imageUrl from '/src/assets/vue.svg';
 import { useAuthStore } from '../../stores/authContext';
+import LeftPanel from '../../components/Landing/LeftPanel.vue';
 
 export default defineComponent({
     name: 'SignInPage',
@@ -24,7 +24,7 @@ export default defineComponent({
         Checkbox,
         Divider,
         ProgressSpinner,
-        Carousel
+        LeftPanel
     },
     setup() {
         const router = useRouter();
@@ -147,94 +147,188 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="flex min-h-screen bg-gradient-to-b from-green-200 to-green-900">
+    <div class="flex min-h-screen bg-gradient-to-br from-blue-100 via-sky-100 to-blue-200">
         <Toast position="top-right" />
-        <div class="flex flex-col md:flex-row bg-white rounded-3xl shadow-2xl m-auto w-full max-w-6xl overflow-hidden">
-            <!-- Left side with form -->
-            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative">
-                <!-- Background pattern -->
-                <div class="absolute inset-0 opacity-5 z-0">
-                    <div class="absolute inset-0"
-                        style="background-image: url('data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%239AE6B4\' fill-opacity=\'0.4\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E');">
-                    </div>
-                </div>
 
-                <!-- Content -->
-                <div class="relative z-10">
-                    <div class="mb-8 text-center">
-                        <div class="flex justify-center items-center mb-6">
-                            <div class="bg-green-500 bg-opacity-20 p-4 rounded-full shadow-md">
-                                <img :src="logoPath" alt="Logo" class="w-16 h-16 object-contain">
-                            </div>
-                        </div>
+        <!-- Main container with enhanced modern effect -->
+        <div class="w-full max-w-7xl mx-auto my-10 px-4 sm:px-6">
 
-                        <h1 class="text-3xl font-bold mb-3 text-green-700">Welcome back</h1>
-                        <p class="text-gray-600">Please enter your details to access your account.</p>
-                    </div>
+            <!-- Card with elegant shadow and layered effect -->
+            <div class="relative bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 hover:shadow-blue-100">
 
-                    <form @submit.prevent="handleSubmit" class="w-full max-w-md mx-auto">
-                        <div class="mb-6">
-                            <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
-                            <InputText id="email" v-model="email" placeholder="Enter your email address"
-                                class="w-full p-3" :class="{ 'p-invalid': submitted && !email }"
-                                aria-describedby="email-error" />
-                            <small id="email-error" v-if="submitted && !email" class="p-error block mt-1">Email
-                                is required.</small>
-                        </div>
+                <!-- Top accent bar with enhanced gradient -->
+                <div class="h-3 bg-gradient-to-r from-blue-500 via-sky-500 to-blue-600"></div>
 
-                        <div class="mb-6">
-                            <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
-                            <Password id="password" v-model="password" placeholder="Enter your password" class="w-full"
-                                :feedback="true" toggleMask :class="{ 'p-invalid': submitted && !password }"
-                                aria-describedby="password-error" inputClass="p-3" />
-                            <small id="password-error" v-if="submitted && !password" class="p-error block mt-1">Password
-                                is required.</small>
-                        </div>
+                <!-- Content container -->
+                <div class="flex flex-col lg:flex-row">
 
-                        <div class="flex justify-between mb-6">
-                            <div class="flex items-center">
-                                <Checkbox v-model="rememberMe" inputId="rememberMe" binary
-                                    class="mr-2 border border-gery-500 rounded-md" />
-                                <label for="rememberMe" class="text-gray-700">Remember me</label>
+                    <!-- Left side panel component -->
+                    <LeftPanel :logoPath="logoPath" />
+
+                    <!-- Right side - Form content -->
+                    <div class="lg:w-7/12 p-6 lg:p-10">
+                        <!-- Form content -->
+                        <form @submit.prevent="handleSubmit" class="max-w-xl mx-auto">
+                            <!-- Header -->
+                            <div class="text-center mb-8">
+                                <!-- Visible on mobile only -->
+                                <div class="flex justify-center items-center mb-6 lg:hidden">
+                                    <div class="bg-blue-100 p-4 rounded-full shadow-md">
+                                        <img :src="logoPath" alt="Logo" class="w-16 h-16 object-contain">
+                                    </div>
+                                </div>
+
+                                <h2 class="text-3xl font-bold mb-2 relative inline-block mt-20">
+                                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-sky-500">Welcome Back</span>
+                                    <div class="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-transparent rounded-full opacity-50"></div>
+                                </h2>
+                                <p class="text-gray-500">Please enter your login credentials to continue</p>
                             </div>
 
-                            <router-link to="/forgotpassword"
-                                class="text-green-600 hover:text-green-800 font-medium transition-colors">
-                                Forgot password?
-                            </router-link>
-                        </div>
+                            <!-- Introduction card with enhanced design -->
+                            <div class="bg-gradient-to-r from-blue-50 to-sky-50 p-5 rounded-2xl border border-blue-100 mb-8 shadow-sm hover:shadow-md transition-all duration-300">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-sm">
+                                        <i class="pi pi-lock-open text-white text-lg"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h3 class="font-semibold text-blue-800">Secure Login</h3>
+                                        <p class="text-sm text-blue-700 mt-1">Access your LivestoX account securely</p>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <Button type="submit" label="Sign In" class="w-full mb-6 p-3 shadow-lg" :loading="loading" />
+                            <!-- Email field with enhanced design -->
+                            <div class="form-group mb-6">
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5 items-center">
+                                    <i class="pi pi-info-circle text-blue-500 mr-1 text-xs"></i>
+                                    Email Address <span class="text-blue-500 ml-1">*</span>
+                                </label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="pi pi-envelope text-blue-500 opacity-70 group-hover:opacity-100 transition-opacity"></i>
+                                    </div>
+                                    <InputText id="email" v-model="email" type="email" placeholder="Your email address"
+                                        class="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all group-hover:border-blue-300"
+                                        :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !email }" />
+                                </div>
+                                <small v-if="submitted && !email" class="text-red-500 text-xs mt-1 block">Email is required</small>
+                            </div>
 
-                        <Divider align="center">
-                            <span class="p-tag bg-white text-gray-500 border border-gray-200 px-3 py-1 rounded-full">Or
-                                continue with</span>
-                        </Divider>
+                            <!-- Password field with enhanced design -->
+                            <div class="form-group mb-6">
+                                <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5  items-center">
+                                    <i class="pi pi-info-circle text-blue-500 mr-1 text-xs"></i>
+                                    Password <span class="text-blue-500 ml-1">*</span>
+                                </label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                        <i class="pi pi-lock text-blue-500 opacity-70 group-hover:opacity-100 transition-opacity"></i>
+                                    </div>
+                                    <Password id="password" v-model="password" toggleMask
+                                        inputClass="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all group-hover:border-blue-300"
+                                        :class="{ 'p-invalid': submitted && !password, 'w-full': true }"
+                                        placeholder="Enter your password" :feedback="false"
+                                        :inputProps="{ style: { width: '100%' } }" />
+                                </div>
+                                <small v-if="submitted && !password" class="text-red-500 text-xs mt-1 block">Password is required</small>
+                            </div>
 
-                        <div class="flex justify-center gap-4 my-8">
-                            <Button type="button" icon="pi pi-google" class="p-button-outlined p-button-rounded p-3" />
-                            <Button type="button" icon="pi pi-facebook"
-                                class="p-button-outlined p-button-rounded p-3" />
-                            <Button type="button" icon="pi pi-apple" class="p-button-outlined p-button-rounded p-3" />
-                        </div>
+                            <!-- Remember me and forgot password with enhanced design -->
+                            <div class="flex justify-between items-center mb-8">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 relative">
+                                        <!-- Visible border container with better hover effect -->
+                                        <div class="w-6 h-6 border-2 border-blue-400 rounded-md bg-white shadow-sm flex items-center justify-center hover:border-blue-500 transition-colors">
+                                            <!-- Actual checkbox positioned absolutely -->
+                                            <Checkbox id="rememberMe" v-model="rememberMe" :binary="true"
+                                                class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer" />
+                                            <!-- Custom visible checkbox indicator -->
+                                            <div v-if="rememberMe" class="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
+                                                <i class="pi pi-check text-white text-xs"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <label for="rememberMe" class="ml-3 text-sm text-gray-700 select-none hover:text-blue-600 cursor-pointer transition-colors">
+                                        Remember me
+                                    </label>
+                                </div>
 
-                        <div class="text-center mt-6">
-                            <p class="text-gray-700">
-                                Don't have an account?
-                                <router-link to="/signup"
-                                    class="text-green-600 hover:text-green-800 font-medium ml-1 transition-colors">
-                                    Create Account
+                                <router-link to="/forgotpassword" class="text-blue-600 hover:text-blue-800 font-medium text-sm hover:underline transition-all">
+                                    Forgot password?
                                 </router-link>
-                            </p>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                            </div>
 
-            <!-- Right side with carousel component -->
-            <div class="w-full md:w-1/2">
-                <Carousel :slides="carouselSlides" :logo-path="logoPath" />
+                            <!-- Login Button with centered text and enhanced design -->
+                            <Button type="submit" :loading="loading"
+                                class="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-sky-600 hover:from-blue-600 hover:to-sky-700 text-white shadow-md hover:shadow-lg transition-all mb-8 flex items-center justify-center">
+                                <span class="flex items-center justify-center w-full">
+                                    <i class="pi pi-sign-in mr-2"></i>
+                                    <span>Sign In</span>
+                                </span>
+                            </Button>
+
+                            <!-- Divider with enhanced design -->
+                            <div class="relative flex items-center justify-center my-8">
+                                <div class="absolute w-full border-t border-gray-300"></div>
+                                <div class="relative bg-white px-4 text-sm text-gray-500 font-medium">Or continue with</div>
+                            </div>
+
+                            <!-- Social login options with enhanced design -->
+                            <div class="flex justify-center gap-4 mb-8">
+                                <Button type="button" class="p-button-outlined p-button-rounded w-12 h-12 flex items-center justify-center bg-white border-2 border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all">
+                                    <i class="pi pi-google"></i>
+                                </Button>
+                                <Button type="button" class="p-button-outlined p-button-rounded w-12 h-12 flex items-center justify-center bg-white border-2 border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all">
+                                    <i class="pi pi-facebook"></i>
+                                </Button>
+                                <Button type="button" class="p-button-outlined p-button-rounded w-12 h-12 flex items-center justify-center bg-white border-2 border-gray-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all">
+                                    <i class="pi pi-apple"></i>
+                                </Button>
+                            </div>
+
+                            <!-- Sign up link with enhanced design -->
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">
+                                    Don't have an account?
+                                    <router-link to="/signup" class="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-all ml-1">
+                                        Create Account
+                                    </router-link>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Bottom accent bar -->
+                <div class="h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
             </div>
         </div>
     </div>
 </template>
+
+<style>
+.p-inputtext:focus {
+    box-shadow: none !important;
+    border-color: #3b82f6 !important;
+}
+
+.p-password-panel {
+    border-radius: 0.75rem !important;
+}
+
+/* Add smooth transitions */
+.p-inputtext, .p-button {
+    transition: all 0.3s ease;
+}
+
+/* Enhance input fields on hover */
+.p-inputtext:hover:not(:focus) {
+    border-color: #93c5fd !important;
+}
+
+/* Add loading spinner style */
+.p-button-loading-icon {
+    margin-right: 0.5rem;
+}
+</style>

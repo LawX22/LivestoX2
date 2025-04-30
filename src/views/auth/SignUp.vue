@@ -10,14 +10,13 @@ import Checkbox from 'primevue/checkbox';
 import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
 import Dropdown from 'primevue/dropdown';
-import Carousel from '../../components/Landing/Carousel.vue';
-import Steps from 'primevue/steps';
 import InputMask from 'primevue/inputmask';
 import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
 import { checkEmailAvailable, checkUsernameAvailable, resendEmailOtp, signUpBuyer, verifyEmailOtp } from '../../lib/aut';
 import imageUrl from '/src/assets/vue.svg';
 import { useAuthStore } from '../../stores/authContext';
+import LeftPanel from '../../components/Landing/LeftPanel.vue';
 
 export default defineComponent({
     name: 'SignUpPage',
@@ -29,12 +28,11 @@ export default defineComponent({
         Checkbox,
         Divider,
         ProgressSpinner,
-        Carousel,
-        Steps,
         Dropdown,
         InputMask,
         Calendar,
-        InputNumber
+        InputNumber,
+        LeftPanel
     },
     setup() {
         const router = useRouter();
@@ -79,42 +77,13 @@ export default defineComponent({
 
         const authStore = useAuthStore();
 
-        // Carousel slides data
-        const carouselSlides = [
-            {
-                image: "https://images.unsplash.com/photo-1500595046743-cd271d694d30",
-                title: "Join LivestoX Today",
-                subtitle: "Your trusted Livestock Online Marketplace",
-                quote: "Starting my journey with LivestoX has been one of the best decisions for my farm.",
-                author: "David Johnson",
-                role: "Dairy Farmer"
-            },
-            {
-                image: "https://images.unsplash.com/photo-1605152276897-4f618f831968",
-                title: "Expand Your Network",
-                subtitle: "Connect with verified farmers and buyers",
-                quote: "LivestoX helped me find quality livestock suppliers that I now work with regularly.",
-                author: "Michelle Parker",
-                role: "Farm Consultant"
-            },
-            {
-                image: "https://images.unsplash.com/photo-1516467508483-a7212febe31a",
-                title: "Streamline Your Business",
-                subtitle: "Manage listings, sales, and payments in one place",
-                quote: "The platform has simplified how I manage my livestock business and increased my profits.",
-                author: "Robert Anderson",
-                role: "Livestock Breeder"
-            },
-            {
-                image: "https://images.unsplash.com/photo-1558343434-a78f1bc6c604",
-                title: "Trusted by Farmers",
-                subtitle: "Join thousands of satisfied farmers",
-                quote: "The verification process ensures I'm dealing with legitimate buyers and sellers.",
-                author: "Jessica Martinez",
-                role: "Small Farm Owner"
-            }
+        // Step titles
+        const stepTitles = [
+            'Create Your Account',
+            'Secure Your Account',
+            'Verify Your Identity',
+            'Complete Registration'
         ];
-
 
         // Debounce function implementation
         function debounce(fn: Function, delay: number) {
@@ -129,8 +98,6 @@ export default defineComponent({
         const debouncedCheckUsernameAvailability = debounce(() => {
             checkUsernameAvailability();
         }, 500);
-
-
 
         // Validation functions
         const validatePersonalInfo = async (): Promise<boolean> => {
@@ -180,11 +147,11 @@ export default defineComponent({
             }
 
             let validEmail = await checkEmailAvailable(email.value);
-            if(!validEmail) {
+            if (!validEmail) {
                 toast.add({
                     severity: 'error',
                     summary: 'Invalid Email',
-                    detail: 'Email already use',
+                    detail: 'Email already in use',
                     life: 3000
                 });
                 return false;
@@ -253,10 +220,9 @@ export default defineComponent({
         };
 
         const validateVerificationCode = async (): Promise<boolean> => {
-
             try {
                 await verifyEmailOtp(email.value, verificationCode.value);
-            } catch(error) {
+            } catch (error) {
                 const errorMessage = (error instanceof Error) ? error.message : 'Token has expired or is invalid.';
                 toast.add({
                     severity: 'error',
@@ -329,7 +295,6 @@ export default defineComponent({
                 // Simulate API call
                 let validUsername = await checkUsernameAvailable(username.value);
 
-                // For demo purposes, let's pretend usernames ending with "taken" are already taken
                 if (!validUsername) {
                     usernameError.value = 'This username is already taken';
                     usernameAvailable.value = false;
@@ -371,9 +336,6 @@ export default defineComponent({
                     phone: phoneNumber.value,
                     role: "Buyer"
                 });
-
-                // Simulate API call to send verification code
-                // await new Promise(resolve => setTimeout(resolve, 1500));
 
                 verificationSent.value = true;
 
@@ -478,9 +440,6 @@ export default defineComponent({
                 loading.value = true;
 
                 await resendEmailOtp(email.value);
-                
-                // Simulate API call
-                // await new Promise(resolve => setTimeout(resolve, 1000));
 
                 toast.add({
                     severity: 'success',
@@ -501,8 +460,8 @@ export default defineComponent({
         };
 
         onMounted(() => {
-            if(authStore.session) {
-                router.push('/main/LivestockMarket');
+            if (authStore.session) {
+                router.push('/signin');
             };
             // Show a welcome toast when component mounts
             setTimeout(() => {
@@ -538,6 +497,7 @@ export default defineComponent({
             usernameError,
             // Form options
             genderOptions,
+            stepTitles,
             // Functions
             nextStep,
             prevStep,
@@ -546,8 +506,7 @@ export default defineComponent({
             checkUsernameAvailability,
             debouncedCheckUsernameAvailability,
             sendVerificationCode,
-            // Other data
-            carouselSlides,
+            // Images
             logoPath: imageUrl
         };
     }
@@ -555,517 +514,517 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="flex min-h-screen bg-gradient-to-b from-green-200 to-green-900">
+    <div class="flex min-h-screen bg-gradient-to-br from-blue-100 via-sky-100 to-blue-200">
         <Toast position="top-right" />
-        <div class="flex flex-col md:flex-row bg-white rounded-3xl shadow-2xl m-auto w-full max-w-6xl overflow-hidden">
-            <!-- Left side with form -->
-            <div class="w-full md:w-1/2 p-4 md:p-6 flex flex-col justify-center relative">
-                <!-- Background pattern with animated subtle gradient -->
-                <div class="absolute inset-0 z-0">
-                    <div class="absolute inset-0 opacity-5 bg-gradient-to-tr from-green-300 to-blue-100 animate-gradient"
-                        style="background-image: url('data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%239AE6B4\' fill-opacity=\'0.4\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E');">
-                    </div>
-                </div>
 
-                <!-- Content -->
-                <div class="relative z-10">
-                    <div class="mb-4 text-center">
-                        <div class="flex justify-center items-center mb-4">
-                            <div class="bg-gradient-to-br from-green-400 to-green-600 p-3 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
-                                <img :src="logoPath" alt="Logo" class="w-12 h-12 object-contain drop-shadow-md">
-                            </div>
-                        </div>
+        <!-- Main container with modern effect -->
+        <div class="w-full max-w-7xl mx-auto my-10 px-4 sm:px-6">
 
-                        <h1 class="text-2xl font-bold mb-1 text-green-700">Create an Account</h1>
-                        <p class="text-gray-600 text-sm">Join the LivestoX community and start your journey.</p>
-                    </div>
-                    
-                    <!-- Steps indicator - More compact -->
-                    <div class="mb-4">
-                        <div class="flex flex-col space-y-1">
-                            <div class="flex justify-between">
-                                <span class="text-xs font-medium text-green-700">Step {{ currentStep + 1 }} of 4</span>
-                                <span class="text-xs font-medium text-green-700">{{ ['Personal', 'Security', 'Verify',
-                                    'Agreement'][currentStep] }}</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                                <div class="bg-gradient-to-r from-green-500 to-green-700 h-1.5 rounded-full transition-all duration-700 ease-in-out"
-                                    :style="{ width: `${(currentStep + 1) * 25}%` }"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <form @submit.prevent="nextStep" class="mx-auto">
-                        <!-- Step 1: Personal Information -->
-                        <div v-if="currentStep === 0" class="animate-fadeIn">
-                            <div class="flex gap-2 mb-3">
-                                <div class="flex-1">
-                                    <label for="firstName" class="block text-gray-700 text-xs font-medium mb-1">First Name
-                                        <span class="text-green-600">*</span></label>
-                                    <InputText id="firstName" v-model="firstName" placeholder="First name"
-                                        class="w-full text-sm p-2 rounded-lg border-2 focus:border-green-500 focus:ring focus:ring-green-200 transition-all"
-                                        :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !firstName }"
-                                        aria-describedby="firstName-error" />
-                                    <small id="firstName-error" v-if="submitted && !firstName"
-                                        class="p-error block mt-1 text-xs">First name is required.</small>
+            <!-- Card with elegant shadow and layered effect -->
+            <div class="relative bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-500">
+
+                <!-- Top accent bar with gradient -->
+                <div class="h-2 bg-gradient-to-r from-blue-400 via-sky-500 to-blue-600"></div>
+
+                <!-- Content container -->
+                <div class="flex flex-col lg:flex-row">
+
+                    <!-- Left side panel component -->
+                    <LeftPanel :logoPath="logoPath" />
+
+                    <!-- Right side - Form content -->
+                    <div class="lg:w-7/12 p-6 lg:p-10">
+                        <!-- Header with step title -->
+                        <div class="text-center mb-8">
+                            <h2
+                                class="text-3xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-sky-600 mb-2">
+                                {{ stepTitles[currentStep] }}</h2>
+                            <p class="text-gray-500">Step {{ currentStep + 1 }} of 4</p>
+
+                            <!-- Progress bar -->
+                            <div class="mt-8">
+                                <div class="w-full bg-gray-100 rounded-full h-2 mb-3">
+                                    <div class="bg-gradient-to-r from-blue-400 via-sky-500 to-blue-600 h-2 rounded-full transition-all duration-500 ease-in-out"
+                                        :style="{ width: `${(currentStep + 1) * 25}%` }"></div>
                                 </div>
-                                <div class="flex-1">
-                                    <label for="lastName" class="block text-gray-700 text-xs font-medium mb-1">Last Name
-                                        <span class="text-green-600">*</span></label>
-                                    <InputText id="lastName" v-model="lastName" placeholder="Last name"
-                                        class="w-full text-sm p-2 rounded-lg border-2 focus:border-green-500 focus:ring focus:ring-green-200 transition-all"
-                                        :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !lastName }"
-                                        aria-describedby="lastName-error" />
-                                    <small id="lastName-error" v-if="submitted && !lastName"
-                                        class="p-error block mt-1 text-xs">Last name is required.</small>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="username" class="block text-gray-700 text-xs font-medium mb-1">Username 
-                                    <span class="text-green-600">*</span></label>
-                                <div class="flex items-center">
-                                    <div class="relative flex-grow">
-                                        <InputText id="username" v-model="username" placeholder="Choose a username"
-                                            class="w-full text-sm p-2 pl-8 rounded-lg border-2 focus:border-green-500 focus:ring focus:ring-green-200 transition-all"
-                                            :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !username || usernameError,
-                                                     'border-green-300 focus:border-green-500': usernameAvailable && !usernameError && username }"
-                                            aria-describedby="username-error" @input="debouncedCheckUsernameAvailability" />
-                                        <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                            <i class="pi pi-user text-xs"></i>
-                                        </span>
+                                <!-- Step indicators -->
+                                <div class="flex justify-between px-2">
+                                    <div v-for="step in 4" :key="step" :class="`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shadow-md transition-all duration-300 transform
+                                            ${step - 1 < currentStep ? 'bg-gradient-to-br from-blue-500 to-sky-600 text-white' :
+                                            step - 1 === currentStep ? 'bg-gradient-to-br from-blue-600 to-sky-700 text-white ring-4 ring-blue-100 scale-110' :
+                                                'bg-gray-100 text-gray-600 border border-gray-200'}`">
+                                        <span v-if="step - 1 < currentStep" class="pi pi-check text-xs"></span>
+                                        <span v-else>{{ step }}</span>
                                     </div>
-                                    <span v-if="loading" class="ml-2 flex items-center text-blue-500">
-                                        <i class="pi pi-spinner pi-spin text-xs"></i>
-                                    </span>
-                                    <span v-if="usernameAvailable && !usernameError && username"
-                                        class="ml-2 flex items-center text-green-500">
-                                        <i class="pi pi-check text-xs"></i>
-                                    </span>
                                 </div>
-                                <small id="username-error" v-if="submitted && !username" class="p-error block mt-1 text-xs">
-                                    Username is required.
-                                </small>
-                                <small v-if="usernameError" class="p-error block mt-1 text-xs">
-                                    {{ usernameError }}
-                                </small>
-                                <small class="text-gray-500 block mt-1 text-xs">
-                                    4-16 characters, letters, numbers, underscore and hyphen only
-                                </small>
                             </div>
+                        </div>
 
-                            <div class="mb-3">
-                                <label for="email" class="block text-gray-700 text-xs font-medium mb-1">Email 
-                                    <span class="text-green-600">*</span></label>
-                                <div class="relative">
-                                    <InputText id="email" v-model="email" placeholder="Enter your email address"
-                                        class="w-full text-sm p-2 pl-8 rounded-lg border-2 focus:border-green-500 focus:ring focus:ring-green-200 transition-all"
-                                        :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !email }"
-                                        aria-describedby="email-error" />
-                                    <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                        <i class="pi pi-envelope text-xs"></i>
-                                    </span>
+                        <!-- Form content -->
+                        <form @submit.prevent="nextStep" class="max-w-xl mx-auto">
+                            <!-- Step 1: Personal Information -->
+                            <div v-if="currentStep === 0" class="space-y-6 animate-fadeSlideIn">
+                                <!-- Introduction card -->
+                                <div
+                                    class="bg-gradient-to-r from-blue-50 to-sky-50 p-5 rounded-2xl border border-blue-100 mb-6 shadow-sm">
+                                    <div class="flex items-start">
+                                        <div
+                                            class="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                            <i class="pi pi-user-plus text-blue-600 text-lg"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <h3 class="font-semibold text-blue-800">Let's get to know you</h3>
+                                            <p class="text-sm text-blue-700 mt-1">Fill in your personal details to
+                                                create your LivestoX profile</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <small id="email-error" v-if="submitted && !email" class="p-error block mt-1 text-xs">
-                                    Email is required.
-                                </small>
-                            </div>
 
-                            <div class="flex gap-2 mb-3">
-                                <div class="flex-1">
-                                    <label for="phoneNumber" class="block text-gray-700 text-xs font-medium mb-1">Phone Number
-                                        <span class="text-green-600">*</span></label>
+                                <!-- Name fields -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div class="form-group">
+                                        <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                            First Name <span class="text-blue-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="pi pi-user text-blue-500 opacity-70"></i>
+                                            </div>
+                                            <InputText id="firstName" v-model="firstName" placeholder="Your first name"
+                                                class="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                                :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !firstName }" />
+                                        </div>
+                                        <small v-if="submitted && !firstName"
+                                            class="text-red-500 text-xs mt-1 block">Required field</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                            Last Name <span class="text-blue-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="pi pi-id-card text-blue-500 opacity-70"></i>
+                                            </div>
+                                            <InputText id="lastName" v-model="lastName" placeholder="Your last name"
+                                                class="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                                :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !lastName }" />
+                                        </div>
+                                        <small v-if="submitted && !lastName"
+                                            class="text-red-500 text-xs mt-1 block">Required field</small>
+                                    </div>
+                                </div>
+
+                                <!-- Username and email fields -->
+                                <div class="form-group">
+                                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Username <span class="text-blue-500">*</span>
+                                    </label>
                                     <div class="relative">
-                                        <InputMask id="phoneNumber" v-model="phoneNumber" mask="+63 999-999-9999"
-                                            placeholder="+63 917-123-4567" 
-                                            class="w-full text-sm p-2 pl-8 rounded-lg border-2 focus:border-green-500 focus:ring focus:ring-green-200 transition-all"
-                                            :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !phoneNumber }"
-                                            aria-describedby="phone-error" />
-                                        <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                            <i class="pi pi-phone text-xs"></i>
-                                        </span>
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="pi pi-at text-blue-500 opacity-70"></i>
+                                        </div>
+                                        <InputText id="username" v-model="username"
+                                            placeholder="Choose a unique username"
+                                            class="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                            :class="{
+                                                'border-red-300 focus:border-red-500': usernameError || (submitted && !username),
+                                                'border-blue-300 focus:border-blue-500': usernameAvailable && username
+                                            }" @input="debouncedCheckUsernameAvailability" />
+
+                                        <!-- Username status indicator -->
+                                        <div v-if="loading && username"
+                                            class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                            <ProgressSpinner style="width:20px;height:20px" strokeWidth="4"
+                                                class="text-blue-500" />
+                                        </div>
+                                        <div v-else-if="username && usernameAvailable"
+                                            class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                            <i class="pi pi-check-circle text-blue-500"></i>
+                                        </div>
+                                        <div v-else-if="username && usernameError"
+                                            class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                            <i class="pi pi-times-circle text-red-500"></i>
+                                        </div>
                                     </div>
-                                    <small id="phone-error" v-if="submitted && !phoneNumber"
-                                        class="p-error block mt-1 text-xs">Phone number is required.</small>
-                                    <small class="text-gray-500 block mt-1 text-xs">
-                                        Philippines format: +63 followed by 10 digits
-                                    </small>
+                                    <div class="mt-1">
+                                        <small v-if="usernameError" class="text-red-500 text-xs block">{{ usernameError
+                                        }}</small>
+                                        <small v-else-if="username && usernameAvailable"
+                                            class="text-blue-500 text-xs block">Username is available</small>
+                                        <small v-else-if="submitted && !username"
+                                            class="text-red-500 text-xs block">Required field</small>
+                                        <small v-else class="text-gray-500 text-xs block">4-16 characters, letters,
+                                            numbers,
+                                            underscore, and hyphens only</small>
+                                    </div>
                                 </div>
 
-                                <div class="flex-1">
-                                    <label for="gender" class="block text-gray-700 text-xs font-medium mb-1">Gender 
-                                        <span class="text-green-600">*</span></label>
-                                    <Dropdown id="gender" v-model="gender" :options="genderOptions" optionLabel="label"
-                                        optionValue="value" placeholder="Select gender" 
-                                        class="w-full text-sm rounded-lg border-2 focus:border-green-500 focus:ring focus:ring-green-200 transition-all dropdown-sm"
-                                        :class="{ 'border-red-300': submitted && !gender }" />
-                                    <small id="gender-error" v-if="submitted && !gender"
-                                        class="p-error block mt-1 text-xs">Gender is required.</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 2: Security Information -->
-                        <div v-if="currentStep === 1" class="animate-fadeIn">
-                            <div class="mb-3">
-                                <label for="password" class="block text-gray-700 text-xs font-medium mb-1">Password 
-                                    <span class="text-green-600">*</span></label>
-                                <div class="relative">
-                                    <Password id="password" v-model="password" placeholder="Create a strong password"
-                                        class="w-full" :feedback="true" toggleMask
-                                        :class="{ 'p-invalid': submitted && !password }" aria-describedby="password-error"
-                                        inputClass="text-sm p-2 pl-8 rounded-lg border-2 focus:border-green-500 focus:ring focus:ring-green-200 w-full" />
-                                    <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">
-                                        <i class="pi pi-lock text-xs"></i>
-                                    </span>
-                                </div>
-                                <small id="password-error" v-if="submitted && !password"
-                                    class="p-error block mt-1 text-xs">Password is required.</small>
-                                <small class="text-gray-500 block mt-1 text-xs">
-                                    Password must be at least 8 characters and include uppercase, lowercase,
-                                    number, and special character.
-                                </small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="confirmPassword" class="block text-gray-700 text-xs font-medium mb-1">Confirm
-                                    Password <span class="text-green-600">*</span></label>
-                                <div class="relative">
-                                    <Password id="confirmPassword" v-model="confirmPassword"
-                                        placeholder="Confirm your password" class="w-full" toggleMask
-                                        :class="{ 'p-invalid': submitted && !confirmPassword }"
-                                        aria-describedby="confirmPassword-error" 
-                                        inputClass="text-sm p-2 pl-8 rounded-lg border-2 focus:border-green-500 focus:ring focus:ring-green-200 w-full" />
-                                    <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">
-                                        <i class="pi pi-lock-open text-xs"></i>
-                                    </span>
-                                </div>
-                                <small id="confirmPassword-error" v-if="submitted && !confirmPassword"
-                                    class="p-error block mt-1 text-xs">
-                                    Confirm password is required.
-                                </small>
-                                <small id="password-match-error"
-                                    v-if="submitted && confirmPassword && confirmPassword !== password"
-                                    class="p-error block mt-1 text-xs">
-                                    Passwords do not match.
-                                </small>
-                            </div>
-
-                            <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg mb-3 shadow-sm transform hover:shadow transition-all">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-shield text-blue-700 mr-2 text-xs"></i>
-                                    <h3 class="text-blue-700 font-medium text-xs">Security Tips</h3>
-                                </div>
-                                <ul class="text-gray-600 text-xs space-y-1">
-                                    <li class="flex items-center">
-                                        <i class="pi pi-check-circle text-blue-500 mr-1 text-xs"></i>
-                                        Use a unique password you don't use elsewhere
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="pi pi-check-circle text-blue-500 mr-1 text-xs"></i>
-                                        Consider using a password manager
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="pi pi-check-circle text-blue-500 mr-1 text-xs"></i>
-                                        Enable two-factor authentication after signup
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div class="p-3 bg-yellow-50 border border-yellow-100 rounded-lg mb-3 shadow-sm transform hover:shadow transition-all">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-info-circle text-yellow-700 mr-1 text-xs"></i>
-                                    <h3 class="text-yellow-700 font-medium text-xs">Next Step: Verification</h3>
-                                </div>
-                                <p class="text-gray-600 text-xs">
-                                    After proceeding, we'll send a verification code to your email to confirm
-                                    your identity.
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Verification code (OTP) -->
-                        <div v-if="currentStep === 2" class="animate-fadeIn">
-                            <div class="p-3 bg-green-50 border border-green-100 rounded-lg mb-3 shadow-sm">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-envelope text-green-700 mr-1 text-xs"></i>
-                                    <h3 class="text-green-700 font-medium text-xs">Verification Required</h3>
-                                </div>
-                                <p class="text-gray-600 text-xs">
-                                    We've sent a 6-digit verification code to your email 
-                                    <strong class="text-green-700">{{ email }}</strong>
-                                </p>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="verificationCode" class="block text-gray-700 text-xs font-medium mb-1">
-                                    Verification Code <span class="text-green-600">*</span>
-                                </label>
-                                <InputMask id="verificationCode" v-model="verificationCode" mask="999999"
-                                    placeholder="Enter 6-digit code"
-                                    class="w-full p-2 text-center text-xl tracking-widest rounded-lg border-2 border-green-200 focus:border-green-500 focus:ring focus:ring-green-200 transition-all"
-                                    :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !verificationCode }"
-                                    aria-describedby="code-error" />
-                                <small id="code-error" v-if="submitted && !verificationCode" class="p-error block mt-1 text-xs">
-                                    Verification code is required.
-                                </small>
-                            </div>
-
-                            <div class="flex justify-center mb-3">
-                                <Button type="button" label="Resend Code" 
-                                    class="p-button-text p-2 text-xs flex items-center text-green-600 hover:text-green-800 hover:bg-green-50 transition-colors rounded-lg"
-                                    icon="pi pi-refresh" iconPos="left"
-                                    @click="resendVerificationCode" :loading="loading" :disabled="loading" />
-                            </div>
-
-                            <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg mb-3 shadow-sm transform hover:shadow transition-all">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-question-circle text-blue-700 mr-1 text-xs"></i>
-                                    <h3 class="text-blue-700 font-medium text-xs">Didn't receive the code?</h3>
-                                </div>
-                                <ul class="text-gray-600 text-xs space-y-1">
-                                    <li class="flex items-center">
-                                        <i class="pi pi-check-circle text-blue-500 mr-1 text-xs"></i>
-                                        Check your spam/junk folder
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="pi pi-check-circle text-blue-500 mr-1 text-xs"></i>
-                                        Verify that you entered the correct email
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="pi pi-check-circle text-blue-500 mr-1 text-xs"></i>
-                                        Wait a few minutes and try again
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Step 4: Agreements -->
-                        <div v-if="currentStep === 3" class="animate-fadeIn">
-                            <div class="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-lg shadow-sm">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-flag-fill text-blue-700 mr-1 text-xs"></i>
-                                    <h3 class="text-blue-700 font-medium text-xs">Almost Done!</h3>
-                                </div>
-                                <p class="text-gray-600 text-xs">
-                                    Please review and accept our terms and conditions to complete your registration.
-                                </p>
-                            </div>
-
-                            <div class="mb-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow transition-all">
-                                <div class="flex items-start mb-1">
-                                    <Checkbox v-model="agreeToTerms" inputId="agreeToTerms" binary
-                                        class="mt-1 mr-2 border border-gray-400 rounded-md focus:border-green-500" />
-                                    <label for="agreeToTerms" class="text-gray-700 text-xs">
-                                        I agree to the
-                                        <a href="#" class="text-green-600 hover:text-green-800 font-medium underline decoration-dotted">
-                                            Terms of Service
-                                        </a>
-                                        and
-                                        <a href="#" class="text-green-600 hover:text-green-800 font-medium underline decoration-dotted">
-                                            Privacy Policy
-                                        </a>
+                                <div class="form-group">
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Email Address <span class="text-blue-500">*</span>
                                     </label>
+                                    <div class="relative">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="pi pi-envelope text-blue-500 opacity-70"></i>
+                                        </div>
+                                        <InputText id="email" v-model="email" type="email"
+                                            placeholder="Your email address"
+                                            class="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                            :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !email }" />
+                                    </div>
+                                    <div class="mt-1">
+                                        <small v-if="submitted && !email" class="text-red-500 text-xs block">Required
+                                            field</small>
+                                        <small v-else class="text-gray-500 text-xs block">We'll send a verification code
+                                            to this email</small>
+                                    </div>
                                 </div>
-                                <small id="agree-error" v-if="submitted && !agreeToTerms" class="p-error block mt-1 text-xs">
-                                    You must agree to the terms and conditions.
-                                </small>
+
+                                <!-- Contact and Gender fields in a row -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div class="form-group">
+                                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                            Phone Number <span class="text-blue-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="pi pi-phone text-blue-500 opacity-70"></i>
+                                            </div>
+                                            <InputMask id="phone" v-model="phoneNumber" mask="+63 999 999 9999"
+                                                placeholder="+63 XXX XXX XXXX"
+                                                class="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                                :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !phoneNumber }" />
+                                        </div>
+                                        <small v-if="submitted && !phoneNumber"
+                                            class="text-red-500 text-xs mt-1 block">Required field</small>
+                                        <small v-else class="text-gray-500 text-xs mt-1 block">Philippines format
+                                            (+63)</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="gender" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                            Gender <span class="text-blue-500">*</span>
+                                        </label>
+                                        <div class="relative flex w-full">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                                <i class="pi pi-user text-blue-500 opacity-70"></i>
+                                            </div>
+                                            <Dropdown id="gender" v-model="gender" :options="genderOptions"
+                                                optionLabel="label" optionValue="value" placeholder="Select your gender"
+                                                class="w-full" :class="{ 'p-invalid': submitted && !gender }"
+                                                :inputStyle="{
+                                                    borderRadius: '0.75rem',
+                                                    height: '3rem',
+                                                    paddingLeft: '2.5rem',
+                                                    borderColor: 'rgb(209, 213, 219)',
+                                                    width: '100%'
+                                                }"
+                                                :inputClass="'border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 shadow-sm transition-all'" />
+                                        </div>
+                                        <small v-if="submitted && !gender"
+                                            class="text-red-500 text-xs mt-1 block">Gender is required</small>
+                                        <small v-if="submitted && !gender"
+                                            class="text-red-500 text-xs mt-1 block">Required field</small>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="mb-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow transition-all">
-                                <div class="flex items-start">
-                                    <Checkbox v-model="receiveMarketingEmails" inputId="receiveMarketingEmails" binary
-                                        class="mt-1 mr-2 border border-gray-400 rounded-md" />
-                                    <label for="receiveMarketingEmails" class="text-gray-700 text-xs">
-                                        I would like to receive updates about products, services, and promotions from
-                                        LivestoX.
+                            <!-- Step 2: Security Information -->
+                            <div v-if="currentStep === 1" class="space-y-6 animate-fadeSlideIn">
+                                <!-- Security introduction -->
+                                <div
+                                    class="bg-gradient-to-r from-blue-50 to-sky-50 p-5 rounded-2xl border border-blue-100 mb-6 shadow-sm">
+                                    <div class="flex items-start">
+                                        <div
+                                            class="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                            <i class="pi pi-shield text-blue-600 text-lg"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <h3 class="font-semibold text-blue-800">Secure your account</h3>
+                                            <p class="text-sm text-blue-700 mt-1">Create a strong password to protect
+                                                your LivestoX account</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Password <span class="text-blue-500">*</span>
                                     </label>
+                                    <div class="relative">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                            <i class="pi pi-lock text-blue-500 opacity-70"></i>
+                                        </div>
+                                        <Password id="password" v-model="password" toggleMask
+                                            inputClass="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                            :class="{ 'p-invalid': submitted && !password, 'w-full': true }"
+                                            placeholder="Create a secure password" :feedback="true"
+                                            :inputProps="{ style: { width: '100%' } }" />
+                                    </div>
+                                    <small v-if="submitted && !password"
+                                        class="text-red-500 text-xs mt-1 block">Required field</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Confirm Password <span class="text-blue-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                            <i class="pi pi-lock text-blue-500 opacity-70"></i>
+                                        </div>
+                                        <Password id="confirmPassword" v-model="confirmPassword" toggleMask
+                                            placeholder="Confirm your password"
+                                            inputClass="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+                                            :class="{ 'p-invalid': submitted && (!confirmPassword || confirmPassword !== password), 'w-full': true }"
+                                            :feedback="true" :inputProps="{ style: { width: '100%' } }" />
+                                    </div>
+                                    <div class="mt-1">
+                                        <small v-if="submitted && !confirmPassword"
+                                            class="text-red-500 text-xs block">Required field</small>
+                                        <small v-else-if="submitted && confirmPassword !== password"
+                                            class="text-red-500 text-xs block">Passwords do not match</small>
+                                    </div>
+                                </div>
+
+                                <!-- Password requirements callout -->
+                                <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                                    <h4 class="font-medium text-blue-700 mb-2 flex items-center">
+                                        <i class="pi pi-info-circle mr-2 text-blue-500"></i>
+                                        Password Requirements
+                                    </h4>
+                                    <ul class="text-xs text-blue-800 space-y-2">
+                                        <li class="flex items-center">
+                                            <i class="pi pi-check-circle mr-2 text-green-500"></i>
+                                            At least 8 characters long
+                                        </li>
+                                        <li class="flex items-center">
+                                            <i class="pi pi-check-circle mr-2 text-green-500"></i>
+                                            Include at least one uppercase letter (A-Z)
+                                        </li>
+                                        <li class="flex items-center">
+                                            <i class="pi pi-check-circle mr-2 text-green-500"></i>
+                                            Include at least one lowercase letter (a-z)
+                                        </li>
+                                        <li class="flex items-center">
+                                            <i class="pi pi-check-circle mr-2 text-green-500"></i>
+                                            Include at least one number (0-9)
+                                        </li>
+                                        <li class="flex items-center">
+                                            <i class="pi pi-check-circle mr-2 text-green-500"></i>
+                                            Include at least one special character (@$!%*?&#)
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
 
-                            <div class="p-3 bg-yellow-50 border border-yellow-100 rounded-lg mb-3 shadow-sm transform hover:shadow transition-all">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-exclamation-circle text-yellow-700 mr-1 text-xs"></i>
-                                    <h3 class="text-yellow-700 font-medium text-xs">Important Information</h3>
+                            <!-- Step 3: Verification -->
+                            <div v-if="currentStep === 2" class="space-y-6 animate-fadeSlideIn">
+                                <!-- Verification introduction -->
+                                <div
+                                    class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 rounded-2xl border border-sky-100 mb-6 shadow-sm">
+                                    <div class="flex items-start">
+                                        <div
+                                            class="flex-shrink-0 w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center">
+                                            <i class="pi pi-check-circle text-sky-600 text-lg"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <h3 class="font-semibold text-sky-800">Verify Your Identity</h3>
+                                            <p class="text-sm text-sky-700 mt-1">Enter the 6-digit code we sent to your
+                                                email</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <ul class="text-gray-600 text-xs space-y-1">
-                                    <li class="flex items-center">
-                                        <i class="pi pi-check-circle text-yellow-500 mr-1 text-xs"></i>
-                                        You can unsubscribe from marketing emails at any time
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="pi pi-check-circle text-yellow-500 mr-1 text-xs"></i>
-                                        We never share your personal information with third parties
-                                    </li>
-                                </ul>
+
+                                <!-- Verification animation -->
+                                <div class="flex justify-center mb-6">
+                                    <div
+                                        class="w-16 h-16 rounded-full bg-sky-100 flex items-center justify-center text-sky-500 animate-pulse">
+                                        <i class="pi pi-envelope text-2xl"></i>
+                                    </div>
+                                </div>
+
+                                <div class="text-center mb-6">
+                                    <p class="text-gray-600">We've sent a verification code to:</p>
+                                    <p class="font-medium text-sky-600">{{ email }}</p>
+                                </div>
+
+                                <!-- Verification code input -->
+                                <div class="form-group">
+                                    <label for="verificationCode"
+                                        class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Verification Code <span class="text-sky-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="pi pi-key text-sky-500 opacity-70"></i>
+                                        </div>
+                                        <InputText id="verificationCode" v-model="verificationCode"
+                                            placeholder="Enter 6-digit code"
+                                            class="w-full pl-10 pr-3 py-3 text-center tracking-widest text-lg font-medium rounded-xl border border-gray-300 focus:ring-2 focus:ring-sky-200 focus:border-sky-500 transition-all"
+                                            :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-200': submitted && !verificationCode }" />
+                                    </div>
+                                    <small v-if="submitted && !verificationCode"
+                                        class="text-red-500 text-xs mt-1 block">Required field</small>
+                                </div>
+
+                                <!-- Resend code option -->
+                                <div class="text-center mt-4">
+                                    <p class="text-sm text-gray-600">
+                                        Didn't receive the code?
+                                        <button type="button" @click="resendVerificationCode"
+                                            class="text-sky-600 hover:text-sky-800 font-medium focus:outline-none">
+                                            Resend code
+                                        </button>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Navigation buttons -->
-                        <div class="flex justify-between mt-4">
-                            <Button v-if="currentStep > 0" type="button" 
-                                class="p-button-outlined p-2 text-xs rounded-lg flex items-center border-2 border-green-500 text-green-600 hover:bg-green-50 transition-colors"
-                                @click="prevStep" :disabled="loading">
-                                <i class="pi pi-arrow-left mr-1"></i>
-                                Back
-                            </Button>
-                            <div v-else class="invisible"></div>
+                            <!-- Step 4: Final Agreements -->
+                            <div v-if="currentStep === 3" class="space-y-6 animate-fadeSlideIn">
+                                <!-- Completion intro -->
+                                <div
+                                    class="bg-gradient-to-r from-blue-50 to-sky-50 p-5 rounded-2xl border border-blue-100 mb-6 shadow-sm">
+                                    <div class="flex items-start">
+                                        <div
+                                            class="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                            <i class="pi pi-check text-blue-600 text-lg"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <h3 class="font-semibold text-blue-800">Almost There!</h3>
+                                            <p class="text-sm text-blue-700 mt-1">Review and accept our terms to
+                                                complete your registration</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <Button type="submit" 
-                                class="p-button-success p-2 text-xs rounded-lg shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                                :loading="loading">
-                                <span class="flex items-center">
-                                    {{ currentStep === 3 ? 'Complete Sign Up' : 'Continue' }}
-                                    <i class="pi pi-arrow-right ml-1"></i>
-                                </span>
-                            </Button>
-                        </div>
-                    </form>
+                                <!-- Success animation -->
+                                <div class="flex justify-center mb-8">
+                                    <div
+                                        class="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                                        <i class="pi pi-check-circle text-4xl"></i>
+                                    </div>
+                                </div>
 
-                    <div class="mt-4 text-center">
-                        <p class="text-gray-600 text-xs">
-                            Already have an account?
-                            <router-link to="/signin" class="text-green-600 font-medium hover:text-green-800 underline decoration-dotted">
-                                Sign In
-                            </router-link>
-                        </p>
+                                <!-- Agreement checkboxes -->
+                                <div class="space-y-4">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 relative">
+                                            <!-- Visible border container -->
+                                            <div
+                                                class="w-6 h-6 border-2 border-blue-400 rounded-md bg-white shadow-sm flex items-center justify-center">
+                                                <!-- Actual checkbox positioned absolutely to fill the container -->
+                                                <Checkbox id="terms" v-model="agreeToTerms" :binary="true"
+                                                    class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                                    :class="{ 'p-invalid': submitted && !agreeToTerms }" />
+                                                <!-- Custom visible checkbox indicator -->
+                                                <div v-if="agreeToTerms"
+                                                    class="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
+                                                    <i class="pi pi-check text-white text-xs"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label for="terms" class="ml-3 text-sm text-gray-700 select-none">
+                                            I agree to the <a href="#"
+                                                class="text-blue-600 hover:text-blue-800 font-medium">Terms &
+                                                Conditions</a>
+                                            and <a href="#"
+                                                class="text-blue-600 hover:text-blue-800 font-medium">Privacy Policy</a>
+                                            <span class="text-red-500">*</span>
+                                        </label>
+                                    </div>
+                                    <small v-if="submitted && !agreeToTerms" class="text-red-500 text-xs block">You must
+                                        agree to the terms</small>
+
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 relative">
+                                            <!-- Visible border container -->
+                                            <div
+                                                class="w-6 h-6 border-2 border-blue-400 rounded-md bg-white shadow-sm flex items-center justify-center">
+                                                <!-- Actual checkbox positioned absolutely to fill the container -->
+                                                <Checkbox id="marketing" v-model="receiveMarketingEmails" :binary="true"
+                                                    class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer" />
+                                                <!-- Custom visible checkbox indicator -->
+                                                <div v-if="receiveMarketingEmails"
+                                                    class="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
+                                                    <i class="pi pi-check text-white text-xs"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label for="marketing" class="ml-3 text-sm text-gray-700 select-none">
+                                            I agree to receive marketing emails and updates about LivestoX promotions
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Final message -->
+                                <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 text-sm text-blue-800">
+                                    <p>By clicking "Complete Registration", you're creating a LivestoX account and you
+                                        agree to our Terms of Service and Privacy Policy.</p>
+                                </div>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="mt-10 flex justify-between items-center">
+                                <!-- Back button - hidden on first step -->
+                                <Button type="button" v-if="currentStep > 0" @click="prevStep"
+                                    class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-sky-600 hover:from-blue-600 hover:to-sky-700 text-white shadow-md hover:shadow-lg transition-all"
+                                    :disabled="loading">
+                                    <i class="pi pi-arrow-left mr-1"></i>
+                                    Back
+                                </Button>
+
+
+                                <!-- Next/Submit button -->
+                                <Button type="submit" :loading="loading"
+                                    :label="currentStep < 3 ? 'Continue' : 'Complete Registration'"
+                                    class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-sky-600 hover:from-blue-600 hover:to-sky-700 text-white shadow-md hover:shadow-lg transition-all"
+                                    :icon="currentStep < 3 ? 'pi pi-arrow-right' : 'pi pi-check'" iconPos="right" />
+                            </div>
+
+                            <!-- Already have account link -->
+                            <div class="mt-8 text-center">
+                                <p class="text-sm text-gray-600">
+                                    Already have an account?
+                                    <router-link to="/signin" class="text-blue-600 hover:text-blue-800 font-medium">
+                                        Sign in instead
+                                    </router-link>
+                                </p>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
-
-            <!-- Right side with carousel -->
-            <div class="hidden md:block w-1/2 bg-gradient-to-br from-green-600 to-green-800 relative overflow-hidden">
-                <!-- Background patterns -->
-                <div class="absolute inset-0 opacity-20">
-                    <div class="absolute right-0 top-0 w-96 h-96 bg-white opacity-10 rounded-full -mr-24 -mt-24"></div>
-                    <div class="absolute left-0 bottom-0 w-64 h-64 bg-white opacity-10 rounded-full -ml-12 -mb-12"></div>
-                </div>
-                
-                <Carousel :slides="carouselSlides" class="z-10 relative" />
+                <!-- Bottom accent bar -->
+                <div class="h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
             </div>
         </div>
     </div>
 </template>
 
-<style scoped>
-.p-password {
-    width: 100%;
+<style>
+.animate-fadeSlideIn {
+    animation: fadeSlideIn 0.4s ease-in-out;
 }
 
-.p-password-input {
-    width: 100%;
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
-
-/* Make dropdown component smaller */
-:deep(.dropdown-sm .p-dropdown-label) {
-    padding: 0.5rem;
-    font-size: 0.875rem;
-}
-
-:deep(.dropdown-sm .p-dropdown-trigger) {
-    width: 2rem;
-}
-
-/* Custom animations */
-@keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 15s ease infinite;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fadeIn {
-    animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Override PrimeVue styles */
-:deep(.p-steps) {
-    margin-bottom: 1rem;
-}
-
-:deep(.p-steps .p-steps-item) {
-    flex: 1;
-}
-
-:deep(.p-steps .p-steps-item .p-menuitem-link) {
-    background: transparent;
-    transition: background-color 0.2s;
-}
-
-:deep(.p-steps .p-steps-item.p-highlight .p-steps-number) {
-    background: #4CAF50;
-}
-
-:deep(.p-dropdown) {
-    border-radius: 0.5rem;
-}
-
-:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item) {
-    padding: 0.5rem;
-    font-size: 0.875rem;
-}
-
-:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight) {
-    background: rgba(76, 175, 80, 0.15);
-    color: #4CAF50;
-}
-
-:deep(.p-checkbox:not(.p-checkbox-disabled).p-focus > .p-checkbox-box) {
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 0.15rem rgba(76, 175, 80, 0.25);
-}
-
-:deep(.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight) {
-    background: #4CAF50;
-    border-color: #4CAF50;
-}
-
-:deep(.p-checkbox-box) {
-    width: 1rem;
-    height: 1rem;
-}
-
-:deep(.p-button.p-button-success),
-:deep(.p-buttonset.p-button-success > .p-button),
-:deep(.p-splitbutton.p-button-success > .p-button) {
-    background: #4CAF50;
-    border: 1px solid #4CAF50;
-}
-
-:deep(.p-button.p-button-success:enabled:hover),
-:deep(.p-buttonset.p-button-success > .p-button:enabled:hover),
-:deep(.p-splitbutton.p-button-success > .p-button:enabled:hover) {
-    background: #43A047;
-    border: 1px solid #43A047;
-}
-
-/* Improved focus styles for all inputs */
-:deep(.p-inputtext:enabled:focus) {
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 0.15rem rgba(76, 175, 80, 0.25);
-}
-
-/* Improved dropdown styling */
-:deep(.p-dropdown:not(.p-disabled).p-focus) {
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 0.15rem rgba(76, 175, 80, 0.25);
-}
-
-/* Override tooltip styles */
-:deep(.p-tooltip .p-tooltip-text) {
-    background: rgba(38, 38, 38, 0.9);
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    color: #fff;   
-}   
-
 </style>
