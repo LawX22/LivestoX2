@@ -624,7 +624,7 @@ export default defineComponent({
                                 <span>Profile Management</span>
                             </router-link>
 
-                            <router-link to="/my-purchases"
+                            <router-link to="/main/PurchaseHistory"
                                 class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
                                 @click="hideUserMenu">
                                 <i class="pi pi-list mr-3 text-gray-500"></i>

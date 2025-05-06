@@ -18,6 +18,9 @@ import Message from '../views/main/Message.vue';
 import LivestockForum from '../views/main/LivestockForum.vue';
 import ViewListings from '../views/main/ViewListings.vue';
 
+import PurchaseHistory from '../views/main/PurchaseHistory.vue';
+
+
 // Farmer Pages
 import FarmerLivestockDashboard from '../views/farmer/FarmerLivestockDashboard.vue'; 
 import PostLivestockForms from '../views/farmer/PostLivestockForms.vue';
@@ -40,6 +43,9 @@ const routes = [
   { path: '/main/Message', component: Message, name: 'Message' },
   { path: '/main/LivestockForum', component: LivestockForum, name: 'LivestockForum' },
   { path: '/main/ViewListings', component: ViewListings, name: 'ViewListings' },
+
+  { path: '/main/PurchaseHistory', component: PurchaseHistory, name: 'PurchaseHistory' },
+
 
   // Farmer Routes
   { path: '/farmer/FarmerLivestockDashboard', component: FarmerLivestockDashboard, name: 'FarmerLivestockDashboard' },
