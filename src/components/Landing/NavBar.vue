@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
+import { defineComponent } from 'vue';
 import { useRouter, useRoute, RouteLocationRaw } from 'vue-router';
 import Menu from 'primevue/menu';
 import Avatar from 'primevue/avatar';
