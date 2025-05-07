@@ -56,7 +56,6 @@ export default defineComponent({
     },
     setup() {
         const router = useRouter();
-        const showMobileMenu = ref(false);
         const isUserMenuVisible = ref(false);
         const isChatMenuVisible = ref(false);
         const isNotificationMenuVisible = ref(false);
@@ -342,25 +341,25 @@ export default defineComponent({
         };
 
         onMounted(async () => {
-
             if (!authStore.session) {
                 await authStore.getSession();
             }
 
             let ses = authStore?.user?.user_metadata;
 
-            user.value.name = `${ses?.firstname} ${ses?.lastname}`;
-            user.value.role = ses?.role;
-            user.value.email = ses?.email;
+            if (ses) {
+                user.value.name = `${ses?.firstname} ${ses?.lastname}`;
+                user.value.role = ses?.role;
+                user.value.email = ses?.email;
+            }
 
             console.log(ses);
         });
 
-        // Close mobile menu when route changes
+        // Close all menus when route changes
         onMounted(() => {
             router.afterEach(() => {
-                showMobileMenu.value = false;
-                // Also close all menus when route changes
+                // Close all menus when route changes
                 closeAllMenus();
             });
 
@@ -379,7 +378,6 @@ export default defineComponent({
             notifications,
             unreadChatCount,
             unreadNotificationCount,
-            showMobileMenu,
             isUserMenuVisible,
             isChatMenuVisible,
             isNotificationMenuVisible,
@@ -418,7 +416,7 @@ export default defineComponent({
                         <div class="font-bold text-xl text-green-600">LivestoX</div>
                     </div>
 
-                    <nav class="hidden md:flex space-x-5">
+                    <nav class="flex space-x-5">
                         <router-link to="/"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
                             <i class="pi pi-home mr-2"></i> Home
@@ -426,19 +424,19 @@ export default defineComponent({
                         </router-link>
                         <router-link to="/main/LivestockMarket"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
-                            <i class="pi pi-list mr-2"></i> Livestocks Market
+                            <i class="pi pi-shopping-cart mr-2"></i> Market
                             <span class="nav-indicator"></span>
                         </router-link>
                         <router-link to="/farmer/FarmerLivestockDashboard"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
-                            v-if="authStore?.user?.user_metadata.role === 'Farmer'">
-                            <i class="pi pi-list mr-2"></i>Dashboard
+                            v-if="authStore?.user?.user_metadata?.role === 'Farmer'">
+                            <i class="pi pi-chart-bar mr-2"></i>Dashboard
                             <span class="nav-indicator"></span>
                         </router-link>
                         <router-link to="/main/LivestockDashboard"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
-                            v-if="authStore?.user?.user_metadata.role === 'Buyer'">
-                            <i class="pi pi-list mr-2"></i>Dashboard
+                            v-if="authStore?.user?.user_metadata?.role === 'Buyer'">
+                            <i class="pi pi-chart-bar mr-2"></i>Dashboard
                             <span class="nav-indicator"></span>
                         </router-link>
                         <router-link to="/main/LivestockForum"
@@ -455,9 +453,9 @@ export default defineComponent({
                 </div>
 
                 <!-- Right Side - User Controls -->
-                <div class="flex items-center space-x-2" v-if="authStore.session">
+                <div class="flex items-center space-x-3" v-if="authStore.session">
                     <!-- Search -->
-                    <div class="hidden md:flex relative">
+                    <div class="flex relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <i class="pi pi-search text-gray-400"></i>
                         </span>
@@ -586,26 +584,26 @@ export default defineComponent({
                             <Avatar :image="user.avatarUrl || undefined"
                                 :label="!user.avatarUrl ? getUserInitials() : undefined" shape="circle" class="mr-2"
                                 :style="!user.avatarUrl ? 'background: linear-gradient(135deg, #4F46E5, #60a5fa); color: white;' : ''" />
-                            <div class="hidden lg:block">
+                            <div>
                                 <div class="text-sm font-medium text-gray-800">{{ user.name }}</div>
                                 <div class="text-xs text-gray-500">{{ user.role }}</div>
                             </div>
-                            <i class="pi pi-chevron-down ml-2 text-gray-400 text-xs hidden lg:block"></i>
+                            <i class="pi pi-chevron-down ml-2 text-gray-400 text-xs"></i>
                         </div>
 
                         <!-- Improved User Menu -->
                         <div v-if="isUserMenuVisible"
-                            class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-2 user-menu-animated">
+                            class="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2 user-menu-animated">
                             <!-- User Profile Header -->
                             <div class="px-4 py-3 border-b border-gray-100">
                                 <div class="flex items-center">
                                     <Avatar :image="user.avatarUrl || undefined"
                                         :label="!user.avatarUrl ? getUserInitials() : undefined" shape="circle"
-                                        class="mr-3"
+                                        class="mr-3" size="large"
                                         :style="!user.avatarUrl ? 'background: linear-gradient(135deg, #4F46E5, #60a5fa); color: white;' : ''" />
-                                    <div>
-                                        <div class="font-medium text-gray-800">{{ user.name }}</div>
-                                        <div class="text-sm text-gray-600">{{ user.email }}</div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-medium text-gray-800 truncate">{{ user.name }}</div>
+                                        <div class="text-sm text-gray-600 truncate">{{ user.email }}</div>
                                         <div class="text-xs text-gray-500 mt-1">
                                             <span class="inline-flex items-center">
                                                 <span class="h-2 w-2 rounded-full bg-green-400 mr-1"></span>
@@ -617,117 +615,81 @@ export default defineComponent({
                             </div>
 
                             <!-- Menu Items -->
-                            <router-link to="/profile"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-user mr-3 text-gray-500"></i>
-                                <span>Profile Management</span>
-                            </router-link>
+                            <div class="py-1">
+                                <router-link to="/profile"
+                                    class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                    @click="hideUserMenu">
+                                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 mr-3">
+                                        <i class="pi pi-user text-blue-600 text-sm"></i>
+                                    </div>
+                                    <span>Profile Management</span>
+                                </router-link>
 
-                            <router-link to="/main/PurchaseHistory"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-list mr-3 text-gray-500"></i>
-                                <span>My Purchases</span>
-                            </router-link>
+                                <router-link to="/main/PurchaseHistory"
+                                    class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                    @click="hideUserMenu">
+                                    <div
+                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 mr-3">
+                                        <i class="pi pi-shopping-cart text-green-600 text-sm"></i>
+                                    </div>
+                                    <span>My Purchases</span>
+                                </router-link>
 
-                            <router-link to="/favorites-listings"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-list mr-3 text-gray-500"></i>
-                                <span>Favorites Listings</span>
-                            </router-link>
+                                <router-link to="/favorites-listings"
+                                    class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                    @click="hideUserMenu">
+                                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 mr-3">
+                                        <i class="pi pi-heart text-red-600 text-sm"></i>
+                                    </div>
+                                    <span>Favorites Listings</span>
+                                </router-link>
 
-                            <router-link to="/settings"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-cog mr-3 text-gray-500"></i>
-                                <span>Settings</span>
-                            </router-link>
+                                <router-link to="/settings"
+                                    class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                    @click="hideUserMenu">
+                                    <div
+                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-purple-100 mr-3">
+                                        <i class="pi pi-cog text-purple-600 text-sm"></i>
+                                    </div>
+                                    <span>Settings</span>
+                                </router-link>
+                            </div>
 
                             <div class="border-t border-gray-100 my-1"></div>
 
-                            <router-link to="/help"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                @click="hideUserMenu">
-                                <i class="pi pi-question-circle mr-3 text-gray-500"></i>
-                                <span>Help Center</span>
-                            </router-link>
+                            <div class="py-1">
+                                <router-link to="/help"
+                                    class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                                    @click="hideUserMenu">
+                                    <div
+                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-100 mr-3">
+                                        <i class="pi pi-question-circle text-yellow-600 text-sm"></i>
+                                    </div>
+                                    <span>Help Center</span>
+                                </router-link>
 
-                            <button @click="logout"
-                                class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200 w-full text-left">
-                                <i class="pi pi-sign-out mr-3 text-gray-500"></i>
-                                <span>Logout</span>
-                            </button>
+                                <button @click="logout"
+                                    class="flex items-center px-4 py-2 hover:bg-red-50 text-gray-700 hover:text-red-600 transition-colors duration-200 w-full text-left">
+                                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 mr-3">
+                                        <i class="pi pi-sign-out text-red-600 text-sm"></i>
+                                    </div>
+                                    <span>Logout</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Mobile Menu Button -->
-                    <Button icon="pi pi-bars"
-                        class="p-button-rounded p-button-text p-button-plain md:hidden hover:bg-blue-50 transition-colors duration-200"
-                        @click="showMobileMenu = !showMobileMenu" />
                 </div>
-                
+
                 <!-- Auth Links -->
                 <div class="flex items-center space-x-4" v-else>
                     <a @click="handleSignIn"
-                        class="hidden md:flex text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 text-sm font-medium cursor-pointer">
+                        class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 text-sm font-medium cursor-pointer">
                         Sign In
                     </a>
                     <a @click="handleSignUp"
-                        class="hidden md:flex bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium cursor-pointer transition-all duration-300">
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium cursor-pointer transition-all duration-300">
                         Sign Up
                     </a>
-
-                    <!-- Mobile Menu Button -->
-                    <Button icon="pi pi-bars"
-                        class="p-button-rounded p-button-text p-button-plain md:hidden hover:bg-blue-50 transition-colors duration-200"
-                        @click="showMobileMenu = !showMobileMenu" />
-                </div>
-            </div>
-
-            <!-- Mobile Menu -->
-            <div v-if="showMobileMenu"
-                class="md:hidden py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg shadow-inner">
-
-                <div class="flex flex-col space-y-1 mt-2">
-                    <router-link to="/"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-home mr-3 text-gray-500"></i> Home
-                    </router-link>
-                    <router-link to="/main/LivestockMarket"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-list mr-3 text-gray-500"></i> Livestocks
-                    </router-link>
-                    <router-link to="/forum"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-users mr-3 text-gray-500"></i> Forum
-                    </router-link>
-                    <router-link to="/resources"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-book mr-3 text-gray-500"></i> Resources
-                    </router-link>
-                    <div class="border-t border-gray-200 my-2"></div>
-                    <router-link to="/profile"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-user mr-3 text-gray-500"></i> Profile
-                    </router-link>
-                    <router-link to="/notifications"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-bell mr-3 text-gray-500"></i> Notifications
-                        <Badge v-if="unreadNotificationCount > 0" :value="unreadNotificationCount" severity="danger"
-                            class="ml-2 pulse-animation" />
-                    </router-link>
-                    <router-link to="/chat"
-                        class="text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-comments mr-3 text-gray-500"></i> Messages
-                        <Badge v-if="unreadChatCount > 0" :value="unreadChatCount" severity="danger"
-                            class="ml-2 pulse-animation" />
-                    </router-link>
-                    <button @click="logout"
-                        class="text-left text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 flex items-center transition-colors duration-200 border-l-4 border-transparent hover:border-blue-500">
-                        <i class="pi pi-sign-out mr-3 text-gray-500"></i> Logout
-                    </button>
                 </div>
             </div>
         </div>
@@ -772,17 +734,14 @@ export default defineComponent({
 @keyframes pulse {
     0% {
         transform: scale(1);
-        opacity: 1;
     }
 
     50% {
-        transform: scale(1.1);
-        opacity: 0.9;
+        transform: scale(1.2);
     }
 
     100% {
         transform: scale(1);
-        opacity: 1;
     }
 }
 
@@ -792,36 +751,76 @@ export default defineComponent({
 
 /* User Menu Animation */
 .user-menu-animated {
-    animation: fadeInDown 0.3s ease forwards;
+    animation: slideDown 0.3s ease-out;
     transform-origin: top right;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-@keyframes fadeInDown {
-    from {
+@keyframes slideDown {
+    0% {
         opacity: 0;
         transform: translateY(-10px) scale(0.95);
     }
 
-    to {
+    100% {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
 
-/* Transition for icons and buttons */
-.pi {
-    transition: transform 0.2s ease;
+/* Avatar Background Gradient */
+.avatar-gradient {
+    background: linear-gradient(135deg, #4F46E5, #60a5fa);
+    color: white;
 }
 
-button:hover .pi {
-    transform: scale(1.1);
+/* Custom Button Hover Effects */
+.hover-lift {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-/* Responsive adjustments */
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Scrollbar for Dropdown Menus */
+.max-h-96 {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+.max-h-96::-webkit-scrollbar {
+    width: 6px;
+}
+
+.max-h-96::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.max-h-96::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 20px;
+}
+
+/* Card Hover Effects */
+.hover-card-shadow {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.hover-card-shadow:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-4px);
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .p-menu {
-        width: 100vw !important;
-        max-width: 100vw;
+    .nav-link {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .user-profile-toggle {
+        padding: 0.5rem;
     }
 }
 </style>
