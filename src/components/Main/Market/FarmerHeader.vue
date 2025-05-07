@@ -9,7 +9,7 @@ import Paginator from 'primevue/paginator';
 
 
 export default defineComponent({
-    name: 'Header',
+    name: 'FarmerDetails',
     components: {
         Button,
         InputText,
@@ -21,22 +21,29 @@ export default defineComponent({
         // Add router
         const router = useRouter();
         
-        // New method to navigate to FarmerSignupForm
+        // Method to navigate to PostLivestockForms
         const postLivestocks = () => {
             router.push('/farmer/PostLivestockForms');
             console.log('Redirecting to /farmer/PostLivestockForms');
         };
 
+        // Method to navigate to farmer profile
+        const manageProfile = () => {
+            router.push('/farmer/profile');
+            console.log('Redirecting to /farmer/profile');
+        };
+
         return {
-          postLivestocks
+          postLivestocks,
+          manageProfile
         };
     }
 });
 </script>
 
 <template>
-    <div class="livestock-marketplace">
-        <!-- Hero/Banner Section with pastel colors -->
+    <div class="farmer-details-section">
+        <!-- Hero/Banner Section with farm theme colors -->
         <div class="Header relative bg-gradient-to-br from-green-500 to-green-800 text-white overflow-hidden">
             <!-- Background Pattern -->
             <div class="absolute inset-0 opacity-10">
@@ -52,18 +59,18 @@ export default defineComponent({
                     <!-- Logo with improved animation -->
                     <div
                         class="bg-white p-4 rounded-full shadow-lg mb-6 transform transition duration-700 hover:scale-105">
-                        <img src="/src/assets/vue.svg" alt="Livestock Marketplace Logo"
+                        <img src="/src/assets/vue.svg" alt="Farmer Portal Logo"
                             class="w-20 h-20 md:w-24 md:h-24" />
                     </div>
 
                     <!-- Heading with improved typography -->
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
-                        Find Premium Livestock <span class="block md:inline text-green-100">For Your Farm</span>
+                        Post Your Livestock <span class="block md:inline text-green-100">For Sale</span>
                     </h1>
 
                     <!-- Subheading with better contrast -->
                     <p class="text-xl text-green-50 mb-8 leading-relaxed max-w-2xl mx-auto">
-                        Connect directly with trusted breeders and sellers across the Philippines.
+                        List your premium livestock for sale and connect with buyers across the Philippines.
                     </p>
 
                     <!-- CTA Buttons - Adding multiple options -->
@@ -76,40 +83,39 @@ export default defineComponent({
                                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
                                     clip-rule="evenodd" />
                             </svg>
-                            Post Your Livestock
+                            Add New Livestock
                         </button>
-                        <button
+                        <button @click="manageProfile"
                             class="bg-green-800 bg-opacity-60 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-900 transform hover:scale-105 transition duration-300 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
                                 fill="currentColor">
-                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                                 <path fill-rule="evenodd"
-                                    d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
                                     clip-rule="evenodd" />
                             </svg>
-                            Browse Livestock
+                            Update Farm Profile
                         </button>
                     </div>
                 </div>
 
-                <!-- Stats Bar -->
+                <!-- Farmer Stats Bar -->
                 <div
                     class="bg-white bg-opacity-80 rounded-lg shadow-md py-4 px-6 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="text-center">
-                        <p class="text-green-800 font-bold text-2xl md:text-3xl">5,000+</p>
+                        <p class="text-green-800 font-bold text-2xl md:text-3xl">12</p>
                         <p class="text-gray-600 text-sm">Active Listings</p>
                     </div>
                     <div class="text-center">
-                        <p class="text-green-800 font-bold text-2xl md:text-3xl">3,200+</p>
-                        <p class="text-gray-600 text-sm">Verified Sellers</p>
+                        <p class="text-green-800 font-bold text-2xl md:text-3xl">45</p>
+                        <p class="text-gray-600 text-sm">Total Sales</p>
                     </div>
                     <div class="text-center">
-                        <p class="text-green-800 font-bold text-2xl md:text-3xl">98%</p>
-                        <p class="text-gray-600 text-sm">Satisfaction Rate</p>
+                        <p class="text-green-800 font-bold text-2xl md:text-3xl">4.8</p>
+                        <p class="text-gray-600 text-sm">Farmer Rating</p>
                     </div>
                     <div class="text-center">
-                        <p class="text-green-800 font-bold text-2xl md:text-3xl">78</p>
-                        <p class="text-gray-600 text-sm">Provinces Covered</p>
+                        <p class="text-green-800 font-bold text-2xl md:text-3xl">3</p>
+                        <p class="text-gray-600 text-sm">Years as Member</p>
                     </div>
                 </div>
             </div>
@@ -132,4 +138,4 @@ export default defineComponent({
 .p-dropdown {
     height: auto !important;
 }
-</style>
+</style>    
