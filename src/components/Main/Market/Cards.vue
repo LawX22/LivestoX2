@@ -244,7 +244,8 @@ export default defineComponent({
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="w-full md:w-2/5">
                         <span class="p-input-icon-left w-full relative">
-                            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <i
+                                class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <InputText v-model="searchQuery" placeholder="Search by type, breed, or location..."
                                 class="w-full pl-10 py-2 rounded-full border-gray-300" />
                         </span>
@@ -391,8 +392,9 @@ export default defineComponent({
 
                         <!-- Button -->
                         <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
-                            class="p-button-rounded p-button-success w-full font-medium text-sm mt-3"
+                            class="p-button-rounded p-button-success w-full font-medium text-sm mt-3 text-white"
                             @click="viewListing(listing)" />
+
                     </div>
                 </div>
             </div>
@@ -497,7 +499,7 @@ export default defineComponent({
                         <!-- Action buttons -->
                         <div class="mt-auto flex items-center gap-3">
                             <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
-                                class="p-button-rounded p-button-success flex-1 text-sm"
+                                class="p-button-rounded p-button-success flex-1 text-sm text-white"
                                 @click="viewListing(listing)" />
                             <button
                                 class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-colors"
