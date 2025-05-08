@@ -603,310 +603,321 @@ export default defineComponent({
 
                         <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
                             <label for="farmType" class="block text-gray-700 text-sm font-medium mb-1">
-    Farm Type <span class="text-red-500">*</span>
-</label>
-<div class="p-dropdown-wrapper w-full">
-    <Dropdown id="farmType" v-model="farmType" :options="farmTypeOptions" optionLabel="label" optionValue="value"
-        placeholder="Select farm type" class="w-full"
-        :class="{ 'p-invalid': submitted && !farmType }" />
-</div>
-<small v-if="submitted && !farmType" class="text-red-500 block mt-1">
-    Farm type is required
-</small>
-</div>
+                                Farm Type <span class="text-red-500">*</span>
+                            </label>
+                            <div class="p-dropdown-wrapper w-full">
+                                <Dropdown id="farmType" v-model="farmType" :options="farmTypeOptions"
+                                    optionLabel="label" optionValue="value" placeholder="Select farm type"
+                                    class="w-full" :class="{ 'p-invalid': submitted && !farmType }" />
+                            </div>
+                            <small v-if="submitted && !farmType" class="text-red-500 block mt-1">
+                                Farm type is required
+                            </small>
+                        </div>
 
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-<label for="farmLocation" class="block text-gray-700 text-sm font-medium mb-1">
-    Farm Location <span class="text-red-500">*</span>
-</label>
-<div class="p-inputtext-wrapper w-full">
-    <InputText id="farmLocation" v-model="farmLocation" placeholder="Enter your farm address"
-        class="w-full p-3 border-2"
-        :class="{ 'border-red-300 bg-red-50': submitted && !farmLocation, 'border-gray-300': !(submitted && !farmLocation) }" />
-</div>
-<small v-if="submitted && !farmLocation" class="text-red-500 block mt-1">
-    Farm location is required
-</small>
-</div>
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label for="farmLocation" class="block text-gray-700 text-sm font-medium mb-1">
+                                Farm Location <span class="text-red-500">*</span>
+                            </label>
+                            <div class="p-inputtext-wrapper w-full">
+                                <InputText id="farmLocation" v-model="farmLocation"
+                                    placeholder="Enter your farm address" class="w-full p-3 border-2"
+                                    :class="{ 'border-red-300 bg-red-50': submitted && !farmLocation, 'border-gray-300': !(submitted && !farmLocation) }" />
+                            </div>
+                            <small v-if="submitted && !farmLocation" class="text-red-500 block mt-1">
+                                Farm location is required
+                            </small>
+                        </div>
 
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-<label for="livestockTypes" class="block text-gray-700 text-sm font-medium mb-1">
-    Livestock Types
-</label>
-<div class="p-multiselect-wrapper w-full">
-    <Dropdown id="livestockTypes" v-model="livestockTypes" :options="livestockTypeOptions" optionLabel="label"
-        optionValue="value" placeholder="Select livestock types" class="w-full" multiple />
-</div>
-</div>
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label for="livestockTypes" class="block text-gray-700 text-sm font-medium mb-1">
+                                Livestock Types
+                            </label>
+                            <div class="p-multiselect-wrapper w-full">
+                                <Dropdown id="livestockTypes" v-model="livestockTypes" :options="livestockTypeOptions"
+                                    optionLabel="label" optionValue="value" placeholder="Select livestock types"
+                                    class="w-full" multiple />
+                            </div>
+                        </div>
 
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-<label for="farmDescription" class="block text-gray-700 text-sm font-medium mb-1">
-    Farm Description
-</label>
-<div class="p-textarea-wrapper w-full">
-    <Textarea id="farmDescription" v-model="farmDescription" rows="4" class="w-full p-3"
-        placeholder="Brief description of your farm operations..." />
-</div>
-</div>
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label for="farmDescription" class="block text-gray-700 text-sm font-medium mb-1">
+                                Farm Description
+                            </label>
+                            <div class="p-textarea-wrapper w-full">
+                                <Textarea id="farmDescription" v-model="farmDescription" rows="4" class="w-full p-3"
+                                    placeholder="Brief description of your farm operations..." />
+                            </div>
+                        </div>
 
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-<label for="farmCertifications" class="block text-gray-700 text-sm font-medium mb-1">
-    Farm Certifications
-</label>
-<div class="p-multiselect-wrapper w-full">
-    <Dropdown id="farmCertifications" v-model="farmCertifications" :options="farmCertificationOptions"
-        optionLabel="label" optionValue="value" placeholder="Select certifications" class="w-full" multiple />
-</div>
-</div>
-</div>
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label for="farmCertifications" class="block text-gray-700 text-sm font-medium mb-1">
+                                Farm Certifications
+                            </label>
+                            <div class="p-multiselect-wrapper w-full">
+                                <Dropdown id="farmCertifications" v-model="farmCertifications"
+                                    :options="farmCertificationOptions" optionLabel="label" optionValue="value"
+                                    placeholder="Select certifications" class="w-full" multiple />
+                            </div>
+                        </div>
+                    </div>
 
-<!-- Step 3: Document Upload & Terms - Enhanced styling -->
-<div v-if="currentStep === 2" class="space-y-6 animate-fade-in">
-<div class="bg-emerald-50 rounded-lg p-4 mb-6 border-l-4 border-emerald-500 shadow-sm">
-    <div class="flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-5 h-5 text-emerald-600 mr-2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-        </svg>
-        <p class="text-emerald-700">Please upload valid documentation to verify your farm.</p>
-    </div>
-</div>
+                    <!-- Step 3: Document Upload & Terms - Enhanced styling -->
+                    <div v-if="currentStep === 2" class="space-y-6 animate-fade-in">
+                        <div class="bg-emerald-50 rounded-lg p-4 mb-6 border-l-4 border-emerald-500 shadow-sm">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-emerald-600 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                </svg>
+                                <p class="text-emerald-700">Please upload valid documentation to verify your farm.</p>
+                            </div>
+                        </div>
 
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-    <label class="block text-gray-700 text-sm font-medium mb-2">
-        Upload Farm Documentation
-    </label>
-    <!-- Document upload with enhanced preview functionality -->
-    <FileUpload mode="basic" name="farm_docs[]" :customUpload="true" @uploader="onFileUpload"
-        accept="image/*,.pdf" :multiple="true" :auto="true" chooseLabel="Browse Files"
-        class="w-full">
-        <template #empty>
-            <p class="text-gray-500 text-center p-6">
-                Drag and drop files here or click to upload
-            </p>
-        </template>
-    </FileUpload>
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label class="block text-gray-700 text-sm font-medium mb-2">
+                                Upload Farm Documentation
+                            </label>
+                            <!-- Document upload with enhanced preview functionality -->
+                            <FileUpload mode="basic" name="farm_docs[]" :customUpload="true" @uploader="onFileUpload"
+                                accept="image/*,.pdf" :multiple="true" :auto="true" chooseLabel="Browse Files"
+                                class="w-full">
+                                <template #empty>
+                                    <p class="text-gray-500 text-center p-6">
+                                        Drag and drop files here or click to upload
+                                    </p>
+                                </template>
+                            </FileUpload>
 
-    <!-- Document preview area -->
-    <div v-if="uploadedImagePreview" class="mt-4 relative">
-        <div class="border rounded-lg p-2 relative">
-            <div class="absolute top-2 right-2 z-10">
-                <button type="button" @click="removeUploadedImage"
-                    class="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                            <!-- Document preview area -->
+                            <div v-if="uploadedImagePreview" class="mt-4 relative">
+                                <div class="border rounded-lg p-2 relative">
+                                    <div class="absolute top-2 right-2 z-10">
+                                        <button type="button" @click="removeUploadedImage"
+                                            class="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <img :src="uploadedImagePreview" alt="Document preview"
+                                        class="max-h-40 mx-auto object-contain" />
+                                </div>
+                            </div>
+
+                            <div class="flex items-center mt-3 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                </svg>
+                                Accepted formats: JPG, PNG, PDF (max 5MB each)
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <div class="flex items-start gap-3">
+                                <div class="pt-0.5">
+                                    <Checkbox v-model="termsAccepted" :binary="true" inputId="terms"
+                                        :class="{ 'p-invalid': submitted && !termsAccepted }" />
+                                </div>
+                                <label for="terms" class="text-gray-700 text-sm">
+                                    I agree to the <a href="#" class="text-emerald-600 hover:underline">Terms and
+                                        Conditions</a> and
+                                    <a href="#" class="text-emerald-600 hover:underline">Privacy Policy</a>. I confirm
+                                    that all
+                                    information provided is accurate and complete.
+                                    <span v-if="submitted && !termsAccepted" class="text-red-500 block mt-1">
+                                        You must accept the terms to continue
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Farm Visit Scheduling - Enhanced styling -->
+                    <div v-if="currentStep === 3" class="space-y-6 animate-fade-in">
+                        <div class="bg-emerald-50 rounded-lg p-4 mb-6 border-l-4 border-emerald-500 shadow-sm">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-emerald-600 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                </svg>
+                                <p class="text-emerald-700">Schedule a farm visit from our agricultural advisor.</p>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label for="visitDate" class="block text-gray-700 text-sm font-medium mb-1">
+                                Preferred Visit Date <span class="text-red-500">*</span>
+                            </label>
+                            <div class="p-calendar-wrapper w-full">
+                                <Calendar id="visitDate" v-model="visitDate" :minDate="new Date()" class="w-full"
+                                    :class="{ 'p-invalid': submitted && !visitDate }" placeholder="Select a date" />
+                            </div>
+                            <small v-if="submitted && !visitDate" class="text-red-500 block mt-1">
+                                Visit date is required
+                            </small>
+                        </div>
+
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label for="visitTime" class="block text-gray-700 text-sm font-medium mb-1">
+                                Preferred Time Slot <span class="text-red-500">*</span>
+                            </label>
+                            <div class="p-dropdown-wrapper w-full">
+                                <Dropdown id="visitTime" v-model="visitTime" :options="timeSlotOptions"
+                                    optionLabel="label" optionValue="value" placeholder="Select time slot"
+                                    class="w-full" :class="{ 'p-invalid': submitted && !visitTime }" />
+                            </div>
+                            <small v-if="submitted && !visitTime" class="text-red-500 block mt-1">
+                                Time slot is required
+                            </small>
+                        </div>
+
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label for="contactPreference" class="block text-gray-700 text-sm font-medium mb-1">
+                                Preferred Contact Method <span class="text-red-500">*</span>
+                            </label>
+                            <div class="p-dropdown-wrapper w-full">
+                                <Dropdown id="contactPreference" v-model="contactPreference"
+                                    :options="contactPreferenceOptions" optionLabel="label" optionValue="value"
+                                    placeholder="Select contact method" class="w-full"
+                                    :class="{ 'p-invalid': submitted && !contactPreference }" />
+                            </div>
+                            <small v-if="submitted && !contactPreference" class="text-red-500 block mt-1">
+                                Contact method is required
+                            </small>
+                        </div>
+
+                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
+                            <label for="additionalNotes" class="block text-gray-700 text-sm font-medium mb-1">
+                                Additional Notes
+                            </label>
+                            <div class="p-textarea-wrapper w-full">
+                                <Textarea id="additionalNotes" v-model="additionalNotes" rows="3" class="w-full p-3"
+                                    placeholder="Any specific requirements or instructions for the farm visit..." />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form navigation buttons with improved styling -->
+                    <div class="flex justify-between pt-6 border-t border-gray-200 mt-8">
+                        <Button type="button" @click="prevStep" v-if="currentStep > 0" class="px-6 py-2"
+                            :disabled="loading" outlined>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-5 h-5 mr-1">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                            Back
+                        </Button>
+                        <div v-else></div>
+
+                        <Button type="submit" :loading="loading" class="px-6 py-2" severity="success">
+                            <span v-if="currentStep < 3">
+                                Continue
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 ml-1">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
+                            </span>
+                            <span v-else>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Complete Registration
+                            </span>
+                        </Button>
+                    </div>
+                </form>
             </div>
-            <img :src="uploadedImagePreview" alt="Document preview" class="max-h-40 mx-auto object-contain" />
+        </div>
+
+        <!-- Footer with brand info and additional links -->
+        <div class="max-w-6xl mx-auto mt-12 text-center text-gray-600 text-sm">
+            <p>© 2025 LivestoX Farm Management. All rights reserved.</p>
+            <div class="flex justify-center space-x-4 mt-3">
+                <a href="#" class="text-emerald-600 hover:text-emerald-700">About Us</a>
+                <a href="#" class="text-emerald-600 hover:text-emerald-700">Contact</a>
+                <a href="#" class="text-emerald-600 hover:text-emerald-700">Privacy Policy</a>
+                <a href="#" class="text-emerald-600 hover:text-emerald-700">Terms & Conditions</a>
+            </div>
         </div>
     </div>
-    
-    <div class="flex items-center mt-3 text-xs text-gray-500">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-4 h-4 mr-1">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-        </svg>
-        Accepted formats: JPG, PNG, PDF (max 5MB each)
-    </div>
-</div>
-
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-    <div class="flex items-start gap-3">
-        <div class="pt-0.5">
-            <Checkbox v-model="termsAccepted" :binary="true" inputId="terms"
-                :class="{ 'p-invalid': submitted && !termsAccepted }" />
-        </div>
-        <label for="terms" class="text-gray-700 text-sm">
-            I agree to the <a href="#" class="text-emerald-600 hover:underline">Terms and Conditions</a> and
-            <a href="#" class="text-emerald-600 hover:underline">Privacy Policy</a>. I confirm that all
-            information provided is accurate and complete.
-            <span v-if="submitted && !termsAccepted" class="text-red-500 block mt-1">
-                You must accept the terms to continue
-            </span>
-        </label>
-    </div>
-</div>
-</div>
-
-<!-- Step 4: Farm Visit Scheduling - Enhanced styling -->
-<div v-if="currentStep === 3" class="space-y-6 animate-fade-in">
-<div class="bg-emerald-50 rounded-lg p-4 mb-6 border-l-4 border-emerald-500 shadow-sm">
-    <div class="flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-5 h-5 text-emerald-600 mr-2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-        </svg>
-        <p class="text-emerald-700">Schedule a farm visit from our agricultural advisor.</p>
-    </div>
-</div>
-
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-    <label for="visitDate" class="block text-gray-700 text-sm font-medium mb-1">
-        Preferred Visit Date <span class="text-red-500">*</span>
-    </label>
-    <div class="p-calendar-wrapper w-full">
-        <Calendar id="visitDate" v-model="visitDate" :minDate="new Date()" class="w-full"
-            :class="{ 'p-invalid': submitted && !visitDate }" placeholder="Select a date" />
-    </div>
-    <small v-if="submitted && !visitDate" class="text-red-500 block mt-1">
-        Visit date is required
-    </small>
-</div>
-
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-    <label for="visitTime" class="block text-gray-700 text-sm font-medium mb-1">
-        Preferred Time Slot <span class="text-red-500">*</span>
-    </label>
-    <div class="p-dropdown-wrapper w-full">
-        <Dropdown id="visitTime" v-model="visitTime" :options="timeSlotOptions" optionLabel="label"
-            optionValue="value" placeholder="Select time slot" class="w-full"
-            :class="{ 'p-invalid': submitted && !visitTime }" />
-    </div>
-    <small v-if="submitted && !visitTime" class="text-red-500 block mt-1">
-        Time slot is required
-    </small>
-</div>
-
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-    <label for="contactPreference" class="block text-gray-700 text-sm font-medium mb-1">
-        Preferred Contact Method <span class="text-red-500">*</span>
-    </label>
-    <div class="p-dropdown-wrapper w-full">
-        <Dropdown id="contactPreference" v-model="contactPreference" :options="contactPreferenceOptions"
-            optionLabel="label" optionValue="value" placeholder="Select contact method" class="w-full"
-            :class="{ 'p-invalid': submitted && !contactPreference }" />
-    </div>
-    <small v-if="submitted && !contactPreference" class="text-red-500 block mt-1">
-        Contact method is required
-    </small>
-</div>
-
-<div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-    <label for="additionalNotes" class="block text-gray-700 text-sm font-medium mb-1">
-        Additional Notes
-    </label>
-    <div class="p-textarea-wrapper w-full">
-        <Textarea id="additionalNotes" v-model="additionalNotes" rows="3" class="w-full p-3"
-            placeholder="Any specific requirements or instructions for the farm visit..." />
-    </div>
-</div>
-</div>
-
-<!-- Form navigation buttons with improved styling -->
-<div class="flex justify-between pt-6 border-t border-gray-200 mt-8">
-<Button type="button" @click="prevStep" v-if="currentStep > 0" class="px-6 py-2"
-    :disabled="loading" outlined>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-        stroke="currentColor" class="w-5 h-5 mr-1">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-    </svg>
-    Back
-</Button>
-<div v-else></div>
-
-<Button type="submit" :loading="loading" class="px-6 py-2" severity="success">
-    <span v-if="currentStep < 3">
-        Continue
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-5 h-5 ml-1">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-        </svg>
-    </span>
-    <span v-else>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-5 h-5 mr-1">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        Complete Registration
-    </span>
-</Button>
-</div>
-</form>
-</div>
-</div>
-
-<!-- Footer with brand info and additional links -->
-<div class="max-w-6xl mx-auto mt-12 text-center text-gray-600 text-sm">
-<p>© 2025 LivestoX Farm Management. All rights reserved.</p>
-<div class="flex justify-center space-x-4 mt-3">
-<a href="#" class="text-emerald-600 hover:text-emerald-700">About Us</a>
-<a href="#" class="text-emerald-600 hover:text-emerald-700">Contact</a>
-<a href="#" class="text-emerald-600 hover:text-emerald-700">Privacy Policy</a>
-<a href="#" class="text-emerald-600 hover:text-emerald-700">Terms & Conditions</a>
-</div>
-</div>
-</div>
 </template>
 
 <style scoped>
 /* Fade in animation for step transitions */
 .animate-fade-in {
-animation: fadeIn 0.3s ease-in-out;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
 @keyframes fadeIn {
-from {
-    opacity: 0;
-    transform: translateY(5px);
-}
-to {
-    opacity: 1;
-    transform: translateY(0);
-}
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Fix for PrimeVue components to match our styling */
 :deep(.p-dropdown),
 :deep(.p-calendar),
 :deep(.p-multiselect) {
-width: 100%;
+    width: 100%;
 }
 
 :deep(.p-dropdown-label),
 :deep(.p-calendar-input),
 :deep(.p-multiselect-label) {
-padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem;
 }
 
 :deep(.p-button) {
-display: flex;
-align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 :deep(.p-calendar-w-btn .p-datepicker-trigger) {
-background-color: #10b981;
-border-color: #10b981;
+    background-color: #10b981;
+    border-color: #10b981;
 }
 
 :deep(.p-calendar-w-btn .p-datepicker-trigger:hover) {
-background-color: #059669;
-border-color: #059669;
+    background-color: #059669;
+    border-color: #059669;
 }
 
 /* Improved styling for checkboxes */
 :deep(.p-checkbox .p-checkbox-box.p-highlight) {
-background-color: #10b981;
-border-color: #10b981;
+    background-color: #10b981;
+    border-color: #10b981;
 }
 
 :deep(.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover) {
-background-color: #059669;
-border-color: #059669;
+    background-color: #059669;
+    border-color: #059669;
 }
 
 /* File upload styling */
 :deep(.p-fileupload-choose) {
-background-color: #10b981;
-border-color: #10b981;
+    background-color: #10b981;
+    border-color: #10b981;
 }
 
 :deep(.p-fileupload-choose:hover) {
-background-color: #059669;
-border-color: #059669;
+    background-color: #059669;
+    border-color: #059669;
 }
 </style>
