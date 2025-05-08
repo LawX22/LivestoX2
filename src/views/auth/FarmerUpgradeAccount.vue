@@ -13,6 +13,7 @@ import FileUpload from 'primevue/fileupload';
 import Calendar from 'primevue/calendar';
 import { useAuthStore } from '../../stores/authContext';
 import { upgradeUserAccount } from '../../lib/upgradeAccount';
+import { upload } from '../../lib/storage/upload';
 
 export default defineComponent({
     name: 'FarmSignupForm',
@@ -50,6 +51,7 @@ export default defineComponent({
         const farmDescription = ref<string>('');
         const livestockTypes = ref<string>('');
         const farmCertifications = ref<string>('');
+        const farmDocumentations = ref<string>('');
 
         // New document upload and terms fields
         const idDocuments = ref<File[]>([]);
@@ -201,7 +203,7 @@ export default defineComponent({
         };
 
         // File upload handler
-        const onFileUpload = (event: any) => {
+        const onFileUpload = async (event: any) => {
             const files = event.files;
             idDocuments.value = files;
 
@@ -212,6 +214,19 @@ export default defineComponent({
                     uploadedImagePreview.value = e.target.result;
                 };
                 reader.readAsDataURL(files[0]);
+            }
+
+            try {
+                const filePath = `documentation/${Date.now()}-${files[0].name}`;
+                const publicUrl = await upload(files[0], filePath);
+                farmDocumentations.value = publicUrl ?? '';
+            } catch (error) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Documents not Uploaded',
+                    detail: `${files.length} document(s) uploaded not successfully`,
+                    life: 3000
+                });
             }
 
             toast.add({
@@ -280,7 +295,8 @@ export default defineComponent({
                     farmLocation.value,
                     farmDescription.value,
                     livestockTypes.value,
-                    farmCertifications.value
+                    farmCertifications.value,
+                    farmDocumentations.value
                 );
 
                 // Mock successful farm account upgrade
