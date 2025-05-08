@@ -217,17 +217,16 @@ export default defineComponent({
             }
 
             try {
-            const filePath = `documentation/${Date.now()}-${files[0].name}`;
-            
-            const publicUrl = await upload(files[0], filePath);
-            farmDocumentations.value = publicUrl ?? '';
+                const filePath = `documentation/${Date.now()}-${files[0].name}`;
+                const publicUrl = await upload(files[0], filePath);
+                farmDocumentations.value = publicUrl ?? '';
             } catch (error) {
                 toast.add({
-                severity: 'error',
-                summary: 'Documents not Uploaded',
-                detail: `${files.length} document(s) uploaded not successfully`,
-                life: 3000
-            });
+                    severity: 'error',
+                    summary: 'Documents not Uploaded',
+                    detail: `${files.length} document(s) uploaded not successfully`,
+                    life: 3000
+                });
             }
 
             toast.add({
