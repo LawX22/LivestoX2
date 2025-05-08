@@ -104,11 +104,10 @@ const hasImages = computed(() => {
 });
 
 // Display only max 5 images in the preview grid
-const imageGridItems = computed(() => {
-  // Ensure we only show a maximum of 5 images
-  const maxImagesShown = Math.min(props.imagePreviewUrls.length, 5);
-  return props.imagePreviewUrls.slice(0, maxImagesShown);
-});
+// const imageGridItems = computed(() => {
+//   const maxImagesShown = Math.min(props.imagePreviewUrls.length, 5);
+//   return props.imagePreviewUrls.slice(0, maxImagesShown);
+// });
 
 // Check if the fifth image is the last one or if there are more images
 const lastImageIsMore = computed(() => {
@@ -188,11 +187,11 @@ const isVideoFormatSupported = computed(() => {
 });
 
 // Format video duration
-const formatVideoDuration = (seconds: number) => {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs < 10 ? '0' + secs : secs}`;
-};
+// const formatVideoDuration = (seconds: number) => {
+//   const mins = Math.floor(seconds / 60);
+//   const secs = Math.floor(seconds % 60);
+//   return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+// };
 
 // Check if video preview is available
 const hasVideoPreview = computed(() => {
