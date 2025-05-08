@@ -217,9 +217,9 @@ export default defineComponent({
             }
 
             try {
-            const filePath = `documentation/${Date.now()}-${files.name}`;
+            const filePath = `documentation/${Date.now()}-${files[0].name}`;
             
-            const publicUrl = await upload(files, filePath);
+            const publicUrl = await upload(files[0], filePath);
             farmDocumentations.value = publicUrl;
             } catch (error) {
                 toast.add({
