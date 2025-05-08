@@ -51,7 +51,7 @@ export default defineComponent({
         const farmDescription = ref<string>('');
         const livestockTypes = ref<string>('');
         const farmCertifications = ref<string>('');
-        const farmDocumentations = ref<string | null>('');
+        const farmDocumentations = ref<string>('');
 
         // New document upload and terms fields
         const idDocuments = ref<File[]>([]);
@@ -220,7 +220,7 @@ export default defineComponent({
             const filePath = `documentation/${Date.now()}-${files[0].name}`;
             
             const publicUrl = await upload(files[0], filePath);
-            farmDocumentations.value = publicUrl;
+            farmDocumentations.value = publicUrl ?? '';
             } catch (error) {
                 toast.add({
                 severity: 'error',
