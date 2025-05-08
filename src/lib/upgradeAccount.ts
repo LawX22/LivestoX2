@@ -9,7 +9,8 @@ export const upgradeUserAccount = async (
   farmLocation: string | undefined,
   farmDescription: string | undefined,
   livestockTypes: string | undefined,
-  farmCertifications: string | undefined
+  farmCertifications: string | undefined,
+  farmDocumentations: string | undefined
 ): Promise<{ success: boolean; error?: string }> => {
   // Step 1: Get current user
   const {
@@ -47,6 +48,8 @@ export const upgradeUserAccount = async (
           description: farmDescription,
           livestock_types: livestockTypes,
           certifications: farmCertifications,
+          documentation: farmDocumentations
+          
         }
       ],
       { onConflict: 'user_id' }
