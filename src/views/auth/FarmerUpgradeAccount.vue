@@ -12,6 +12,7 @@ import Textarea from 'primevue/textarea';
 import FileUpload from 'primevue/fileupload';
 import Calendar from 'primevue/calendar';
 import { useAuthStore } from '../../stores/authContext';
+import { upgradeUserAccount } from '../../lib/upgradeAccount';
 
 export default defineComponent({
     name: 'FarmSignupForm',
@@ -32,17 +33,23 @@ export default defineComponent({
         const authStore = useAuthStore();
 
         // User Personal Information (pre-filled)
-        const fullName = ref<string>(`${authStore?.user?.user_metadata.firstname} ${authStore?.user?.user_metadata.firstname}`); // This would typically come from user's existing account
-        const email = ref<string>(authStore?.user?.user_metadata.email); // Pre-filled from existing account
-        const phoneNumber = ref<string>(authStore?.user?.user_metadata.phone); // Philippines phone number field
+        const fullName = ref<string>(''); // This would typically come from user's existing account
+        const email = ref<string>(''); // Pre-filled from existing account
+        const phoneNumber = ref<string>(''); // Philippines phone number field
+
+        onMounted(async () => {
+            fullName.value = `${authStore?.user?.user_metadata.firstname ?? ''} ${authStore?.user?.user_metadata.firstname ?? ''}`.trim();
+            email.value = authStore?.user?.user_metadata.email;
+            phoneNumber.value = authStore?.user?.user_metadata.phone;
+        });
 
         // Farm-specific form fields
         const farmName = ref<string>('');
         const farmType = ref<string>('');
         const farmLocation = ref<string>('');
         const farmDescription = ref<string>('');
-        const livestockTypes = ref<string[]>([]);
-        const farmCertifications = ref<string[]>([]);
+        const livestockTypes = ref<string>('');
+        const farmCertifications = ref<string>('');
 
         // New document upload and terms fields
         const idDocuments = ref<File[]>([]);
@@ -264,8 +271,17 @@ export default defineComponent({
             try {
                 loading.value = true;
 
-                // Replace with your actual farm account upgrade logic
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await upgradeUserAccount(
+                    fullName.value,
+                    email.value,
+                    phoneNumber.value,
+                    farmName.value,
+                    farmType.value,
+                    farmLocation.value,
+                    farmDescription.value,
+                    livestockTypes.value,
+                    farmCertifications.value
+                );
 
                 // Mock successful farm account upgrade
                 toast.add({
@@ -276,7 +292,7 @@ export default defineComponent({
                 });
 
                 // Navigate to farm dashboard or profile
-                router.push('/farm-dashboard');
+                router.push('/farmer/FarmerLivestockDashboard');
             } catch (error) {
                 toast.add({
                     severity: 'error',
