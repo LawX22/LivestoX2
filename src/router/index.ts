@@ -19,6 +19,7 @@ import LivestockForum from '../views/main/LivestockForum.vue';
 import ViewListings from '../views/main/ViewListings.vue';
 
 import PurchaseHistory from '../views/main/PurchaseHistory.vue';
+import UserProfile from '../views/main/UserProfile.vue';
 
 
 // Farmer Pages
@@ -45,6 +46,7 @@ const routes = [
   { path: '/main/ViewListings', component: ViewListings, name: 'ViewListings' },
 
   { path: '/main/PurchaseHistory', component: PurchaseHistory, name: 'PurchaseHistory' },
+  { path: '/main/UserProfile', component: UserProfile, name: 'UserProfile' },
 
 
   // Farmer Routes

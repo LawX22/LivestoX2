@@ -616,7 +616,7 @@ export default defineComponent({
 
                             <!-- Menu Items -->
                             <div class="py-1">
-                                <router-link to="/profile"
+                                <router-link to="/main/UserProfile"
                                     class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
                                     @click="hideUserMenu">
                                     <div class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 mr-3">
