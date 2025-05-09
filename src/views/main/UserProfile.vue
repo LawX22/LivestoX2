@@ -17,6 +17,7 @@
     livestockTypes?: string[];
     accountType: 'buyer' | 'farmer';
     profilePicture?: string;
+    bannerImage?: string;
     joinDate: Date;
     lastLogin: Date;
   }
@@ -83,6 +84,10 @@
     // Redirect to the farmer upgrade page
     router.push('/FarmerUpgradeAccount');
   };
+  
+  const navigateBack = () => {
+    router.back();
+  };
 
   const addLivestockType = () => {
     if (selectedLivestockType.value && !editableUser.value.livestockTypes?.includes(selectedLivestockType.value)) {
@@ -123,6 +128,20 @@
       reader.readAsDataURL(input.files[0]);
     }
   };
+  
+  // Mock function for banner image upload
+  const uploadBannerImage = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target && typeof e.target.result === 'string') {
+          editableUser.value.bannerImage = e.target.result;
+        }
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  };
 
   onMounted(() => {
     // Here you would typically fetch the user data from an API
@@ -139,7 +158,7 @@
       >
         <div class="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 0016 0zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 0116 0zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
           </svg>
           {{ notification.message }}
         </div>
@@ -147,18 +166,42 @@
 
       <div class="max-w-6xl mx-auto px-4">
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+          <!-- Back button -->
+          <div class="absolute top-4 left-4 z-10">
+            <button 
+              @click="navigateBack" 
+              class="bg-white/80 hover:bg-white text-gray-700 p-2 rounded-lg shadow-md transition duration-200 flex items-center gap-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+              </svg>
+              <span>Back</span>
+            </button>
+          </div>
+          
           <!-- Header with background image -->
           <div class="relative bg-gradient-to-r from-green-700 to-emerald-600 h-48">
-            <!-- Farm theme background pattern -->
-            <div class="absolute inset-0 opacity-20 bg-repeat" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=');"></div>
+            <!-- Farm theme background pattern or uploaded banner image -->
+            <div 
+              class="absolute inset-0 bg-cover bg-center" 
+              :style="editableUser.bannerImage ? `background-image: url('${editableUser.bannerImage}')` : 'background-image: url(\'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=\'); background-repeat: repeat; opacity: 0.2;'"
+            ></div>
             
-            <div class="absolute bottom-0 left-0 w-full p-6 flex justify-between items-end">
-              <h1 class="text-3xl font-bold text-white flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                </svg>
-                User Profile
-              </h1>
+            <!-- Banner upload button -->
+            <label v-if="isEditing" for="bannerImageInput" class="absolute top-4 right-4 bg-white/80 text-green-700 p-2 rounded-full cursor-pointer shadow-md hover:bg-white transition duration-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <input 
+                id="bannerImageInput" 
+                type="file" 
+                accept="image/*" 
+                class="hidden" 
+                @change="uploadBannerImage"
+              />
+            </label>
+            
+            <div class="absolute bottom-0 left-0 w-full p-6 flex justify-end items-end">
               <div>
                 <span v-if="isFarmerAccount" class="bg-yellow-400 text-gray-800 px-4 py-1 rounded-full font-semibold flex items-center shadow-md">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -355,352 +398,374 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                         </svg>
-                        Security & Settings
+                        Security
                       </button>
                     </nav>
                   </div>
                   
-                  <form @submit.prevent="saveProfile">
-                    <!-- Personal Information Tab -->
-                    <div v-if="activeTab === 'personal'" class="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-100 shadow-sm">
-                      <h4 class="text-lg font-semibold mb-4 flex items-center text-green-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
+                  <!-- Personal Information Tab -->
+                  <div v-if="activeTab === 'personal'" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.firstName" 
+                          type="text" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">{{ currentUser.firstName }}</p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.lastName" 
+                          type="text" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">{{ currentUser.lastName }}</p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.username" 
+                          type="text" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">{{ currentUser.username }}</p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.email" 
+                          type="email" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">{{ currentUser.email }}</p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.phoneNumber" 
+                          type="tel" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">{{ currentUser.phoneNumber }}</p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                        <select 
+                          v-if="isEditing" 
+                          v-model="editableUser.gender" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                          {{ currentUser.gender ? currentUser.gender.charAt(0).toUpperCase() + currentUser.gender.slice(1) : 'Not specified' }}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div v-if="isEditing" class="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-6">
+                      <h4 class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                         </svg>
-                        Basic Information
+                        We Value Your Privacy
                       </h4>
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <label class="block text-gray-700 mb-2 font-medium">First Name</label>
-                          <input 
-                            v-if="isEditing" 
-                            v-model="editableUser.firstName" 
-                            type="text" 
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          />
-                          <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">{{ currentUser.firstName }}</p>
+                      <p class="text-sm text-gray-600">
+                        Your personal information is protected and will only be used to provide you with a better experience on our platform. We never share your details with third parties without your consent.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <!-- Farm Information Tab -->
+                  <div v-if="activeTab === 'farm'" class="space-y-6">
+                    <div v-if="!isFarmerAccount && !isEditing" class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+                      <div class="flex justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                      <h3 class="text-lg font-medium text-gray-900 mb-2">Farm Information Not Available</h3>
+                      <p class="text-gray-600 mb-4">
+                        You currently have a buyer account. To access farm management features, please upgrade to a farmer account.
+                      </p>
+                      <button 
+                        @click="upgradeToFarmer" 
+                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200 inline-flex items-center"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                        </svg>
+                        Upgrade to Farmer
+                      </button>
+                    </div>
+                    
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Farm Name</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.farmName" 
+                          type="text" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                          placeholder="Enter your farm name"
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                          {{ currentUser.farmName || 'Not specified' }}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Farm Location</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.farmLocation" 
+                          type="text" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                          placeholder="Enter your farm location"
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                          {{ currentUser.farmLocation || 'Not specified' }}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Farm Size (acres)</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.farmSize" 
+                          type="number" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                          placeholder="Enter farm size in acres"
+                          min="0"
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                          {{ currentUser.farmSize ? `${currentUser.farmSize} acres` : 'Not specified' }}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Livestock Count</label>
+                        <input 
+                          v-if="isEditing" 
+                          v-model="editableUser.livestockCount" 
+                          type="number" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                          placeholder="Enter total livestock count"
+                          min="0"
+                        />
+                        <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                          {{ currentUser.livestockCount !== undefined ? currentUser.livestockCount : 'Not specified' }}
+                        </p>
+                      </div>
+                      
+                      <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Livestock Types</label>
+                        <div v-if="isEditing" class="space-y-3">
+                          <div class="flex gap-2">
+                            <select 
+                              v-model="selectedLivestockType" 
+                              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            >
+                              <option value="">Select livestock type</option>
+                              <option v-for="type in availableLivestockTypes" :key="type" :value="type">{{ type }}</option>
+                            </select>
+                            <button 
+                              @click="addLivestockType" 
+                              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                              :disabled="!selectedLivestockType"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <div v-if="editableUser.livestockTypes && editableUser.livestockTypes.length > 0" class="flex flex-wrap gap-2">
+                            <div 
+                              v-for="type in editableUser.livestockTypes" 
+                              :key="type" 
+                              class="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center gap-1"
+                            >
+                              {{ type }}
+                              <button 
+                                @click="removeLivestockType(type)" 
+                                class="text-green-600 hover:text-green-800"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          <p v-else class="text-gray-500 italic">No livestock types added yet</p>
                         </div>
                         
-                        <div>
-                          <label class="block text-gray-700 mb-2 font-medium">Last Name</label>
-                          <input 
-                            v-if="isEditing" 
-                            v-model="editableUser.lastName" 
-                            type="text" 
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          />
-                          <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">{{ currentUser.lastName }}</p>
-                        </div>
-                        
-                        <div>
-                          <label class="block text-gray-700 mb-2 font-medium">Username</label>
-                          <input 
-                            v-if="isEditing" 
-                            v-model="editableUser.username" 
-                            type="text" 
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          />
-                          <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">{{ currentUser.username }}</p>
-                        </div>
-                        
-                        <div>
-                          <label class="block text-gray-700 mb-2 font-medium">Email Address</label>
-                          <input 
-                            v-if="isEditing" 
-                            v-model="editableUser.email" 
-                            type="email" 
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          />
-                          <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">{{ currentUser.email }}</p>
-                        </div>
-                        
-                        <div>
-                          <label class="block text-gray-700 mb-2 font-medium">Phone Number</label>
-                          <input 
-                            v-if="isEditing" 
-                            v-model="editableUser.phoneNumber" 
-                            type="tel" 
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          />
-                          <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">{{ currentUser.phoneNumber }}</p>
-                        </div>
-                        
-                        <div>
-                          <label class="block text-gray-700 mb-2 font-medium">Gender</label>
-                          <select 
-                            v-if="isEditing" 
-                            v-model="editableUser.gender" 
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          >
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                            <option value="">Prefer not to say</option>
-                          </select>
-                          <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">
-                            {{ currentUser.gender ? currentUser.gender.charAt(0).toUpperCase() + currentUser.gender.slice(1) : 'Not specified' }}
+                        <div v-else>
+                          <div v-if="currentUser.livestockTypes && currentUser.livestockTypes.length > 0" class="flex flex-wrap gap-2">
+                            <span 
+                              v-for="type in currentUser.livestockTypes" 
+                              :key="type" 
+                              class="bg-green-100 text-green-800 px-3 py-1 rounded-full"
+                            >
+                              {{ type }}
+                            </span>
+                          </div>
+                          <p v-else class="text-gray-800 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
+                            Not specified
                           </p>
                         </div>
                       </div>
                     </div>
                     
-                    <!-- Farm Information Tab -->
-                    <div v-if="activeTab === 'farm'" class="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-100 shadow-sm">
-                      <div v-if="!isFarmerAccount && !isEditing" class="text-center py-8">
-                        <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-200 mb-6 inline-block">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-yellow-500 mx-auto mb-3" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                          <h3 class="text-xl font-semibold text-gray-800 mb-2">Upgrade to a Farmer Account</h3>
-                          <p class="text-gray-600 mb-4">Access farm management tools and connect with buyers directly.</p>
-                          <button 
-                            @click="upgradeToFarmer" 
-                            class="bg-gradient-to-r from-amber-400 to-amber-600 text-white py-2 px-6 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                          >
-                            Upgrade Now
+                    <div v-if="isFarmerAccount && !isEditing" class="bg-green-50 p-4 rounded-lg border border-green-100 mt-6">
+                      <h4 class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        Farm Management Tools
+                      </h4>
+                      <p class="text-sm text-gray-600">
+                        Access additional farm management tools, analytics, and resources in the Farm Management Dashboard. Track your livestock, monitor market trends, and connect with other farmers in the community.
+                      </p>
+                      <button class="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded-lg text-sm font-medium transition duration-200 inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+                        </svg>
+                        Farm Dashboard
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Security Tab -->
+                  <div v-if="activeTab === 'security'" class="space-y-6">
+                    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                      <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        Password & Security
+                      </h3>
+                      
+                      <div class="space-y-4">
+                        <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                          <div>
+                            <h4 class="font-medium text-gray-900">Password</h4>
+                            <p class="text-sm text-gray-600">Last changed: 2 months ago</p>
+                          </div>
+                          <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Change Password
                           </button>
                         </div>
-                      </div>
-                      
-                      <div v-else>
-                        <h4 class="text-lg font-semibold mb-4 flex items-center text-green-700">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                          </svg>
-                          Farm Details
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <div class="flex items-center justify-between pb-4 border-b border-gray-200">
                           <div>
-                            <label class="block text-gray-700 mb-2 font-medium">Farm Name</label>
-                            <input 
-                              v-if="isEditing" 
-                              v-model="editableUser.farmName" 
-                              type="text" 
-                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                              placeholder="Enter your farm name"
-                            />
-                            <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">
-                              {{ currentUser.farmName || 'Not specified' }}
-                            </p>
+                            <h4 class="font-medium text-gray-900">Two-Factor Authentication</h4>
+                            <p class="text-sm text-gray-600">Add an extra layer of security to your account</p>
                           </div>
-                          
-                          <div>
-                            <label class="block text-gray-700 mb-2 font-medium">Farm Location</label>
-                            <input 
-                              v-if="isEditing" 
-                              v-model="editableUser.farmLocation" 
-                              type="text" 
-                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                              placeholder="City, State/Province"
-                            />
-                            <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">
-                              {{ currentUser.farmLocation || 'Not specified' }}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <label class="block text-gray-700 mb-2 font-medium">Farm Size (acres)</label>
-                            <input 
-                              v-if="isEditing" 
-                              v-model.number="editableUser.farmSize" 
-                              type="number" 
-                              min="0"
-                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                            />
-                            <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">
-                              {{ currentUser.farmSize ? `${currentUser.farmSize} acres` : 'Not specified' }}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <label class="block text-gray-700 mb-2 font-medium">Livestock Count</label>
-                            <input 
-                              v-if="isEditing" 
-                              v-model.number="editableUser.livestockCount" 
-                              type="number" 
-                              min="0"
-                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                            />
-                            <p v-else class="text-gray-900 bg-white p-2 rounded border border-gray-200">
-                              {{ currentUser.livestockCount || 'Not specified' }}
-                            </p>
-                          </div>
+                          <button class="bg-green-100 text-green-800 hover:bg-green-200 px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Enable 2FA
+                          </button>
                         </div>
                         
-                        <!-- Livestock Types -->
-                        <div class="mt-6">
-                          <label class="block text-gray-700 mb-2 font-medium">Livestock Types</label>
-                          
-                          <div v-if="isEditing" class="mb-4">
-                            <div class="flex gap-2">
-                              <select 
-                                v-model="selectedLivestockType" 
-                                class="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                              >
-                                <option value="">-- Select livestock type --</option>
-                                <option v-for="type in availableLivestockTypes" :key="type" :value="type">
-                                  {{ type }}
-                                </option>
-                              </select>
-                              <button 
-                                type="button"
-                                @click="addLivestockType" 
-                                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                                :disabled="!selectedLivestockType"
-                              >
-                                Add
-                              </button>
-                            </div>
-                            
-                            <div class="flex flex-wrap gap-2 mt-3">
-                              <div 
-                                v-for="type in editableUser.livestockTypes" 
-                                :key="type"
-                                class="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center"
-                              >
-                                {{ type }}
-                                <button 
-                                  type="button"
-                                  @click="removeLivestockType(type)" 
-                                  class="ml-2 text-green-600 hover:text-green-800"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <h4 class="font-medium text-gray-900">Login History</h4>
+                            <p class="text-sm text-gray-600">View your recent login activity</p>
                           </div>
-                          
-                          <div v-else class="bg-white p-2 rounded border border-gray-200">
-                            <div v-if="currentUser.livestockTypes && currentUser.livestockTypes.length > 0" class="flex flex-wrap gap-2">
-                              <span 
-                                v-for="type in currentUser.livestockTypes" 
-                                :key="type"
-                                class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
-                              >
-                                {{ type }}
-                              </span>
-                            </div>
-                            <p v-else class="text-gray-500">No livestock types specified</p>
-                          </div>
+                          <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            View History
+                          </button>
                         </div>
                       </div>
                     </div>
                     
-                    <!-- Security & Settings Tab -->
-                    <div v-if="activeTab === 'security'" class="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-100 shadow-sm">
-                      <h4 class="text-lg font-semibold mb-4 flex items-center text-green-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                      <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
                         </svg>
-                        Security Settings
-                      </h4>
+                        Privacy Settings
+                      </h3>
                       
-                      <div class="space-y-6">
-                        <div>
-                          <label class="block text-gray-700 mb-2 font-medium">Change Password</label>
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input 
-                              type="password" 
-                              placeholder="Current Password" 
-                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                              :disabled="!isEditing"
-                            />
-                            <input 
-                              type="password" 
-                              placeholder="New Password" 
-                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                              :disabled="!isEditing"
-                            />
+                      <div class="space-y-4">
+                        <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                          <div>
+                            <h4 class="font-medium text-gray-900">Profile Visibility</h4>
+                            <p class="text-sm text-gray-600">Control who can see your profile information</p>
                           </div>
-                        </div>
-
-                        <div>
-                          <h5 class="font-semibold mb-3">Account Type</h5>
-                          <div class="flex gap-4">
-                            <label class="flex items-center">
-                              <input 
-                                type="radio" 
-                                v-model="editableUser.accountType" 
-                                value="buyer" 
-                                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                                :disabled="!isEditing"
-                              />
-                              <span class="ml-2 text-gray-700">Buyer</span>
-                            </label>
-                            <label class="flex items-center">
-                              <input 
-                                type="radio" 
-                                v-model="editableUser.accountType" 
-                                value="farmer" 
-                                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                                :disabled="!isEditing"
-                              />
-                              <span class="ml-2 text-gray-700">Farmer</span>
-                            </label>
-                          </div>
+                          <select class="bg-white border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <option>Public</option>
+                            <option>Private</option>
+                            <option>Only Connections</option>
+                          </select>
                         </div>
                         
-                        <div>
-                          <h5 class="font-semibold mb-3">Notification Preferences</h5>
-                          <div class="space-y-2">
-                            <label class="flex items-center">
-                              <input 
-                                type="checkbox" 
-                                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                :disabled="!isEditing"
-                              />
-                              <span class="ml-2 text-gray-700">Email notifications</span>
-                            </label>
-                            <label class="flex items-center">
-                              <input 
-                                type="checkbox" 
-                                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                :disabled="!isEditing"
-                              />
-                              <span class="ml-2 text-gray-700">SMS notifications</span>
-                            </label>
-                            <label class="flex items-center">
-                              <input 
-                                type="checkbox" 
-                                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                :disabled="!isEditing"
-                              />
-                              <span class="ml-2 text-gray-700">Marketing emails</span>
-                            </label>
+                        <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                          <div>
+                            <h4 class="font-medium text-gray-900">Email Notifications</h4>
+                            <p class="text-sm text-gray-600">Manage your email notification preferences</p>
                           </div>
+                          <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Configure
+                          </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <h4 class="font-medium text-gray-900">Data Sharing</h4>
+                            <p class="text-sm text-gray-600">Control how your data is used and shared</p>
+                          </div>
+                          <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Review Settings
+                          </button>
                         </div>
                       </div>
-
-                      <div class="mt-8 pt-5 border-t border-gray-200">
-                        <h5 class="font-semibold text-red-600 mb-2">Danger Zone</h5>
-                        <button 
-                          type="button"
-                          class="bg-red-50 text-red-700 px-4 py-2 rounded-lg border border-red-200 hover:bg-red-100 transition-colors"
-                        >
-                          Delete Account
-                        </button>
+                    </div>
+                    
+                    <div class="bg-red-50 p-6 rounded-lg border border-red-100">
+                      <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Account Actions
+                      </h3>
+                      
+                      <div class="space-y-4">
+                        <div class="flex items-center justify-between pb-4 border-b border-red-200">
+                          <div>
+                            <h4 class="font-medium text-gray-900">Deactivate Account</h4>
+                            <p class="text-sm text-gray-600">Temporarily disable your account</p>
+                          </div>
+                          <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Deactivate
+                          </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <h4 class="font-medium text-gray-900">Delete Account</h4>
+                            <p class="text-sm text-gray-600">Permanently delete your account and all data</p>
+                          </div>
+                          <button class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Delete Account
+                          </button>
+                        </div>
                       </div>
                     </div>
-
-                    <!-- Action buttons for mobile view -->
-                    <div v-if="isEditing" class="flex gap-3 md:hidden mt-6">
-                      <button 
-                        type="submit" 
-                        class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium shadow-sm transition-colors"
-                      >
-                        Save Changes
-                      </button>
-                      <button 
-                        type="button"
-                        @click="cancelEditing" 
-                        class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-3 rounded-lg font-medium transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
+                  </div>
                 </div>
               </div>
             </div>
