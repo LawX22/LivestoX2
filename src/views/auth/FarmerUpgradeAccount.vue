@@ -1,37 +1,31 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import Toast from 'primevue/toast';
-import InputText from 'primevue/inputtext';
-import InputMask from 'primevue/inputmask';
-import Button from 'primevue/button';
-import Dropdown from 'primevue/dropdown';
-import Checkbox from 'primevue/checkbox';
-import Textarea from 'primevue/textarea';
-import FileUpload from 'primevue/fileupload';
-import Calendar from 'primevue/calendar';
 import { useAuthStore } from '../../stores/authContext';
 import { upgradeUserAccount } from '../../lib/upgradeAccount';
 import { upload } from '../../lib/storage/upload';
+import LeftPanel from '../../components/Auth/LeftPanel.vue';
 
 export default defineComponent({
     name: 'FarmSignupForm',
     components: {
-        Toast,
-        InputText,
-        InputMask,
-        Button,
-        Dropdown,
-        Checkbox,
-        Textarea,
-        FileUpload,
-        Calendar
+        LeftPanel
     },
     setup() {
         const router = useRouter();
-        const toast = useToast();
         const authStore = useAuthStore();
+
+        // Toast notifications system
+        const toasts = ref<{ severity: string; summary: string; detail: string; id: number }[]>([]);
+        const toastId = ref(0);
+
+        const addToast = (severity: string, summary: string, detail: string, life: number = 3000) => {
+            const id = toastId.value++;
+            toasts.value.push({ severity, summary, detail, id });
+            setTimeout(() => {
+                toasts.value = toasts.value.filter(t => t.id !== id);
+            }, life);
+        };
 
         // User Personal Information (pre-filled)
         const fullName = ref<string>(''); // This would typically come from user's existing account
@@ -42,6 +36,11 @@ export default defineComponent({
             fullName.value = `${authStore?.user?.user_metadata.firstname ?? ''} ${authStore?.user?.user_metadata.firstname ?? ''}`.trim();
             email.value = authStore?.user?.user_metadata.email;
             phoneNumber.value = authStore?.user?.user_metadata.phone;
+
+            // Show a welcome toast when component mounts
+            setTimeout(() => {
+                addToast('info', 'Upgrade Farm Account', 'Provide your farm details to enhance your LivestoX experience');
+            }, 500);
         });
 
         // Farm-specific form fields
@@ -49,8 +48,8 @@ export default defineComponent({
         const farmType = ref<string>('');
         const farmLocation = ref<string>('');
         const farmDescription = ref<string>('');
-        const livestockTypes = ref<string>('');
-        const farmCertifications = ref<string>('');
+        const livestockTypes = ref<string[]>([]);
+        const farmCertifications = ref<string[]>([]);
         const farmDocumentations = ref<string>('');
 
         // New document upload and terms fields
@@ -58,8 +57,8 @@ export default defineComponent({
         const termsAccepted = ref<boolean>(false);
         const uploadedImagePreview = ref<string | null>(null);
 
-        // Step 4: Farm Visit Scheduling
-        const visitDate = ref<Date | null>(null);
+        // Step 4: Farm Visit Scheduling - Change to days of the week
+        const visitDays = ref<string[]>([]);
         const visitTime = ref<string>('');
         const contactPreference = ref<string>('');
         const additionalNotes = ref<string>('');
@@ -68,6 +67,12 @@ export default defineComponent({
         const loading = ref<boolean>(false);
         const submitted = ref<boolean>(false);
         const currentStep = ref<number>(0);
+        const totalSteps = 4;
+
+        // Calculate progress percentage
+        const progressPercentage = () => {
+            return ((currentStep.value + 1) / totalSteps) * 100;
+        };
 
         // Form options
         const farmTypeOptions = [
@@ -109,15 +114,21 @@ export default defineComponent({
             { label: 'By Appointment Only', value: 'appointment' }
         ];
 
+        // Days of the week options
+        const daysOfWeekOptions = [
+            { label: 'Monday', value: 'monday' },
+            { label: 'Tuesday', value: 'tuesday' },
+            { label: 'Wednesday', value: 'wednesday' },
+            { label: 'Thursday', value: 'thursday' },
+            { label: 'Friday', value: 'friday' },
+            { label: 'Saturday', value: 'saturday' },
+            { label: 'Sunday', value: 'sunday' }
+        ];
+
         // Validation functions
         const validateUserInfo = (): boolean => {
             if (!phoneNumber.value) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Missing Information',
-                    detail: 'Please provide your phone number',
-                    life: 3000
-                });
+                addToast('warn', 'Missing Information', 'Please provide your phone number');
                 return false;
             }
 
@@ -125,12 +136,7 @@ export default defineComponent({
             // Philippines mobile format: +63 9XX XXX XXXX or 09XX XXX XXXX
             const phoneRegex = /^\+63 9\d{2} \d{3} \d{4}$/;
             if (!phoneRegex.test(phoneNumber.value)) {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Invalid Phone Number',
-                    detail: 'Please enter a valid Philippines phone number',
-                    life: 3000
-                });
+                addToast('error', 'Invalid Phone Number', 'Please enter a valid Philippines phone number');
                 return false;
             }
 
@@ -139,12 +145,7 @@ export default defineComponent({
 
         const validateFarmInfo = (): boolean => {
             if (!farmName.value || !farmType.value || !farmLocation.value) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Missing Information',
-                    detail: 'Please fill in all required farm information fields',
-                    life: 3000
-                });
+                addToast('warn', 'Missing Information', 'Please fill in all required farm information fields');
                 return false;
             }
 
@@ -156,12 +157,7 @@ export default defineComponent({
             // Always allow proceeding to next step
             // Only check terms acceptance
             if (!termsAccepted.value) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Terms and Conditions',
-                    detail: 'Please accept the terms and conditions to proceed',
-                    life: 3000
-                });
+                addToast('warn', 'Terms and Conditions', 'Please accept the terms and conditions to proceed');
                 return false;
             }
 
@@ -169,33 +165,18 @@ export default defineComponent({
         };
 
         const validateFarmVisit = (): boolean => {
-            if (!visitDate.value) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Missing Information',
-                    detail: 'Please select a preferred visit date',
-                    life: 3000
-                });
+            if (visitDays.value.length === 0) {
+                addToast('warn', 'Missing Information', 'Please select at least one preferred visit day');
                 return false;
             }
 
             if (!visitTime.value) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Missing Information',
-                    detail: 'Please select a preferred time slot',
-                    life: 3000
-                });
+                addToast('warn', 'Missing Information', 'Please select a preferred time slot');
                 return false;
             }
 
             if (!contactPreference.value) {
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Missing Information',
-                    detail: 'Please select your preferred contact method',
-                    life: 3000
-                });
+                addToast('warn', 'Missing Information', 'Please select your preferred contact method');
                 return false;
             }
 
@@ -203,38 +184,30 @@ export default defineComponent({
         };
 
         // File upload handler
-        const onFileUpload = async (event: any) => {
-            const files = event.files;
-            idDocuments.value = files;
+        const onFileUpload = async (event: Event) => {
+            const input = event.target as HTMLInputElement;
+            const files = input.files;
 
-            // Create image preview
             if (files && files.length > 0) {
+                idDocuments.value = Array.from(files);
+
+                // Create image preview
                 const reader = new FileReader();
                 reader.onload = (e: any) => {
                     uploadedImagePreview.value = e.target.result;
                 };
                 reader.readAsDataURL(files[0]);
-            }
 
-            try {
-                const filePath = `documentation/${Date.now()}-${files[0].name}`;
-                const publicUrl = await upload(files[0], filePath);
-                farmDocumentations.value = publicUrl ?? '';
-            } catch (error) {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Documents not Uploaded',
-                    detail: `${files.length} document(s) uploaded not successfully`,
-                    life: 3000
-                });
-            }
+                try {
+                    const filePath = `documentation/${Date.now()}-${files[0].name}`;
+                    const publicUrl = await upload(files[0], filePath);
+                    farmDocumentations.value = publicUrl ?? '';
 
-            toast.add({
-                severity: 'success',
-                summary: 'Documents Uploaded',
-                detail: `${files.length} document(s) uploaded successfully`,
-                life: 3000
-            });
+                    addToast('success', 'Documents Uploaded', `${files.length} document(s) uploaded successfully`);
+                } catch (error) {
+                    addToast('error', 'Documents not Uploaded', `${files.length} document(s) uploaded not successfully`);
+                }
+            }
         };
 
         // Remove uploaded image
@@ -242,6 +215,12 @@ export default defineComponent({
             uploadedImagePreview.value = null;
             idDocuments.value = [];
         };
+
+        // Return to dashboard function
+        const returnToPreviousPage = () => {
+            router.back();
+        };
+
 
         // Navigation functions
         const nextStep = () => {
@@ -269,6 +248,8 @@ export default defineComponent({
                 if (currentStep.value < 3) {
                     currentStep.value++;
                     submitted.value = false;
+                    // Scroll to top when changing steps
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     handleSubmit();
                 }
@@ -279,6 +260,17 @@ export default defineComponent({
             if (currentStep.value > 0) {
                 currentStep.value--;
                 submitted.value = false;
+                // Scroll to top when changing steps
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        const goToStep = (step: number) => {
+            if (step <= currentStep.value) {
+                currentStep.value = step;
+                submitted.value = false;
+                // Scroll to top when changing steps
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         };
 
@@ -294,50 +286,77 @@ export default defineComponent({
                     farmType.value,
                     farmLocation.value,
                     farmDescription.value,
-                    livestockTypes.value,
-                    farmCertifications.value,
-                    farmDocumentations.value
+                    livestockTypes.value.join(','),
+                    farmCertifications.value.join(','),
+                    farmDocumentations.value,
+                    `${visitDays.value.join(', ')} at ${visitTime.value}` // Adding visitScheduleStr
                 );
 
                 // Mock successful farm account upgrade
-                toast.add({
-                    severity: 'success',
-                    summary: 'Farm Account Upgraded',
-                    detail: `Welcome to LivestoX Farm Network, ${farmName.value}!`,
-                    life: 3000
-                });
+                addToast('success', 'Farm Account Upgraded', `Welcome to LivestoX Farm Network, ${farmName.value}!`);
 
                 // Navigate to farm dashboard or profile
                 router.push('/farmer/FarmerLivestockDashboard');
             } catch (error) {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Upgrade Failed',
-                    detail: 'There was an error upgrading your farm account',
-                    life: 3000
-                });
+                addToast('error', 'Upgrade Failed', 'There was an error upgrading your farm account');
             } finally {
                 loading.value = false;
             }
         };
 
-        onMounted(() => {
-            // Show a welcome toast when component mounts
-            setTimeout(() => {
-                toast.add({
-                    severity: 'info',
-                    summary: 'Upgrade Farm Account',
-                    detail: 'Provide your farm details to enhance your LivestoX experience',
-                    life: 3000
-                });
-            }, 500);
-        });
+        // Handlers for farm type selection
+        const handleFarmTypeChange = (event: Event) => {
+            const select = event.target as HTMLSelectElement;
+            farmType.value = select.value;
+        };
+
+        // Handler for checkbox selections
+        const toggleLivestockType = (value: string) => {
+            const index = livestockTypes.value.indexOf(value);
+            if (index === -1) {
+                livestockTypes.value.push(value);
+            } else {
+                livestockTypes.value.splice(index, 1);
+            }
+        };
+
+        const toggleFarmCertification = (value: string) => {
+            const index = farmCertifications.value.indexOf(value);
+            if (index === -1) {
+                farmCertifications.value.push(value);
+            } else {
+                farmCertifications.value.splice(index, 1);
+            }
+        };
+
+        const toggleVisitDay = (value: string) => {
+            const index = visitDays.value.indexOf(value);
+            if (index === -1) {
+                visitDays.value.push(value);
+            } else {
+                visitDays.value.splice(index, 1);
+            }
+        };
+
+        // Handlers for dropdowns
+        const handleVisitTimeChange = (event: Event) => {
+            const select = event.target as HTMLSelectElement;
+            visitTime.value = select.value;
+        };
+
+        const handleContactPreferenceChange = (event: Event) => {
+            const select = event.target as HTMLSelectElement;
+            contactPreference.value = select.value;
+        };
+
+        const fileInput = ref<HTMLInputElement | null>(null); // Ensure fileInput is correctly typed
 
         return {
             // User info fields
             fullName,
             email,
             phoneNumber,
+            fileInput,
 
             // Farm form fields
             farmName,
@@ -347,6 +366,10 @@ export default defineComponent({
             livestockTypes,
             farmCertifications,
 
+            // Toast system
+            toasts,
+            addToast,
+
             // New document upload and terms fields
             idDocuments,
             termsAccepted,
@@ -355,7 +378,7 @@ export default defineComponent({
             removeUploadedImage,
 
             // Farm visit scheduling fields
-            visitDate,
+            visitDays,
             visitTime,
             contactPreference,
             additionalNotes,
@@ -364,6 +387,8 @@ export default defineComponent({
             loading,
             submitted,
             currentStep,
+            totalSteps,
+            progressPercentage,
 
             // Form options
             farmTypeOptions,
@@ -371,500 +396,580 @@ export default defineComponent({
             farmCertificationOptions,
             contactPreferenceOptions,
             timeSlotOptions,
+            daysOfWeekOptions,
+
+            // Handlers for selections
+            handleFarmTypeChange,
+            toggleLivestockType,
+            toggleFarmCertification,
+            toggleVisitDay,
+            handleVisitTimeChange,
+            handleContactPreferenceChange,
 
             // Functions
             nextStep,
             prevStep,
-            handleSubmit
+            goToStep,
+            handleSubmit,
+            returnToPreviousPage
         };
     }
 });
 </script>
 
 <template>
-    <!-- Nature-inspired background with subtle farm pattern and improved gradient -->
-    <div class="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-emerald-100 py-12 px-4 relative">
-        <!-- Background pattern overlay -->
+    <!-- Fixed top navigation bar WITHOUT progress bar -->
+    <div class="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and return button -->
+                <div class="flex items-center space-x-4">
+                    <button @click="returnToPreviousPage"
+                        class="flex items-center space-x-2 text-emerald-700 hover:text-emerald-800 transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-medium">Return to Dashboard</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content with padding to account for fixed header -->
+    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-100 pt-24 pb-12 px-4 relative">
+        <!-- Enhanced background pattern overlay -->
         <div class="absolute inset-0 z-0 opacity-5 pointer-events-none bg-repeat"
             style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDE4MCAxODAiPjxnIHRyYW5zZm9ybT0ic2NhbGUoMC44KSI+PHBhdGggZmlsbD0iIzA0NjMzNyIgZD0iTTgxIDgxaDQ0djQ0SDgxem0tNDQgMGg0NHY0NEgzN3oiLz48L2c+PC9zdmc+');">
         </div>
 
-        <Toast position="top-right" />
-
-        <!-- Logo and branding at the top -->
-        <div class="flex justify-center mb-8">
-            <div class="flex items-center space-x-3 text-emerald-800">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
-                    <path
-                        d="M19.006 3.705a.75.75 0 00-.512-1.41L6 6.838V3a.75.75 0 00-.75-.75h-1.5A.75.75 0 003 3v4.93l-1.006.365a.75.75 0 00.512 1.41l16.5-6z" />
-                    <path fill-rule="evenodd"
-                        d="M3.019 11.115L18 5.667V9.09l4.006 1.456a.75.75 0 11-.512 1.41l-.494-.18v8.475h.75a.75.75 0 010 1.5H2.25a.75.75 0 010-1.5H3v-9.129l.019-.006zM18 20.25v-9.565l1.5.545v9.02H18zm-9-6a.75.75 0 00-.75.75v4.5c0 .414.336.75.75.75h3a.75.75 0 00.75-.75V15a.75.75 0 00-.75-.75H9z"
-                        clip-rule="evenodd" />
-                </svg>
-                <h1 class="text-2xl font-bold">LivestoX</h1>
+        <!-- Improved Toast notifications with animation -->
+        <div class="fixed top-20 right-4 z-50 flex flex-col gap-3 max-w-md">
+            <div v-for="toast in toasts" :key="toast.id"
+                class="flex items-center gap-3 p-4 rounded-lg shadow-xl animate-slide-in-right transition-all duration-300"
+                :class="{
+                    'bg-red-50 text-red-700 border-l-4 border-red-500': toast.severity === 'error',
+                    'bg-yellow-50 text-yellow-700 border-l-4 border-yellow-500': toast.severity === 'warn',
+                    'bg-blue-50 text-blue-700 border-l-4 border-blue-500': toast.severity === 'info',
+                    'bg-green-50 text-green-700 border-l-4 border-green-500': toast.severity === 'success'
+                }">
+                <div class="flex-shrink-0">
+                    <svg v-if="toast.severity === 'error'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                        viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <svg v-else-if="toast.severity === 'warn'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                        viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <svg v-else-if="toast.severity === 'info'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                        viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="font-semibold">{{ toast.summary }}</h4>
+                    <p class="text-sm">{{ toast.detail }}</p>
+                </div>
             </div>
         </div>
 
         <!-- Main container with enhanced shadow and rounded corners -->
         <div
-            class="max-w-6xl mx-auto flex flex-col lg:flex-row rounded-3xl overflow-hidden shadow-2xl bg-white relative z-10">
-
-            <!-- Left side illustration panel - Hidden on mobile -->
-            <div
-                class="hidden lg:block lg:w-2/5 bg-gradient-to-br from-emerald-700 to-emerald-800 relative overflow-hidden">
-                <!-- Background pattern for illustration panel -->
-                <div
-                    class="absolute inset-0 bg-[url('/api/placeholder/600/900')] opacity-20 bg-cover bg-center mix-blend-overlay">
-                </div>
-
-                <!-- Farm themed SVG decoration -->
-                <div class="absolute bottom-0 left-0 right-0 h-32 opacity-20">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" fill="#ffffff">
-                        <path fill-opacity="1"
-                            d="M0,160L48,154.7C96,149,192,139,288,149.3C384,160,480,192,576,197.3C672,203,768,181,864,165.3C960,149,1056,139,1152,149.3C1248,160,1344,192,1392,208L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
-                        </path>
-                    </svg>
-                </div>
-
-                <div class="relative z-10 h-full flex flex-col justify-between p-12 text-white">
-                    <div>
-                        <!-- Logo container -->
-                        <div class="flex items-center space-x-2 mb-8">
-                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#047857"
-                                    class="w-6 h-6">
-                                    <path
-                                        d="M19.006 3.705a.75.75 0 00-.512-1.41L6 6.838V3a.75.75 0 00-.75-.75h-1.5A.75.75 0 003 3v4.93l-1.006.365a.75.75 0 00.512 1.41l16.5-6z" />
-                                    <path fill-rule="evenodd"
-                                        d="M3.019 11.115L18 5.667V9.09l4.006 1.456a.75.75 0 11-.512 1.41l-.494-.18v8.475h.75a.75.75 0 010 1.5H2.25a.75.75 0 010-1.5H3v-9.129l.019-.006zM18 20.25v-9.565l1.5.545v9.02H18zm-9-6a.75.75 0 00-.75.75v4.5c0 .414.336.75.75.75h3a.75.75 0 00.75-.75V15a.75.75 0 00-.75-.75H9z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <span class="text-xl font-bold">LivestoX</span>
-                        </div>
-
-                        <h2 class="text-3xl font-bold mb-6">Join our Farming Community</h2>
-                        <p class="mb-8 text-emerald-100 leading-relaxed">Connect with other farmers, access premium
-                            tools, and grow your
-                            livestock business with our complete farm management solution.</p>
-
-                        <!-- Benefits list with icons -->
-                        <div class="space-y-4 mb-10">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <span class="text-sm">Access to premium livestock tools</span>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <span class="text-sm">Connect with other farmers</span>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <span class="text-sm">Get specialized farming insights</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Improved Steps sidebar with animated current step indicator -->
-                    <div class="space-y-6">
-                        <div v-for="(step, index) in ['Personal Info', 'Farm Details', 'Document Upload', 'Farm Visit']"
-                            :key="index" class="flex items-center space-x-4 transition-all duration-300"
-                            :class="{ 'opacity-100': currentStep >= index, 'opacity-60': currentStep < index }">
-                            <div
-                                :class="`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold relative
-                                ${currentStep >= index ? 'bg-white text-emerald-700' : 'bg-emerald-600 text-white border border-emerald-400'}`">
-                                <!-- Animated pulse effect for current step -->
-                                <div v-if="currentStep === index"
-                                    class="absolute inset-0 rounded-full bg-white opacity-30 animate-ping"></div>
-                                {{ index + 1 }}
-                            </div>
-                            <span :class="`text-lg ${currentStep >= index ? 'font-medium' : 'text-emerald-200'}`">{{
-                                step }}</span>
-                        </div>
-                    </div>
-
-                    <div class="text-sm text-emerald-200 flex items-center space-x-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-                        </svg>
-                        <p>Need help? Contact us at support@livestox.com</p>
-                    </div>
-                </div>
-            </div>
+            class="max-w-6xl mx-auto flex flex-col lg:flex-row rounded-3xl overflow-hidden shadow-2xl bg-white relative z-10 border border-emerald-100">
+            <!-- Left side panel component -->
+            <LeftPanel :currentStep="currentStep" />
 
             <!-- Right side form panel with improved UI -->
             <div class="w-full lg:w-3/5 p-6 md:p-12">
-                <!-- Mobile steps indicator with improved styling -->
-                <div class="lg:hidden mb-8">
+                <!-- Progress bar now directly on the form -->
+                <div class="mb-8">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-medium text-emerald-700">Step {{ currentStep + 1 }} of 4</span>
-                        <span class="text-sm font-medium text-emerald-700">
+                        <span class="text-sm font-medium text-emerald-700">Step {{ currentStep + 1 }} of {{ totalSteps
+                            }}</span>
+                        <span class="text-sm font-medium bg-emerald-100 px-3 py-1 rounded-full text-emerald-700">
                             {{ ['Personal Info', 'Farm Details', 'Document Upload', 'Farm Visit'][currentStep] }}
                         </span>
                     </div>
-                    <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-emerald-500 rounded-full transition-all duration-500 shadow-sm"
-                            :style="{ width: `${(currentStep + 1) * 25}%` }"></div>
+                    <!-- Main progress bar - Now on the form -->
+                    <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500 transition-all duration-500 ease-out rounded-full"
+                            :style="{ width: `${progressPercentage()}%` }"></div>
                     </div>
                 </div>
 
-                <!-- Form header with improved typography -->
-                <div class="mb-10">
-                    <h1 class="text-3xl font-bold text-gray-800 mb-3">Upgrade to Farm Account</h1>
-                    <p class="text-gray-600 leading-relaxed">Join the LivestoX network and connect with other farmers to
-                        grow your agricultural business</p>
+                <!-- Mobile step navigation tabs -->
+                <div class="lg:hidden flex overflow-x-auto pb-2 mb-6 -mx-6 px-6 space-x-2">
+                    <button v-for="index in totalSteps" :key="index" @click="goToStep(index)"
+                        class="flex-shrink-0 px-4 py-2 rounded-full text-sm transition-all duration-200" :class="[
+                            index <= currentStep ? 'bg-emerald-100 text-emerald-700 font-medium' : 'bg-gray-100 text-gray-500'
+                        ]">
+                        {{ ['Personal Info', 'Farm Details', 'Documents', 'Farm Visit'][index] }}
+                    </button>
                 </div>
 
-                <!-- Form content with enhanced styling -->
-                <form @submit.prevent="nextStep" class="space-y-6">
+                <!-- Form Content - Conditionally show based on current step -->
+                <div>
                     <!-- Step 1: User Personal Information -->
-                    <div v-if="currentStep === 0" class="space-y-6 animate-fade-in">
-                        <div class="bg-emerald-50 rounded-lg p-4 mb-6 border-l-4 border-emerald-500 shadow-sm">
-                            <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-emerald-600 mr-2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                                </svg>
-                                <p class="text-emerald-700">We've pre-filled some information from your account. Please
-                                    verify and complete any missing fields.</p>
-                            </div>
-                        </div>
+                    <div v-if="currentStep === 0" class="animate-fade-in">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span
+                                class="bg-emerald-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">1</span>
+                            Personal Information
+                        </h2>
+                        <p class="text-gray-600 mb-8">Please verify your personal information below. This will be used
+                            for your farm profile and communications.</p>
 
-                        <div class="space-y-5">
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <label class="block text-gray-700 text-sm font-medium mb-1">Full Name</label>
-                                <div class="p-inputtext-wrapper w-full">
-                                    <InputText v-model="fullName" class="w-full p-3 bg-gray-100 border-0" disabled />
-                                </div>
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                <input type="text" v-model="fullName" disabled
+                                    class="w-full px-4 py-3 rounded-lg border bg-gray-50 text-gray-600 focus:border-emerald-500 focus:ring focus:ring-emerald-200" />
                             </div>
 
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <label class="block text-gray-700 text-sm font-medium mb-1">Email</label>
-                                <div class="p-inputtext-wrapper w-full">
-                                    <InputText v-model="email" class="w-full p-3 bg-gray-100 border-0" disabled />
-                                </div>
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                <input type="email" v-model="email" disabled
+                                    class="w-full px-4 py-3 rounded-lg border bg-gray-50 text-gray-600 focus:border-emerald-500 focus:ring focus:ring-emerald-200" />
                             </div>
 
-                            <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                                <label for="phoneNumber" class="block text-gray-700 text-sm font-medium mb-1">
-                                    Philippines Mobile Number <span class="text-red-500">*</span>
-                                </label>
-                                <div class="p-inputmask-wrapper w-full">
-                                    <InputMask id="phoneNumber" v-model="phoneNumber" mask="+63 999 999 9999"
-                                        placeholder="+63 9XX XXX XXXX" class="w-full p-3 border-2"
-                                        :class="{ 'border-red-300 bg-red-50': submitted && !phoneNumber, 'border-gray-300': !(submitted && !phoneNumber) }" />
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number*</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                    </span>
+                                    <input type="tel" v-model="phoneNumber" placeholder="+63 9XX XXX XXXX"
+                                        class="w-full pl-10 px-4 py-3 rounded-lg border focus:border-emerald-500 focus:ring focus:ring-emerald-200"
+                                        :class="{ 'border-red-500 ring-1 ring-red-500': submitted && !phoneNumber }" />
                                 </div>
-                                <div class="flex items-center mt-2 text-gray-500 text-xs">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-                                    </svg>
-                                    Format: +63 9XX XXX XXXX (Philippines mobile format)
-                                </div>
-                                <small v-if="submitted && !phoneNumber" class="text-red-500 block mt-1">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Format: +63 9XX XXX XXXX (Philippines format)
+                                </p>
+                                <p v-if="submitted && !phoneNumber" class="text-red-500 text-sm mt-1">
                                     Phone number is required
-                                </small>
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Step 2: Farm Information - Enhanced styling -->
-                    <div v-if="currentStep === 1" class="space-y-6 animate-fade-in">
-                        <div class="bg-emerald-50 rounded-lg p-4 mb-6 border-l-4 border-emerald-500 shadow-sm">
-                            <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-emerald-600 mr-2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p class="text-emerald-700">Tell us about your farm to customize your experience.</p>
-                            </div>
-                        </div>
+                    <!-- Step 2: Farm Information -->
+                    <div v-if="currentStep === 1" class="animate-fade-in">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span
+                                class="bg-emerald-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">2</span>
+                            Farm Details
+                        </h2>
+                        <p class="text-gray-600 mb-8">Tell us about your farm to help buyers find and connect with you.
+                        </p>
 
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="farmName" class="block text-gray-700 text-sm font-medium mb-1">
-                                Farm Name <span class="text-red-500">*</span>
-                            </label>
-                            <div class="p-inputtext-wrapper w-full">
-                                <InputText id="farmName" v-model="farmName" placeholder="Enter your farm name"
-                                    class="w-full p-3 border-2"
-                                    :class="{ 'border-red-300 bg-red-50': submitted && !farmName, 'border-gray-300': !(submitted && !farmName) }" />
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Farm Name*</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    </span>
+                                    <input type="text" v-model="farmName" placeholder="Enter farm name"
+                                        class="w-full pl-10 px-4 py-3 rounded-lg border focus:border-emerald-500 focus:ring focus:ring-emerald-200"
+                                        :class="{ 'border-red-500 ring-1 ring-red-500': submitted && !farmName }" />
+                                </div>
+                                <p v-if="submitted && !farmName" class="text-red-500 text-sm mt-1">
+                                    Farm name is required
+                                </p>
                             </div>
-                            <small v-if="submitted && !farmName" class="text-red-500 block mt-1">
-                                Farm name is required
-                            </small>
-                        </div>
 
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="farmType" class="block text-gray-700 text-sm font-medium mb-1">
-                                Farm Type <span class="text-red-500">*</span>
-                            </label>
-                            <div class="p-dropdown-wrapper w-full">
-                                <Dropdown id="farmType" v-model="farmType" :options="farmTypeOptions"
-                                    optionLabel="label" optionValue="value" placeholder="Select farm type"
-                                    class="w-full" :class="{ 'p-invalid': submitted && !farmType }" />
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Farm Type*</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                        </svg>
+                                    </span>
+                                    <select v-model="farmType" @change="handleFarmTypeChange"
+                                        class="w-full pl-10 px-4 py-3 rounded-lg border focus:border-emerald-500 focus:ring focus:ring-emerald-200 appearance-none"
+                                        :class="{ 'border-red-500 ring-1 ring-red-500': submitted && !farmType }">
+                                        <option value="">Select Farm Type</option>
+                                        <option v-for="option in farmTypeOptions" :key="option.value"
+                                            :value="option.value">
+                                            {{ option.label }}
+                                        </option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p v-if="submitted && !farmType" class="text-red-500 text-sm mt-1">
+                                    Farm type is required
+                                </p>
                             </div>
-                            <small v-if="submitted && !farmType" class="text-red-500 block mt-1">
-                                Farm type is required
-                            </small>
-                        </div>
 
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="farmLocation" class="block text-gray-700 text-sm font-medium mb-1">
-                                Farm Location <span class="text-red-500">*</span>
-                            </label>
-                            <div class="p-inputtext-wrapper w-full">
-                                <InputText id="farmLocation" v-model="farmLocation"
-                                    placeholder="Enter your farm address" class="w-full p-3 border-2"
-                                    :class="{ 'border-red-300 bg-red-50': submitted && !farmLocation, 'border-gray-300': !(submitted && !farmLocation) }" />
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Farm Location*</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </span>
+                                    <input type="text" v-model="farmLocation" placeholder="Enter complete farm address"
+                                        class="w-full pl-10 px-4 py-3 rounded-lg border focus:border-emerald-500 focus:ring focus:ring-emerald-200"
+                                        :class="{ 'border-red-500 ring-1 ring-red-500': submitted && !farmLocation }" />
+                                </div>
+                                <p v-if="submitted && !farmLocation" class="text-red-500 text-sm mt-1">
+                                    Farm location is required
+                                </p>
                             </div>
-                            <small v-if="submitted && !farmLocation" class="text-red-500 block mt-1">
-                                Farm location is required
-                            </small>
-                        </div>
 
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="livestockTypes" class="block text-gray-700 text-sm font-medium mb-1">
-                                Livestock Types
-                            </label>
-                            <div class="p-multiselect-wrapper w-full">
-                                <Dropdown id="livestockTypes" v-model="livestockTypes" :options="livestockTypeOptions"
-                                    optionLabel="label" optionValue="value" placeholder="Select livestock types"
-                                    class="w-full" multiple />
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Farm Description</label>
+                                <textarea v-model="farmDescription"
+                                    placeholder="Describe your farm, facilities, specialties, etc." rows="4"
+                                    class="w-full px-4 py-3 rounded-lg border focus:border-emerald-500 focus:ring focus:ring-emerald-200"></textarea>
                             </div>
-                        </div>
 
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="farmDescription" class="block text-gray-700 text-sm font-medium mb-1">
-                                Farm Description
-                            </label>
-                            <div class="p-textarea-wrapper w-full">
-                                <Textarea id="farmDescription" v-model="farmDescription" rows="4" class="w-full p-3"
-                                    placeholder="Brief description of your farm operations..." />
-                            </div>
-                        </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="form-group">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Livestock Types</label>
+                                    <div class="space-y-2 mt-2">
+                                        <div v-for="option in livestockTypeOptions" :key="option.value"
+                                            class="flex items-center">
+                                            <input type="checkbox" :id="'livestock-' + option.value"
+                                                :checked="livestockTypes.includes(option.value)"
+                                                @change="toggleLivestockType(option.value)"
+                                                class="h-4 w-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500" />
+                                            <label :for="'livestock-' + option.value" class="ml-2 text-sm text-gray-700">
+                                                {{ option.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="farmCertifications" class="block text-gray-700 text-sm font-medium mb-1">
-                                Farm Certifications
-                            </label>
-                            <div class="p-multiselect-wrapper w-full">
-                                <Dropdown id="farmCertifications" v-model="farmCertifications"
-                                    :options="farmCertificationOptions" optionLabel="label" optionValue="value"
-                                    placeholder="Select certifications" class="w-full" multiple />
+                                <div class="form-group">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Farm
+                                        Certifications</label>
+                                    <div class="space-y-2 mt-2">
+                                        <div v-for="option in farmCertificationOptions" :key="option.value"
+                                            class="flex items-center">
+                                            <input type="checkbox" :id="'cert-' + option.value"
+                                                :checked="farmCertifications.includes(option.value)"
+                                                @change="toggleFarmCertification(option.value)"
+                                                class="h-4 w-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500" />
+                                            <label :for="'cert-' + option.value" class="ml-2 text-sm text-gray-700">
+                                                {{ option.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Step 3: Document Upload & Terms - Enhanced styling -->
-                    <div v-if="currentStep === 2" class="space-y-6 animate-fade-in">
-                        <div class="bg-emerald-50 rounded-lg p-4 mb-6 border-l-4 border-emerald-500 shadow-sm">
-                            <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-emerald-600 mr-2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                                </svg>
-                                <p class="text-emerald-700">Please upload valid documentation to verify your farm.</p>
-                            </div>
-                        </div>
+                    <!-- Step 3: Document Upload & Terms -->
+                    <div v-if="currentStep === 2" class="animate-fade-in">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span
+                                class="bg-emerald-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">3</span>
+                            Documentation & Terms
+                        </h2>
+                        <p class="text-gray-600 mb-8">Upload supporting documentation for your farm and review our
+                            terms.</p>
 
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label class="block text-gray-700 text-sm font-medium mb-2">
-                                Upload Farm Documentation
-                            </label>
-                            <!-- Document upload with enhanced preview functionality -->
-                            <FileUpload mode="basic" name="farm_docs[]" :customUpload="true" @uploader="onFileUpload"
-                                accept="image/*,.pdf" :multiple="true" :auto="true" chooseLabel="Browse Files"
-                                class="w-full">
-                                <template #empty>
-                                    <p class="text-gray-500 text-center p-6">
-                                        Drag and drop files here or click to upload
-                                    </p>
-                                </template>
-                            </FileUpload>
+                        <div class="space-y-8">
+                            <!-- Document Upload Section with Preview -->
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Farm Documentation</label>
+                                <p class="text-sm text-gray-500 mb-4">
+                                    Upload any relevant farm documents, certifications, licenses, or photos.
+                                </p>
 
-                            <!-- Document preview area -->
-                            <div v-if="uploadedImagePreview" class="mt-4 relative">
-                                <div class="border rounded-lg p-2 relative">
-                                    <div class="absolute top-2 right-2 z-10">
+                                <!-- File input with improved styling -->
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-lg bg-white"
+                                    :class="{ 'border-emerald-300 bg-emerald-50': uploadedImagePreview }">
+                                    <div class="space-y-3 text-center" v-if="!uploadedImagePreview">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="file-upload"
+                                                class="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none">
+                                                <span>Upload a file</span>
+                                                <input id="file-upload" ref="fileInput" name="file-upload" type="file"
+                                                    class="sr-only" @change="onFileUpload" accept="image/*,.pdf">
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, PDF up to 10MB</p>
+                                    </div>
+
+                                    <!-- Image Preview Section -->
+                                    <div v-else class="relative w-full">
+                                        <img :src="uploadedImagePreview" alt="Document Preview"
+                                            class="mx-auto h-48 object-cover rounded-lg shadow-md">
+                                        <div class="mt-4 flex justify-center">
+                                            <span class="text-sm text-emerald-600 font-medium">
+                                                {{ idDocuments.length > 0 ? idDocuments[0].name : 'File uploaded' }}
+                                            </span>
+                                        </div>
                                         <button type="button" @click="removeUploadedImage"
-                                            class="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-sm">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M6 18L18 6M6 6l12 12" />
+                                            class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                                fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd" />
                                             </svg>
                                         </button>
                                     </div>
-                                    <img :src="uploadedImagePreview" alt="Document preview"
-                                        class="max-h-40 mx-auto object-contain" />
                                 </div>
                             </div>
 
-                            <div class="flex items-center mt-3 text-xs text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                </svg>
-                                Accepted formats: JPG, PNG, PDF (max 5MB each)
-                            </div>
-                        </div>
-
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <div class="flex items-start gap-3">
-                                <div class="pt-0.5">
-                                    <Checkbox v-model="termsAccepted" :binary="true" inputId="terms"
-                                        :class="{ 'p-invalid': submitted && !termsAccepted }" />
-                                </div>
-                                <label for="terms" class="text-gray-700 text-sm">
-                                    I agree to the <a href="#" class="text-emerald-600 hover:underline">Terms and
-                                        Conditions</a> and
-                                    <a href="#" class="text-emerald-600 hover:underline">Privacy Policy</a>. I confirm
-                                    that all
-                                    information provided is accurate and complete.
-                                    <span v-if="submitted && !termsAccepted" class="text-red-500 block mt-1">
+                            <!-- Terms and Conditions Section -->
+                            <div class="form-group">
+                                <div class="rounded-lg border border-gray-200 p-4 bg-gray-50">
+                                    <h3 class="font-medium text-gray-800 mb-3">Terms & Conditions</h3>
+                                    <div
+                                        class="text-sm text-gray-600 h-48 overflow-y-auto mb-4 bg-white p-3 rounded border">
+                                        <p class="mb-3">By registering your farm on LivestoX, you agree to the following
+                                            terms:</p>
+                                        <ol class="list-decimal pl-5 space-y-2">
+                                            <li>You confirm that all information provided is accurate and up-to-date.
+                                            </li>
+                                            <li>You agree to maintain your farm profile with current information.</li>
+                                            <li>You understand that your farm information will be visible to potential
+                                                buyers on the platform.</li>
+                                            <li>You agree to comply with all applicable laws and regulations related to
+                                                livestock farming in your region.</li>
+                                            <li>You consent to receiving communications from LivestoX and potential
+                                                buyers through the contact methods provided.</li>
+                                            <li>LivestoX reserves the right to verify farm information and request
+                                                additional documentation if necessary.</li>
+                                            <li>LivestoX may remove farm listings that violate platform policies or
+                                                receive consistent negative feedback.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex items-center h-5">
+                                            <input id="terms" type="checkbox" v-model="termsAccepted"
+                                                class="h-4 w-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                                                :class="{ 'border-red-500': submitted && !termsAccepted }">
+                                        </div>
+                                        <div class="ml-3 text-sm">
+                                            <label for="terms" class="font-medium text-gray-700">I accept the terms and
+                                                conditions*</label>
+                                        </div>
+                                    </div>
+                                    <p v-if="submitted && !termsAccepted" class="text-red-500 text-sm mt-1">
                                         You must accept the terms to continue
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Farm Visit Scheduling -->
+                    <div v-if="currentStep === 3" class="animate-fade-in">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span
+                                class="bg-emerald-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">4</span>
+                            Farm Visit Availability
+                        </h2>
+                        <p class="text-gray-600 mb-8">Set your availability for potential farm visits and preferred
+                            contact method.</p>
+
+                        <div class="space-y-6">
+                            <!-- Days of week selection -->
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Available Days for Farm
+                                    Visits*</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                                    <div v-for="day in daysOfWeekOptions" :key="day.value"
+                                        class="flex flex-col items-center">
+                                        <button type="button" @click="toggleVisitDay(day.value)"
+                                            class="p-3 rounded-lg w-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                                            :class="visitDays.includes(day.value) ?
+                                                'bg-emerald-500 text-white' :
+                                                'bg-gray-100 text-gray-700 hover:bg-gray-200'">
+                                            {{ day.label.substring(0, 3) }}
+                                        </button>
+                                    </div>
+                                </div>
+                                <p v-if="submitted && visitDays.length === 0" class="text-red-500 text-sm mt-1">
+                                    Please select at least one day
+                                </p>
+                            </div>
+
+                            <!-- Time slot selection -->
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Time Slot*</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
                                     </span>
-                                </label>
+                                    <select v-model="visitTime" @change="handleVisitTimeChange"
+                                        class="w-full pl-10 px-4 py-3 rounded-lg border focus:border-emerald-500 focus:ring focus:ring-emerald-200 appearance-none"
+                                        :class="{ 'border-red-500 ring-1 ring-red-500': submitted && !visitTime }">
+                                        <option value="">Select Time Slot</option>
+                                        <option v-for="option in timeSlotOptions" :key="option.value"
+                                            :value="option.value">
+                                            {{ option.label }}
+                                        </option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p v-if="submitted && !visitTime" class="text-red-500 text-sm mt-1">
+                                    Please select a time slot
+                                </p>
+                            </div>
+
+                            <!-- Contact preference -->
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Contact
+                                    Method*</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                        </svg>
+                                    </span>
+                                    <select v-model="contactPreference" @change="handleContactPreferenceChange"
+                                        class="w-full pl-10 px-4 py-3 rounded-lg border focus:border-emerald-500 focus:ring focus:ring-emerald-200 appearance-none"
+                                        :class="{ 'border-red-500 ring-1 ring-red-500': submitted && !contactPreference }">
+                                        <option value="">Select Contact Method</option>
+                                        <option v-for="option in contactPreferenceOptions" :key="option.value"
+                                            :value="option.value">
+                                            {{ option.label }}
+                                        </option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p v-if="submitted && !contactPreference" class="text-red-500 text-sm mt-1">
+                                    Please select a contact method
+                                </p>
+                            </div>
+
+                            <!-- Additional Notes -->
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes for
+                                    Visitors</label>
+                                <textarea v-model="additionalNotes"
+                                    placeholder="Special instructions, directions to the farm, etc." rows="3"
+                                    class="w-full px-4 py-3 rounded-lg border focus:border-emerald-500 focus:ring focus:ring-emerald-200"></textarea>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Step 4: Farm Visit Scheduling - Enhanced styling -->
-                    <div v-if="currentStep === 3" class="space-y-6 animate-fade-in">
-                        <div class="bg-emerald-50 rounded-lg p-4 mb-6 border-l-4 border-emerald-500 shadow-sm">
-                            <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-emerald-600 mr-2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                                </svg>
-                                <p class="text-emerald-700">Schedule a farm visit from our agricultural advisor.</p>
-                            </div>
-                        </div>
-
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="visitDate" class="block text-gray-700 text-sm font-medium mb-1">
-                                Preferred Visit Date <span class="text-red-500">*</span>
-                            </label>
-                            <div class="p-calendar-wrapper w-full">
-                                <Calendar id="visitDate" v-model="visitDate" :minDate="new Date()" class="w-full"
-                                    :class="{ 'p-invalid': submitted && !visitDate }" placeholder="Select a date" />
-                            </div>
-                            <small v-if="submitted && !visitDate" class="text-red-500 block mt-1">
-                                Visit date is required
-                            </small>
-                        </div>
-
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="visitTime" class="block text-gray-700 text-sm font-medium mb-1">
-                                Preferred Time Slot <span class="text-red-500">*</span>
-                            </label>
-                            <div class="p-dropdown-wrapper w-full">
-                                <Dropdown id="visitTime" v-model="visitTime" :options="timeSlotOptions"
-                                    optionLabel="label" optionValue="value" placeholder="Select time slot"
-                                    class="w-full" :class="{ 'p-invalid': submitted && !visitTime }" />
-                            </div>
-                            <small v-if="submitted && !visitTime" class="text-red-500 block mt-1">
-                                Time slot is required
-                            </small>
-                        </div>
-
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="contactPreference" class="block text-gray-700 text-sm font-medium mb-1">
-                                Preferred Contact Method <span class="text-red-500">*</span>
-                            </label>
-                            <div class="p-dropdown-wrapper w-full">
-                                <Dropdown id="contactPreference" v-model="contactPreference"
-                                    :options="contactPreferenceOptions" optionLabel="label" optionValue="value"
-                                    placeholder="Select contact method" class="w-full"
-                                    :class="{ 'p-invalid': submitted && !contactPreference }" />
-                            </div>
-                            <small v-if="submitted && !contactPreference" class="text-red-500 block mt-1">
-                                Contact method is required
-                            </small>
-                        </div>
-
-                        <div class="rounded-lg p-4 bg-white shadow-sm border border-gray-200">
-                            <label for="additionalNotes" class="block text-gray-700 text-sm font-medium mb-1">
-                                Additional Notes
-                            </label>
-                            <div class="p-textarea-wrapper w-full">
-                                <Textarea id="additionalNotes" v-model="additionalNotes" rows="3" class="w-full p-3"
-                                    placeholder="Any specific requirements or instructions for the farm visit..." />
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Form navigation buttons with improved styling -->
-                    <div class="flex justify-between pt-6 border-t border-gray-200 mt-8">
-                        <Button type="button" @click="prevStep" v-if="currentStep > 0" class="px-6 py-2"
-                            :disabled="loading" outlined>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5 mr-1">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                <!-- Navigation buttons with enhanced styling -->
+                <div class="flex flex-wrap justify-between mt-10 pt-6 border-t border-gray-200">
+                    <button v-if="currentStep > 0" @click="prevStep" type="button"
+                        class="px-5 py-3 rounded-lg font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+                                    clip-rule="evenodd" />
                             </svg>
-                            Back
-                        </Button>
-                        <div v-else></div>
-
-                        <Button type="submit" :loading="loading" class="px-6 py-2" severity="success">
-                            <span v-if="currentStep < 3">
-                                Continue
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 ml-1">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                </svg>
-                            </span>
-                            <span v-else>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Complete Registration
-                            </span>
-                        </Button>
-                    </div>
-                </form>
+                            Previous
+                        </div>
+                    </button>
+                    <div></div> <!-- Spacer for flex justify-between -->
+                    <button @click="nextStep" type="button"
+                        class="px-6 py-3 rounded-lg font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 shadow-lg shadow-emerald-500/20 transition-all duration-200"
+                        :class="{ 'opacity-75 cursor-not-allowed': loading }" :disabled="loading">
+                        <div class="flex items-center">
+                            <span>{{ currentStep === 3 ? 'Submit Application' : 'Next' }}</span>
+                            <svg v-if="!loading" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2"
+                                viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <svg v-else class="animate-spin h-4 w-4 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </div>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Footer with brand info and additional links -->
-        <div class="max-w-6xl mx-auto mt-12 text-center text-gray-600 text-sm">
-            <p>© 2025 LivestoX Farm Management. All rights reserved.</p>
-            <div class="flex justify-center space-x-4 mt-3">
-                <a href="#" class="text-emerald-600 hover:text-emerald-700">About Us</a>
-                <a href="#" class="text-emerald-600 hover:text-emerald-700">Contact</a>
-                <a href="#" class="text-emerald-600 hover:text-emerald-700">Privacy Policy</a>
-                <a href="#" class="text-emerald-600 hover:text-emerald-700">Terms & Conditions</a>
-            </div>
+        <!-- Optional disclaimer text at bottom of page -->
+        <div class="max-w-6xl mx-auto mt-8 text-center">
+            <p class="text-sm text-gray-500">
+                LivestoX connects farmers and buyers to create sustainable livestock markets.
+                <br class="hidden md:block" />
+                Questions? Contact our support team at <a href="mailto:support@livestox.com"
+                    class="text-emerald-600 hover:text-emerald-700">support@livestox.com</a>
+            </p>
         </div>
     </div>
 </template>
@@ -872,13 +977,13 @@ export default defineComponent({
 <style scoped>
 /* Fade in animation for step transitions */
 .animate-fade-in {
-    animation: fadeIn 0.3s ease-in-out;
+    animation: fadeIn 0.4s ease-in-out;
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(5px);
+        transform: translateY(10px);
     }
 
     to {
@@ -887,53 +992,20 @@ export default defineComponent({
     }
 }
 
-/* Fix for PrimeVue components to match our styling */
-:deep(.p-dropdown),
-:deep(.p-calendar),
-:deep(.p-multiselect) {
-    width: 100%;
+/* Slide in animation for toast notifications */
+.animate-slide-in-right {
+    animation: slideInRight 0.5s ease-out;
 }
 
-:deep(.p-dropdown-label),
-:deep(.p-calendar-input),
-:deep(.p-multiselect-label) {
-    padding: 0.75rem 1rem;
-}
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
 
-:deep(.p-button) {
-    display: flex;
-    align-items: center;
-}
-
-:deep(.p-calendar-w-btn .p-datepicker-trigger) {
-    background-color: #10b981;
-    border-color: #10b981;
-}
-
-:deep(.p-calendar-w-btn .p-datepicker-trigger:hover) {
-    background-color: #059669;
-    border-color: #059669;
-}
-
-/* Improved styling for checkboxes */
-:deep(.p-checkbox .p-checkbox-box.p-highlight) {
-    background-color: #10b981;
-    border-color: #10b981;
-}
-
-:deep(.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover) {
-    background-color: #059669;
-    border-color: #059669;
-}
-
-/* File upload styling */
-:deep(.p-fileupload-choose) {
-    background-color: #10b981;
-    border-color: #10b981;
-}
-
-:deep(.p-fileupload-choose:hover) {
-    background-color: #059669;
-    border-color: #059669;
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 </style>

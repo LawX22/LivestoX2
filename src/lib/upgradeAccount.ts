@@ -1,17 +1,7 @@
 import { supabase } from '../lib/supabaseClient';
 
 export const upgradeUserAccount = async (
-  fullName: string | undefined,
-  email: string | undefined,
-  phoneNumber: string | undefined,
-  farmName: string | undefined,
-  farmType: string | undefined,
-  farmLocation: string | undefined,
-  farmDescription: string | undefined,
-  livestockTypes: string | undefined,
-  farmCertifications: string | undefined,
-  farmDocumentations: string | undefined
-): Promise<{ success: boolean; error?: string }> => {
+fullName: string | undefined, email: string | undefined, phoneNumber: string | undefined, farmName: string | undefined, farmType: string | undefined, farmLocation: string | undefined, farmDescription: string | undefined, livestockTypes: string | undefined, farmCertifications: string | undefined, farmDocumentations: string | undefined, visitScheduleStr: string): Promise<{ success: boolean; error?: string }> => {
   // Step 1: Get current user
   const {
     data: { user },

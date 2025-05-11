@@ -317,7 +317,7 @@ export default defineComponent({
             // In a real app, you would call your auth service here
             // Then redirect to login page
             setTimeout(() => {
-                router.push('/signin');
+                router.push('/');
             }, 500);
         };
 
@@ -417,11 +417,11 @@ export default defineComponent({
                     </div>
 
                     <nav class="flex space-x-5">
-                        <router-link to="/"
+                        <!-- <router-link to="/"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
                             <i class="pi pi-home mr-2"></i> Home
                             <span class="nav-indicator"></span>
-                        </router-link>
+                        </router-link> -->
                         <router-link to="/main/LivestockMarket"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
                             <i class="pi pi-shopping-cart mr-2"></i> Market
