@@ -10,13 +10,13 @@ export const upload = async (file: File, filePath: string): Promise<string | nul
             throw new Error(error.message);
         }
         
-        const { data, error: urlError } = supabase.storage
+        const { data } = supabase.storage
           .from('assets')
           .getPublicUrl(filePath);
 
-        if (urlError) {
-            throw new Error(urlError.message);
-        }
+        // if (urlError) {
+        //     throw new Error(urlError.message);
+        // }
 
         return data?.publicUrl || null;
 
