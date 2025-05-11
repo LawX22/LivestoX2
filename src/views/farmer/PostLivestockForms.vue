@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import LivestockFormSteps from '../../components/Farmer/LivestockFormSteps.vue';
-import LivestockFormReview from '../../components/Farmer/LivestockFormReview.vue';
+import LivestockFormSteps from '../../components/Farmer/FormSteps.vue';
+import LivestockFormReview from '../../components/Farmer/FormReview.vue';
 import { ArrowLeftIcon, IdentificationIcon, CurrencyDollarIcon, ClipboardDocumentListIcon, MapPinIcon, PhotoIcon, CheckCircleIcon } from '@heroicons/vue/24/solid'
 
 // Types
@@ -222,155 +222,179 @@ const editForm = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 to-green-100 font-sans antialiased text-gray-800">
-    <!-- Toast Notification -->
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 font-sans antialiased text-gray-800">
+    <!-- Toast Notification - Redesigned with better positioning and smoother animation -->
     <div v-if="toastVisible"
-      class="fixed top-5 right-5 z-50 max-w-sm p-4 rounded-lg shadow-lg transition-all duration-300 transform scale-100 opacity-100"
-      :class="[toastType === 'success' ? 'bg-green-500' : 'bg-red-500']">
+      class="fixed top-5 right-5 z-50 max-w-sm p-4 rounded-lg shadow-xl transition-all duration-300 transform translate-y-0 opacity-100"
+      :class="[toastType === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500']">
       <div class="flex items-center">
-        <div class="flex-shrink-0">
-          <span v-if="toastType === 'success'" class="i-heroicons-check-circle-solid text-white text-xl"></span>
+        <div class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-white bg-opacity-25">
+          <CheckCircleIcon v-if="toastType === 'success'" class="w-5 h-5 text-white" />
           <span v-else class="i-heroicons-x-circle-solid text-white text-xl"></span>
         </div>
-        <div class="ml-3">
+        <div class="ml-3 flex-1">
           <p class="text-sm font-medium text-white">{{ toastMessage }}</p>
         </div>
-        <div class="ml-4 flex-shrink-0 flex">
-          <button @click="toastVisible = false" class="inline-flex text-white">
-            <span class="i-heroicons-x-mark text-sm"></span>
-          </button>
-        </div>
+        <button @click="toastVisible = false" class="ml-4 flex-shrink-0 text-white hover:text-gray-100 focus:outline-none">
+          <span class="sr-only">Close</span>
+          <span class="i-heroicons-x-mark text-sm"></span>
+        </button>
       </div>
     </div>
 
-    <!-- Header with mobile menu toggle -->
-    <header class="bg-white shadow-md lg:hidden sticky top-0 z-50 border-b border-green-100">
+    <!-- Header with mobile menu toggle - Redesigned with better contrast -->
+    <header class="bg-white shadow-md lg:hidden sticky top-0 z-40 border-b border-green-100">
       <div class="flex items-center justify-between px-4 py-3">
-        <button @click="goBack" class="text-green-600 flex items-center gap-1 font-medium">
-          <span class="i-heroicons-arrow-left-solid"></span>
+        <button @click="goBack" class="text-emerald-600 flex items-center gap-1 font-medium hover:text-emerald-700 transition-colors">
+          <ArrowLeftIcon class="w-5 h-5" />
           <span>Back</span>
         </button>
-        <h1 class="text-lg font-semibold text-green-700">New Livestock Listing</h1>
-        <button @click="toggleMobileMenu" class="text-green-600 p-2">
+        <h1 class="text-lg font-bold text-emerald-800">New Listing</h1>
+        <button @click="toggleMobileMenu" class="text-emerald-600 p-2 rounded-md hover:bg-emerald-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500">
           <span v-if="!mobileMenuOpen" class="i-heroicons-bars-3-solid"></span>
           <span v-else class="i-heroicons-x-mark-solid"></span>
         </button>
       </div>
 
-      <!-- Mobile Progress Bar -->
-      <div class="px-4 py-2 bg-green-50">
-        <div class="flex justify-between items-center mb-1">
-          <span class="text-xs font-medium text-gray-600">Step {{ currentStep }} of {{ totalSteps }}</span>
-          <span class="text-xs font-bold text-green-500">{{ Math.round(progressPercentage) }}%</span>
+      <!-- Mobile Progress Bar - Redesigned with smoother animation -->
+      <div class="px-4 py-3 bg-emerald-50">
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-xs font-medium text-emerald-700">Step {{ currentStep }} of {{ totalSteps }}: {{ stepsItems[currentStep - 1].title }}</span>
+          <span class="text-xs font-bold text-emerald-600">{{ Math.round(progressPercentage) }}%</span>
         </div>
-        <div class="h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner">
-          <div class="h-full bg-gradient-to-r from-green-400 to-green-500 transition-all duration-500 rounded-full"
+        <div class="h-2.5 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+          <div class="h-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all duration-500 ease-out rounded-full"
             :style="`width: ${progressPercentage}%`"></div>
         </div>
       </div>
     </header>
 
-    <!-- Mobile Navigation Menu with improved animation -->
+    <!-- Mobile Navigation Menu - Improved with better transitions and touch targets -->
     <div v-if="mobileMenuOpen"
-      class="fixed inset-0 z-40 lg:hidden bg-black bg-opacity-50 transition-opacity duration-300"
+      class="fixed inset-0 z-30 lg:hidden bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300"
       @click="mobileMenuOpen = false">
       <div
-        class="absolute top-16 right-0 bottom-0 w-64 bg-white shadow-xl transition-transform duration-300 animate-slide-in-right"
+        class="absolute top-16 right-0 bottom-0 w-72 bg-white shadow-2xl transition-transform duration-300 animate-slide-in-right"
         @click.stop>
-        <div class="p-4 border-b border-gray-100">
-          <h3 class="font-bold text-green-700 mb-2 flex items-center">
+        <div class="p-5 border-b border-gray-100">
+          <h3 class="font-bold text-emerald-700 mb-2 flex items-center">
             <span class="i-heroicons-square-3-stack-3d-solid mr-2"></span>
             Livestock Listing
           </h3>
-          <p class="text-sm text-gray-500">Complete your listing in 5 easy steps</p>
+          <p class="text-sm text-gray-600">Complete your listing in 5 easy steps</p>
         </div>
 
-        <!-- Step navigation with improved icons -->
-        <nav class="p-4">
-          <ul class="space-y-2">
+        <!-- Step navigation - Improved with better spacing and visual cues -->
+        <nav class="p-5">
+          <ul class="space-y-3">
             <li v-for="(step, index) in stepsItems" :key="index">
               <button @click="goToStep(index + 1)"
-                :disabled="index + 1 > currentStep && !stepValidation[index + 1 as keyof typeof stepValidation]" :class="[
-                  'w-full flex items-center py-3 px-4 rounded-lg transition-all duration-300',
+                :disabled="index + 1 > currentStep && !stepValidation[index + 1 as keyof typeof stepValidation]" 
+                :class="[
+                  'w-full flex items-center py-3.5 px-4 rounded-xl transition-all duration-300',
                   currentStep === index + 1
-                    ? 'bg-gradient-to-r from-green-400 to-green-500 text-white font-medium shadow-sm'
+                    ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white font-medium shadow-md'
                     : index + 1 < currentStep
-                      ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                      ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                       : 'text-gray-500 hover:bg-gray-100'
                 ]">
-                <span
-                  :class="[step.icon, 'mr-3 text-xl', currentStep === index + 1 ? 'text-white' : 'text-green-500']"></span>
+                <div class="flex items-center justify-center h-8 w-8 rounded-full mr-3" 
+                  :class="[
+                    currentStep === index + 1
+                      ? 'bg-white bg-opacity-25 text-white'
+                      : index + 1 < currentStep
+                        ? 'bg-emerald-200 text-emerald-600'
+                        : 'bg-gray-100 text-gray-400'
+                  ]">
+                  <component :is="step.icon" class="w-5 h-5" />
+                </div>
+
                 <span>{{ step.title }}</span>
 
-                <span v-if="index + 1 < currentStep"
-                  class="ml-auto i-heroicons-check-circle-solid text-green-500"></span>
-                <span v-else-if="index + 1 === currentStep" class="ml-auto w-2 h-2 rounded-full bg-white"></span>
+                <CheckCircleIcon v-if="index + 1 < currentStep" class="ml-auto w-5 h-5 text-emerald-500" />
+                <span v-else-if="index + 1 === currentStep" class="ml-auto w-2 h-2 rounded-full bg-white animate-pulse"></span>
               </button>
             </li>
           </ul>
         </nav>
+        
+        <!-- Mobile tips section -->
+        <div class="p-5 mt-4">
+          <div class="p-4 bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-100 shadow-sm">
+            <h4 class="font-medium text-emerald-700 flex items-center mb-2">
+              <span class="i-heroicons-light-bulb-solid text-emerald-500 mr-2"></span>
+              Tips for Success
+            </h4>
+            <p class="text-sm text-emerald-600">
+              Add multiple high-quality photos to increase interest in your listing by up to 250%!
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Main Layout -->
+    <!-- Main Layout - Redesigned with better responsive behavior -->
     <div class="flex flex-col lg:flex-row">
-      <!-- Sidebar - Further enhanced -->
-      <div
-        class="hidden lg:block lg:w-72 fixed top-0 left-0 bottom-0 bg-white shadow-lg z-20 border-r border-green-100">
-        <!-- Brand and Header with animated gradient -->
-        <div class="bg-gradient-to-br from-green-600 to-emerald-700 text-white px-6 py-6 bg-animate">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="bg-white bg-opacity-20 p-2 rounded-xl">
+      <!-- Sidebar - Redesigned with better visual hierarchy -->
+      <div class="hidden lg:block lg:w-80 fixed top-0 left-0 bottom-0 bg-white shadow-lg z-20 border-r border-emerald-100">
+        <!-- Brand and Header - Redesigned with more modern gradient -->
+        <div class="bg-gradient-to-br from-emerald-600 to-green-700 text-white px-6 py-8 bg-animate">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="bg-white bg-opacity-15 p-2.5 rounded-xl shadow-md">
               <span class="i-heroicons-square-3-stack-3d-solid text-2xl text-white"></span>
             </div>
             <div>
               <h1 class="text-xl font-bold">Livestock Market</h1>
-              <p class="text-green-100 text-xs">Premium Listing Portal</p>
+              <p class="text-emerald-100 text-xs">Premium Listing Portal</p>
             </div>
           </div>
 
-          <button @click="goBack" class="flex items-center gap-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg 
-    transition-all duration-300 w-full text-sm font-medium">
+          <button @click="goBack" 
+            class="flex items-center gap-2 bg-white bg-opacity-15 hover:bg-opacity-25 text-white px-4 py-2.5 rounded-lg 
+            transition-all duration-300 w-full text-sm font-medium shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-30">
             <ArrowLeftIcon class="w-5 h-5" />
             <span>Back to Market</span>
           </button>
         </div>
 
-        <!-- Progress indicator - Enhanced with animation -->
-        <div class="p-4 border-b border-gray-100">
+        <!-- Progress indicator - Redesigned with better visual feedback -->
+        <div class="p-5 border-b border-gray-100">
           <div class="flex justify-between items-center mb-2">
             <span class="text-sm font-medium text-gray-700">Your Progress</span>
-            <span class="text-sm font-bold text-green-600">{{ Math.round(progressPercentage) }}%</span>
+            <span class="text-sm font-bold text-emerald-600">{{ Math.round(progressPercentage) }}%</span>
           </div>
-          <div class="h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner">
-            <div class="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500 rounded-full"
+          <div class="h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+            <div class="h-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all duration-500 ease-out rounded-full"
               :style="`width: ${progressPercentage}%`"></div>
           </div>
-          <div class="mt-2 text-xs font-medium text-gray-500 flex justify-between">
-            <span>Step {{ currentStep }} of {{ totalSteps }}</span>
-            <span v-if="progressPercentage === 100" class="text-green-500 animate-pulse">Ready for review!</span>
+          <div class="mt-2 text-xs font-medium text-gray-600 flex justify-between">
+            <span>Step {{ currentStep }} of {{ totalSteps }}: {{ stepsItems[currentStep - 1].title }}</span>
+            <span v-if="progressPercentage === 100" class="text-emerald-500 animate-pulse">Ready for review!</span>
           </div>
         </div>
 
-        <!-- Step navigation - With enhanced visual indicators -->
-        <nav class="p-4 overflow-y-auto">
+        <!-- Step navigation - Redesigned with better visual hierarchy -->
+        <nav class="p-5 overflow-y-auto">
           <h3 class="text-xs font-bold uppercase text-gray-500 mb-3 tracking-wider px-2">Form Steps</h3>
-          <ul class="space-y-1.5">
+          <ul class="space-y-2">
             <li v-for="(step, index) in stepsItems" :key="index">
-              <button @click="goToStep(index + 1)" :disabled="index + 1 > currentStep && !stepValidation[index + 1 as keyof typeof stepValidation]"
+              <button @click="goToStep(index + 1)" 
+                :disabled="index + 1 > currentStep && !stepValidation[index + 1 as keyof typeof stepValidation]"
                 :class="[
-                  'w-full flex items-center py-2.5 px-3 rounded-lg transition-all duration-300',
+                  'w-full flex items-center py-3 px-4 rounded-xl transition-all duration-300',
                   currentStep === index + 1
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium shadow-sm'
+                    ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white font-medium shadow-md'
                     : index + 1 < currentStep
-                      ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                      : 'text-gray-500 hover:bg-gray-100'
+                      ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                      : index + 1 === currentStep + 1 
+                        ? 'text-gray-600 border border-dashed border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50'
+                        : 'text-gray-500 hover:bg-gray-100'
                 ]">
-                <div class="flex items-center justify-center h-7 w-7 rounded-full mr-3" :class="[
+                <div class="flex items-center justify-center h-9 w-9 rounded-full mr-3" :class="[
                   currentStep === index + 1
                     ? 'bg-white bg-opacity-20 text-white'
                     : index + 1 < currentStep
-                      ? 'bg-green-100 text-green-600'
+                      ? 'bg-emerald-100 text-emerald-600'
                       : 'bg-gray-100 text-gray-400'
                 ]">
                   <component :is="step.icon" class="w-5 h-5" />
@@ -378,44 +402,30 @@ const editForm = () => {
 
                 <span>{{ step.title }}</span>
 
-                <component v-if="index + 1 < currentStep" :is="CheckCircleIcon"
-                  class="ml-auto w-5 h-5 text-green-600" />
-                <span v-else-if="index + 1 === currentStep" class="ml-auto w-1.5 h-1.5 rounded-full bg-white"></span>
+                <CheckCircleIcon v-if="index + 1 < currentStep" class="ml-auto w-5 h-5 text-emerald-500" />
+                <span v-else-if="index + 1 === currentStep" class="ml-auto w-2 h-2 rounded-full bg-white animate-pulse"></span>
               </button>
             </li>
           </ul>
         </nav>
-
-        <!-- Tips section - Enhanced with card hover effect -->
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-          <div class="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100 shadow-sm
-                      hover:shadow-md transition-all duration-300 hover:border-green-200">
-            <h4 class="font-medium text-green-700 flex items-center mb-2">
-              <span class="i-heroicons-light-bulb-solid text-green-500 mr-2"></span>
-              Pro Tips
-            </h4>
-            <p class="text-sm text-green-600">
-              High-quality listings with clear photos and detailed descriptions get up to 3x more buyer interest.
-            </p>
-          </div>
-        </div>
       </div>
 
-      <!-- Main content - Enhanced with animations and better spacing -->
-      <div class="lg:ml-72 w-full px-4 lg:px-8 py-4 lg:py-8">
+      <!-- Main content - Redesigned with better spacing and card design -->
+      <div class="lg:ml-80 w-full px-4 lg:px-8 py-4 lg:py-8">
         <div class="max-w-4xl mx-auto">
-          <!-- Desktop-only header with refined typography -->
+          <!-- Desktop-only header - Redesigned with more appealing typography -->
           <div class="hidden lg:block mb-6">
-            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
-              <span class="i-heroicons-clipboard-document-list-solid text-green-500 mr-2"></span>
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <span class="flex items-center justify-center w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg shadow-sm">
+                <ClipboardDocumentListIcon class="w-6 h-6" />
+              </span>
               Create New Livestock Listing
             </h1>
-            <p class="text-gray-500 pl-7">Complete all steps to create your premium livestock listing</p>
+            <p class="text-gray-500 ml-12">Complete all steps to create your premium livestock listing</p>
           </div>
 
-          <!-- Form Card - Enhanced with subtle animations -->
-          <div
-            class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-xl">
+          <!-- Form Card - Redesigned with softer shadows and better border radius -->
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-xl">
             <!-- Form Review Mode -->
             <LivestockFormReview v-if="formReviewed" :title="title" :description="description" :category="category"
               :breed="breed" :price="price" :negotiable="negotiable" :quantity="quantity" :age="age" :age-unit="ageUnit"
@@ -452,15 +462,16 @@ const editForm = () => {
               @clearImages="clearImages" @clearVideo="clearVideo" />
           </div>
 
-          <!-- Footer with refined appearance -->
-          <div class="mt-8 text-center text-sm text-gray-500 border-t border-gray-100 pt-4">
-            <p>Livestock Market © 2025 •
-              <a href="#"
-                class="text-green-600 hover:text-green-700 hover:underline transition-colors duration-300">Terms of
-                Service</a> •
-              <a href="#"
-                class="text-green-600 hover:text-green-700 hover:underline transition-colors duration-300">Privacy
-                Policy</a>
+          <!-- Footer - Redesigned with better spacing and links -->
+          <div class="mt-8 text-center text-sm text-gray-500 border-t border-gray-100 pt-6">
+            <p class="flex items-center justify-center gap-3 flex-wrap">
+              <span>Livestock Market © 2025</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-gray-300 hidden sm:block"></span>
+<a href="#" class="text-emerald-600 hover:text-emerald-700 hover:underline transition-colors">Terms of Service</a>
+              <span class="w-1.5 h-1.5 rounded-full bg-gray-300 hidden sm:block"></span>
+              <a href="#" class="text-emerald-600 hover:text-emerald-700 hover:underline transition-colors">Privacy Policy</a>
+              <span class="w-1.5 h-1.5 rounded-full bg-gray-300 hidden sm:block"></span>
+              <a href="#" class="text-emerald-600 hover:text-emerald-700 hover:underline transition-colors">Help Center</a>
             </p>
           </div>
         </div>
@@ -470,35 +481,33 @@ const editForm = () => {
 </template>
 
 <style scoped>
-/* Add required animations */
+/* Animation for mobile menu */
 .animate-slide-in-right {
   animation: slideInRight 0.3s ease-out forwards;
-}
-
-.bg-animate {
-  background-size: 200% 200%;
-  animation: gradientShift 15s ease infinite;
 }
 
 @keyframes slideInRight {
   from {
     transform: translateX(100%);
   }
-
   to {
     transform: translateX(0);
   }
 }
 
-@keyframes gradientShift {
+/* Background animation for sidebar header */
+.bg-animate {
+  background-size: 200% 200%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
   0% {
     background-position: 0% 50%;
   }
-
   50% {
     background-position: 100% 50%;
   }
-
   100% {
     background-position: 0% 50%;
   }
