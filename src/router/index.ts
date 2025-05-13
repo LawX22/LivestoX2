@@ -12,7 +12,7 @@ import UserManagement from '../views/admin/UserManagement.vue';
 
 // Main Pages
 import LandingPage from '../views/main/LandingPage.vue';
-import LivestockDashboard from '../views/main/LivestockDashboard.vue';   
+import BuyerDashboard from '../views/main/BuyerDashboard.vue';   
 import LivestockMarket from '../views/main/LivestockMarket.vue';
 import Message from '../views/main/Message.vue';
 import LivestockForum from '../views/main/LivestockForum.vue';
@@ -40,7 +40,7 @@ const routes = [
   // Main Routes
   { path: '/', component: LandingPage, name: 'LandingPage' },
   { path: '/main/LivestockMarket', component: LivestockMarket, name: 'LivestockMarket' },
-  { path: '/main/LivestockDashboard', component: LivestockDashboard, name: 'LivestockDashboard' },
+  { path: '/main/BuyerDashboard', component: BuyerDashboard, name: 'BuyerDashboard' },
   { path: '/main/Message', component: Message, name: 'Message' },
   { path: '/main/LivestockForum', component: LivestockForum, name: 'LivestockForum' },
   { path: '/main/ViewListings', component: ViewListings, name: 'ViewListings' },
