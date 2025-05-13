@@ -18,13 +18,14 @@ import Message from '../views/main/Message.vue';
 import LivestockForum from '../views/main/LivestockForum.vue';
 import ViewListings from '../views/main/ViewListings.vue';
 
-import PurchaseHistory from '../views/main/PurchaseHistory.vue';
+import BuyerTransaction from '../views/main/BuyerTransaction.vue';
 import UserProfile from '../views/main/UserProfile.vue';
 
 
 // Farmer Pages
 import FarmerDashboard from '../views/farmer/FarmerDashboard.vue'; 
 import PostLivestockForms from '../views/farmer/PostLivestockForms.vue';
+import FarmerTransaction from '../views/farmer/FarmerTransaction.vue';
 
 // Utility Pages
 import UnderConstructionPage from '../views/utility/UnderConstructionPage.vue';
@@ -45,13 +46,14 @@ const routes = [
   { path: '/main/LivestockForum', component: LivestockForum, name: 'LivestockForum' },
   { path: '/main/ViewListings', component: ViewListings, name: 'ViewListings' },
 
-  { path: '/main/PurchaseHistory', component: PurchaseHistory, name: 'PurchaseHistory' },
+  { path: '/main/BuyerTransaction', component: BuyerTransaction, name: 'BuyerTransaction' },
   { path: '/main/UserProfile', component: UserProfile, name: 'UserProfile' },
 
 
   // Farmer Routes
   { path: '/farmer/FarmerDashboard', component: FarmerDashboard, name: 'FarmerDashboard' },
   { path: '/farmer/PostLivestockForms', component: PostLivestockForms, name: 'PostLivestockForms' },
+  { path: '/farmer/FarmerTransaction', component: FarmerTransaction, name: 'FarmerTransaction' },
 
   // Admin Routes
   { path: '/admin/adminDashboard', component: AdminDashboard, name: 'AdminDashboard' },

@@ -625,14 +625,14 @@ export default defineComponent({
                                     <span>Profile Management</span>
                                 </router-link>
 
-                                <router-link to="/main/PurchaseHistory"
+                                <router-link to="/farmer/FarmerTransaction"
                                     class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
                                     @click="hideUserMenu">
                                     <div
                                         class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 mr-3">
                                         <i class="pi pi-shopping-cart text-green-600 text-sm"></i>
                                     </div>
-                                    <span>My Purchases</span>
+                                    <span>Transaction</span>
                                 </router-link>
 
                                 <router-link to="/favorites-listings"
