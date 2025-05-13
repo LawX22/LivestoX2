@@ -1,40 +1,77 @@
 import { supabase } from "./supabaseClient";
 
-export const signUpConfirm = async (email: string, password: string) => {
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+export const signUpBuyer = async (
+  email: string,
+  password: string,
+  additionalInfo = {}
+) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: additionalInfo,
+    },
+  });
 
-    if (error) throw error;
+  if (error) {
+    throw error;
+  }
+  return data;
+};
 
-    console.log('User signed up:', data);
-    return data;
-  } catch (error) {
-    console.error('Signup error:', (error as Error).message);
-    return null;
+export const resendEmailOtp = async (email: string) => {
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: email,
+  });
+  if (error) {
+    throw error;
   }
 };
 
-export const signUp = async () => {
-    
-}
+export const verifyEmailOtp = async (email: string, token: string) => {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: "signup",
+  });
+
+  if (error) {
+    throw error;
+  }
+  return data;
+};
+
+export const checkUsernameAvailable = async (username: string) => {
+  const { data, error } = await supabase
+    .rpc('is_username_exist', { username })
+    .single();
+  
+  if (error) {
+    throw error;
+  }
+  return !data;
+};
+
+export const checkEmailAvailable = async (email: string) => {
+  const { data, error } = await supabase
+    .rpc('is_email_exist', { email })
+    .single();
+  
+  if (error) {
+    throw error;
+  }
+  return !data;
+};
 
 export const signIn = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-  
-      if (error) throw error;
-  
-      console.log('User signed in:', data);
-      return data;
-    } catch (error) {
-      console.error('Sign-in error:', (error as Error).message);
-      return null;
-    }
-  };
-  
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    throw error;
+  }
+  return data;
+};

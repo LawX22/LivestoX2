@@ -1,19 +1,23 @@
 <script lang="ts">
-// Script remains the same as your current implementation
 import { defineComponent, reactive, ref, computed } from 'vue';
 import NavBar from '../../components/Main/NavBar.vue';
 import Filters from '../../components/Main/Market/Filters.vue';
-import LivestockListing from '../../components/Main/Market/LivestockListings.vue';
-import FarmerLivestockListings from '../../components/Main/Market/FarmerLivestockListings.vue';
+import Header from '../../components/Main/Market/Header.vue';
+import Cards from '../../components/Main/Market/Cards.vue';
+import FarmerHeader from '../../components/Main/Market/FarmerHeader.vue';
+import Footer from '../../components/Main/Market/Footer.vue'; 
 
 export default defineComponent({
   name: 'LivestockMarket',
   components: {
     NavBar,
     Filters,
-    LivestockListing,
-    FarmerLivestockListings
+    Header,
+    Cards,
+    FarmerHeader,
+    Footer
   },
+
   setup() {
     const loading = ref(false);
     const filteredListings = ref([]);
@@ -199,82 +203,25 @@ export default defineComponent({
     </div>
     <div class="main-container">
       <div class="content-container">
-        <div class="sidebar">
+        <!-- <div class="sidebar">
           <Filters :filters="filters" :categories="categories" :breeds="breeds" :loading="loading"
             :savedLocations="savedLocations" @apply-filters="handleApplyFilters" @clear-filters="handleClearFilters"
             @update:filters="updateFilters" @save-preset="handleSavePreset" @category-change="handleCategoryChange"
             @save-location="handleSaveLocation" />
-        </div>
+        </div> -->
         <div class="main-content">
-          <!-- Replace the existing content with the LivestockListing component -->
-          <LivestockListing :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
 
-          <!-- This is for FarmerLivestockListing component -->
-          <!-- <FarmerLivestockListings :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
+          <!-- BUYER SIDE -->
+          <!-- <Header :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />  -->
           
+          <!-- FARMER SIDE  -->
+          <FarmerHeader :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+
+
+          <Cards :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
         </div>
       </div>
     </div>
+    <Footer /> 
   </div>
 </template>
-
-<style scoped>
-.livestock-market {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.navbar-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.main-container {
-  margin-top: 60px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.content-container {
-  display: flex;
-  flex: 1;
-  padding: 20px;
-  gap: 20px;
-}
-
-.sidebar {
-  width: 350px;
-  flex-shrink: 0;
-}
-
-.main-content {
-  flex: 1;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.loading-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-}
-
-@media (max-width: 768px) {
-  .content-container {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-  }
-}
-</style>

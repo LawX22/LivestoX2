@@ -1,21 +1,31 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 // Auth Pages
-import LandingPage from '../views/auth/LandingPage.vue';
 import SignIn from '../views/auth/SignIn.vue';
 import SignUp from '../views/auth/SignUp.vue';
+import ForgotPassword from '../views/auth/ForgotPassword.vue';
+import FarmerUpgradeAccount from '../views/auth/FarmerUpgradeAccount.vue';
 
 // Admin Pages
 import AdminDashboard from '../views/admin/AdminDashboard.vue';
 import UserManagement from '../views/admin/UserManagement.vue';
 
 // Main Pages
+import LandingPage from '../views/main/LandingPage.vue';
+import BuyerDashboard from '../views/main/BuyerDashboard.vue';   
 import LivestockMarket from '../views/main/LivestockMarket.vue';
 import Message from '../views/main/Message.vue';
 import LivestockForum from '../views/main/LivestockForum.vue';
 import ViewListings from '../views/main/ViewListings.vue';
-import PostLivestockForms from '../views/main/PostLivestockForms.vue';
-import FarmerSignupForm from '../views/main/FarmerSignupForm.vue';
+
+import BuyerTransaction from '../views/main/BuyerTransaction.vue';
+import UserProfile from '../views/main/UserProfile.vue';
+
+
+// Farmer Pages
+import FarmerDashboard from '../views/farmer/FarmerDashboard.vue'; 
+import PostLivestockForms from '../views/farmer/PostLivestockForms.vue';
+import FarmerTransaction from '../views/farmer/FarmerTransaction.vue';
 
 // Utility Pages
 import UnderConstructionPage from '../views/utility/UnderConstructionPage.vue';
@@ -23,17 +33,27 @@ import UnderConstructionPage from '../views/utility/UnderConstructionPage.vue';
 // Define Routes
 const routes = [
   // Auth Routes
-  { path: '/', component: LandingPage, name: 'LandingPage' },
   { path: '/signin', component: SignIn, name: 'SignIn' },
   { path: '/signup', component: SignUp, name: 'SignUp' },
+  { path: '/forgotpassword', component: ForgotPassword, name: 'ForgotPassword' },
+  { path: '/FarmerUpgradeAccount', component: FarmerUpgradeAccount, name: 'FarmerUpgradeAccount.vue' },
 
   // Main Routes
+  { path: '/', component: LandingPage, name: 'LandingPage' },
   { path: '/main/LivestockMarket', component: LivestockMarket, name: 'LivestockMarket' },
+  { path: '/main/BuyerDashboard', component: BuyerDashboard, name: 'BuyerDashboard' },
   { path: '/main/Message', component: Message, name: 'Message' },
   { path: '/main/LivestockForum', component: LivestockForum, name: 'LivestockForum' },
   { path: '/main/ViewListings', component: ViewListings, name: 'ViewListings' },
-  { path: '/main/PostLivestockForms', component: PostLivestockForms, name: 'PostLivestockForms' },
-  { path: '/main/FarmerSignupForm', component: FarmerSignupForm, name: 'FarmerSignupForm' },
+
+  { path: '/main/BuyerTransaction', component: BuyerTransaction, name: 'BuyerTransaction' },
+  { path: '/main/UserProfile', component: UserProfile, name: 'UserProfile' },
+
+
+  // Farmer Routes
+  { path: '/farmer/FarmerDashboard', component: FarmerDashboard, name: 'FarmerDashboard' },
+  { path: '/farmer/PostLivestockForms', component: PostLivestockForms, name: 'PostLivestockForms' },
+  { path: '/farmer/FarmerTransaction', component: FarmerTransaction, name: 'FarmerTransaction' },
 
   // Admin Routes
   { path: '/admin/adminDashboard', component: AdminDashboard, name: 'AdminDashboard' },

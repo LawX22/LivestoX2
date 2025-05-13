@@ -371,430 +371,520 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="livestock-details-page bg-gray-50 min-h-screen">
+    <div class="livestock-details-page min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50">
         <!-- Loading state -->
-        <div v-if="loading" class="flex justify-center items-center py-12">
-            <ProgressSpinner style="width: 60px; height: 60px" strokeWidth="4" fill="var(--surface-ground)"
-                animationDuration=".2s" aria-label="Loading" />
+        <div v-if="loading" class="flex justify-center items-center py-16">
+            <div class="text-center">
+                <ProgressSpinner style="width: 70px; height: 70px" strokeWidth="4" fill="var(--surface-ground)"
+                    animationDuration=".4s" aria-label="Loading" class="mb-4" />
+                <p class="text-emerald-700 animate-pulse">Loading your livestock details...</p>
+            </div>
         </div>
 
-        <div v-else class="container mx-auto px-4 py-2">
-            <!-- Back button with improved styling -->
-            <Button icon="pi pi-arrow-left" label="Back to Listings"
-                class="p-button-text mb-6 hover:bg-green-50 transition-colors duration-200 font-medium"
-                @click="goBack" />
+        <div v-else class="container mx-auto px-4 py-8">
+            <!-- Header and navigation -->
+            <div class="flex items-center justify-between mb-8">
+                <Button icon="pi pi-arrow-left" label="Back to Listings"
+                    class="p-button font-medium text-white bg-emerald-700 hover:bg-emerald-800 border border-emerald-800 shadow-md rounded-full px-5 py-2 transition duration-300 ease-in-out"
+                    @click="goBack" />
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Left column: Images and videos -->
-                <div class="col-span-1 lg:col-span-2">
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-                        <!-- Main image and badges with improved styling -->
-                        <div class="relative">
-                            <img :src="livestock.imageUrl" :alt="livestock.title"
-                                class="w-full h-72 md:h-96 object-cover" />
-                            <span v-if="livestock.auction"
-                                class="absolute top-4 right-4 bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm flex items-center">
-                                <i class="pi pi-clock mr-1.5"></i> Auction
-                            </span>
-                            <span v-if="livestock.certified"
-                                class="absolute top-4 left-4 bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm flex items-center">
-                                <i class="pi pi-check-circle mr-1.5"></i> Certified
-                            </span>
-                        </div>
 
-                        <!-- Thumbnail gallery with improved styling -->
-                        <div class="p-6">
-                            <h4 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                                <i class="pi pi-images mr-2 text-green-600"></i> Photo Gallery
-                            </h4>
-                            <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                                <div v-for="(image, index) in additionalImages" :key="index"
-                                    class="flex-shrink-0 cursor-pointer border-2 rounded-lg transition-all duration-200 hover:shadow-md"
-                                    :class="selectedImage === index ? 'border-green-500 shadow-md' : 'border-transparent'"
-                                    @click="selectImage(index)">
-                                    <img :src="image" class="w-20 h-20 object-cover rounded-lg" />
-                                </div>
-                            </div>
-
-                            <!-- Video preview with improved styling -->
-                            <div v-if="livestock.videoUrl" class="mt-6">
-                                <h4 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                                    <i class="pi pi-video mr-2 text-green-600"></i> Video Preview
-                                </h4>
-                                <div class="relative bg-black rounded-lg overflow-hidden shadow-md group">
-                                    <img :src="livestock.videoThumbnail"
-                                        class="w-full h-48 object-cover opacity-80 rounded-lg group-hover:opacity-60 transition-opacity duration-300" />
-                                    <div class="absolute inset-0 flex items-center justify-center">
-                                        <Button icon="pi pi-play"
-                                            class="p-button-rounded p-button-lg shadow-lg group-hover:scale-110 transition-transform duration-300"
-                                            @click="playVideo" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right column: Livestock details and actions -->
-                <div class="col-span-1">
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6 p-6 border border-gray-100">
-                        <div class="flex justify-between items-start">
-                            <h1 class="text-2xl font-bold text-gray-800">{{ livestock.title }}</h1>
-                            <Button icon="pi pi-heart" :class="[
-                                'p-button-rounded p-button-lg shadow-sm transition-all duration-200',
-                                livestock.isFavorite ? 'p-button-danger' : 'p-button-outlined p-button-secondary hover:bg-red-50'
-                            ]" @click="toggleFavorite(livestock)" aria-label="Save Listing"
-                                v-tooltip.top="livestock.isFavorite ? 'Remove from Favorites' : 'Save Listing'" />
-                        </div>
-
-                        <div class="flex items-center text-sm text-gray-600 mt-2 mb-4">
-                            <i class="pi pi-map-marker mr-1 text-green-600"></i>
-                            <span>{{ livestock.location }}</span>
-                            <div class="mx-2 h-1 w-1 rounded-full bg-gray-400"></div>
-                            <span>Listed {{ formatDate(livestock.listedDate) }}</span>
-                        </div>
-
-                        <div class="flex items-center">
-                            <div class="text-3xl font-bold text-green-700">${{ formatPrice(livestock.price) }}</div>
-                            <span v-if="livestock.negotiable"
-                                class="ml-2 text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                                Negotiable
-                            </span>
-                            <Badge v-if="livestock.availableImmediate" value="Available Now" severity="success"
-                                class="ml-auto shadow-sm"></Badge>
-                        </div>
-
-                        <Divider class="my-4" />
-
-                        <!-- Primary actions with enhanced design -->
-                        <div class="flex gap-4 mb-6">
-                            <Button label="Buy Now" icon="pi pi-shopping-cart"
-                                class="p-button-success flex-1 p-button-raised shadow-md hover:shadow-lg transition-all duration-300 font-semibold text-base py-3 px-4 rounded-lg"
-                                iconClass="mr-2" @click="buyNow" />
-                            <Button label="Contact Seller" icon="pi pi-comments"
-                                class="p-button-outlined flex-1 hover:bg-green-50 transition-all duration-300 font-semibold text-base py-3 px-4 rounded-lg border-2 border-green-500 text-green-600"
-                                iconClass="mr-2" @click="contactSeller" />
-                        </div>
-
-                        <!-- Quantity selection with improved visual hierarchy and feedback -->
-                        <div v-if="livestock.quantity > 1"
-                            class="mb-5 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
-                            <label class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <i class="pi pi-th-large mr-2 text-green-600"></i> Select Quantity
-                            </label>
-                            <div class="flex ">
-                                <Button icon="pi pi-minus"
-                                    class="p-button-rounded p-button-outlined p-button-sm hover:bg-gray-100"
-                                    @click="decrementQuantity" :disabled="selectedQuantity <= 1" />
-                                <InputNumber v-model="selectedQuantity" :min="1" :max="livestock.quantity"
-                                    class="w-20 px-2" :showButtons="false" />
-                                <Button icon="pi pi-plus"
-                                    class="p-button-rounded p-button-outlined p-button-sm hover:bg-gray-100"
-                                    @click="incrementQuantity" :disabled="selectedQuantity >= livestock.quantity" />
-                            </div>
-                            <div class="mt-2 text-xs text-gray-500">
-                                Select between 1 and {{ livestock.quantity }} items
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-white rounded-xl shadow-md overflow-hidden mb-6 p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                            <i class="pi pi-user mr-2 text-green-600"></i> Seller Information
-                        </h2>
-
-                        <div class="flex items-center mb-5">
-                            <Avatar :image="seller.avatarUrl || '/src/assets/vue.svg'" shape="circle"
-                                class="mr-4 shadow-sm border-2 border-white" style="width: 56px; height: 56px;" />
-                            <div>
-                                <div class="font-medium text-base text-gray-800">{{ seller.name }}</div>
-                                <div class="flex items-center text-sm mt-1">
-                                    <Rating v-model="seller.rating" :cancel="false" readonly :stars="5" class="mr-2" />
-                                    <span class="text-gray-600">{{ seller.rating }} <span class="text-gray-400">({{
-                                        seller.reviewCount }} reviews)</span></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Buttons in a row with improved spacing and styling -->
-                        <div class="flex gap-4 mb-4 justify-center">
-                            <Button icon="pi pi-user" v-tooltip.top="'View Profile'"
-                                class="p-button-rounded p-button-outlined p-button-sm text-green-600 hover:bg-green-50 transition-colors duration-200"
-                                @click="viewSellerProfile" />
-
-                            <Button v-if="seller.showPhoneNumber" icon="pi pi-envelope" v-tooltip.top="'Message Seller'"
-                                class="p-button-rounded p-button-outlined p-button-sm text-blue-600 hover:bg-blue-50 transition-colors duration-200"
-                                @click="callSeller" />
-                        </div>
-
-                        <!-- Report listing with improved styling -->
-                        <div class="text-center mt-3 border-t border-gray-100 pt-3">
-                            <a href="#" @click.prevent="reportListing"
-                                class="text-xs inline-flex items-center text-gray-400 hover:text-red-500 transition-colors duration-200">
-                                <i class="pi pi-flag mr-1 text-xs"></i>
-                                Report Listing
-                            </a>
-                        </div>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <Button icon="pi pi-share-alt"
+                        class="p-button-rounded p-button-outlined border-emerald-400 text-emerald-600 hover:bg-emerald-50"
+                        v-tooltip.top="'Share Listing'" />
+                    <Button icon="pi pi-flag"
+                        class="p-button-rounded p-button-outlined border-rose-400 text-rose-600 hover:bg-rose-50"
+                        @click="reportListing" v-tooltip.top="'Report Listing'" />
                 </div>
             </div>
 
-            <!-- Details tabs with improved styling -->
-            <div class="mt-8">
-                <TabView class="livestock-tabs">
-                    <TabPanel header="Description">
-                        <div class="p-6 bg-white rounded-xl shadow-md border border-gray-100">
-                            <p class="text-gray-700 whitespace-pre-line leading-relaxed">{{ livestock.description }}</p>
-                        </div>
-                    </TabPanel>
+            <!-- Main product showcase -->
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden mb-10">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-0">
+                    <!-- Left column: Main image gallery -->
+                    <div class="lg:col-span-3 h-full">
+                        <div class="relative aspect-video lg:aspect-auto lg:h-full">
+                            <img :src="livestock.imageUrl" :alt="livestock.title" class="w-full h-full object-cover" />
 
-                    <TabPanel header="Livestock Details">
-                        <div class="p-6 bg-white rounded-xl shadow-md border border-gray-100">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div v-for="(detail, index) in livestockDetails" :key="index"
-                                    class="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                                    <span class="text-sm text-gray-600">{{ detail.label }}</span>
-                                    <span class="font-medium text-gray-800 mt-1">{{ detail.value }}</span>
+                            <!-- Badges -->
+                            <div class="absolute top-5 left-5 flex gap-2 flex-wrap">
+                                <div v-if="livestock.certified"
+                                    class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm flex items-center">
+                                    <i class="pi pi-verified text-xl mr-2"></i> Certified
+                                </div>
+                                <div v-if="livestock.auction"
+                                    class="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm flex items-center">
+                                    <i class="pi pi-clock text-xl mr-2"></i> Auction
                                 </div>
                             </div>
-                        </div>
-                    </TabPanel>
 
-                    <TabPanel header="Location & Delivery">
-                        <div class="p-6 bg-white rounded-xl shadow-md border border-gray-100">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Favorite button -->
+                            <Button :icon="livestock.isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" :class="[
+                                'absolute top-5 right-5 p-button-rounded shadow-lg transform transition-all duration-300 hover:scale-110',
+                                livestock.isFavorite ? 'p-button-danger' : 'bg-white/80 hover:bg-white border-0 text-rose-500'
+                            ]" @click="toggleFavorite(livestock)"
+                                v-tooltip.left="livestock.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'" />
+
+                            <!-- Available now indicator -->
+                            <div v-if="livestock.availableImmediate"
+                                class="absolute bottom-5 right-5 bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold flex items-center">
+                                <i class="pi pi-check-circle mr-2"></i> Available Now
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right column: Details and CTA -->
+                    <div class="lg:col-span-2 p-8 flex flex-col bg-gradient-to-br from-white to-emerald-50">
+                        <div class="flex items-center gap-2 text-sm text-emerald-600 font-medium mb-2">
+                            <i class="pi pi-tag"></i>
+                            <span>{{ livestock.category }} / {{ livestock.breed }}</span>
+                        </div>
+
+                        <h1 class="text-3xl font-bold text-gray-800 mb-4 leading-tight">{{ livestock.title }}</h1>
+
+                        <div class="flex items-center gap-3 text-gray-500 text-sm mb-6">
+                            <div class="flex items-center bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">
+                                <i class="pi pi-map-marker mr-1"></i>
+                                <span>{{ livestock.location }}</span>
+                            </div>
+                            <div class="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                                <i class="pi pi-calendar mr-1"></i>
+                                <span>{{ formatDate(livestock.listedDate) }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Price section -->
+                        <div class="bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl p-6 mb-6 shadow-inner">
+                            <div class="flex justify-between items-center">
                                 <div>
-                                    <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                                        <i class="pi pi-map-marker mr-2 text-green-600"></i> Location
-                                    </h3>
-                                    <p class="text-gray-700 mb-4 ml-6">
-                                        {{ livestock.location }}
-                                    </p>
-
-                                    <!-- Map placeholder with improved styling -->
-                                    <div
-                                        class="bg-gray-100 rounded-xl h-56 flex items-center justify-center overflow-hidden shadow-sm border border-gray-200">
-                                        <img src="/src/assets/vue.svg" alt="Location Map" class="rounded-xl" />
+                                    <div class="text-sm text-emerald-700 font-medium mb-1">Price</div>
+                                    <div class="flex items-center">
+                                        <span class="text-3xl font-bold text-emerald-800">${{
+                                            formatPrice(livestock.price) }}</span>
+                                        <span v-if="livestock.negotiable"
+                                            class="ml-2 bg-white text-emerald-600 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+                                            Negotiable
+                                        </span>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                                        <i class="pi pi-truck mr-2 text-green-600"></i> Delivery Options
-                                    </h3>
-                                    <div
-                                        class="bg-gray-50 p-4 rounded-xl mb-6 border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                                        <div class="flex items-center">
-                                            <div>
-                                                <div class="font-medium">{{ livestock.deliveryOption }}</div>
-                                                <div class="text-sm text-gray-600 mt-1">{{ livestock.deliveryDetails }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                                        <i class="pi pi-info-circle mr-2 text-green-600"></i> Restrictions
-                                    </h3>
-                                    <div
-                                        class="bg-gray-50 p-4 rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                                        <div class="flex items-center">
-                                            <div class="text-gray-700">{{ livestock.restrictions }}</div>
-                                        </div>
-                                    </div>
+                                <div v-if="livestock.quantity > 1" class="text-center">
+                                    <div class="text-sm text-emerald-700 font-medium mb-1">Available</div>
+                                    <div class="font-bold text-emerald-800">{{ livestock.quantity }} items</div>
                                 </div>
                             </div>
                         </div>
-                    </TabPanel>
 
-                    <TabPanel header="Reviews">
-                        <div class="p-6 bg-white rounded-xl shadow-md border border-gray-100">
-                            <div v-if="reviews.length > 0">
-                                <div v-for="(review, index) in reviews" :key="index"
-                                    class="mb-6 pb-6 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 p-3 rounded-lg transition-colors duration-200">
-                                    <div class="flex items-start">
-                                        <Avatar :image="review.avatarUrl || '/src/assets/vue.svg'" shape="circle"
-                                            class="mr-4 shadow-sm" style="width: 45px; height: 45px;" />
-                                        <div class="flex-grow">
-                                            <div class="flex justify-between items-center">
-                                                <div class="font-medium">{{ review.username }}</div>
-                                                <div class="text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                                                    {{ formatDate(review.date) }}
-                                                </div>
-                                            </div>
-                                            <Rating :modelValue="review.rating" readonly :cancel="false" :stars="5"
-                                                class="my-2" />
-                                            <p class="mt-2 text-gray-700">{{ review.comment }}</p>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Key specs summary -->
+                        <div class="flex flex-wrap gap-4 mb-8">
+                            <div
+                                class="flex-1 min-w-[80px] bg-gradient-to-b from-white to-emerald-50 rounded-2xl p-4 text-center shadow-sm border border-emerald-100">
+                                <div class="text-sm text-emerald-700 font-medium">Age</div>
+                                <div class="font-semibold text-gray-800 mt-1">{{ livestock.age }} {{ livestock.ageUnit
+                                    }}</div>
                             </div>
-                            <div v-else class="text-center py-10">
-                                <i class="pi pi-comments text-5xl text-gray-300 mb-4"></i>
-                                <p class="text-gray-500">No reviews yet for this listing</p>
-                                <Button label="Be the first to review" icon="pi pi-pencil"
-                                    class="p-button-text mt-4 hover:bg-green-50 transition-colors duration-200" />
+                            <div
+                                class="flex-1 min-w-[80px] bg-gradient-to-b from-white to-emerald-50 rounded-2xl p-4 text-center shadow-sm border border-emerald-100">
+                                <div class="text-sm text-emerald-700 font-medium">Gender</div>
+                                <div class="font-semibold text-gray-800 mt-1">{{ livestock.gender }}</div>
+                            </div>
+                            <div
+                                class="flex-1 min-w-[80px] bg-gradient-to-b from-white to-emerald-50 rounded-2xl p-4 text-center shadow-sm border border-emerald-100">
+                                <div class="text-sm text-emerald-700 font-medium">Weight</div>
+                                <div class="font-semibold text-gray-800 mt-1">{{ livestock.weight }} {{
+                                    livestock.weightUnit }}</div>
                             </div>
                         </div>
-                    </TabPanel>
-                </TabView>
-            </div>
 
-            <!-- Similar listings with improved styling -->
-            <div class="mt-10">
-                <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                    <i class="pi pi-clone mr-2 text-green-600"></i> Similar Listings
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="listing in similarListings" :key="listing.id"
-                        class="livestock-card bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col">
-                        <div class="relative">
-                            <!-- Image with gradient overlay -->
-                            <div class="relative h-56 overflow-hidden">
-                                <img :src="listing.imageUrl" :alt="listing.title"
-                                    class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-
-                                <!-- Price badge -->
-                                <div
-                                    class="absolute bottom-3 left-3 bg-white/90 text-green-600 px-3 py-1.5 rounded-lg text-base font-bold shadow-md">
-                                    ${{ formatPrice(listing.price) }}
-                                </div>
-
-                                <!-- Available now badge -->
-                                <div v-if="listing.availableImmediate"
-                                    class="absolute bottom-3 right-3 bg-green-100 text-green-800 px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center shadow-sm">
-                                    <i class="pi pi-check-circle mr-1.5"></i> Available Now
-                                </div>
-                            </div>
-
-                            <!-- Top badges -->
-                            <div class="absolute top-3 left-3 right-3 flex justify-between">
-                                <div class="flex gap-1.5">
-                                    <span v-if="listing.certified"
-                                        class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center shadow-sm">
-                                        <i class="pi pi-check-circle mr-1.5"></i> Certified
-                                    </span>
-                                    <span v-if="listing.auction"
-                                        class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center shadow-sm">
-                                        <i class="pi pi-clock mr-1.5"></i> Auction
-                                    </span>
-                                </div>
-
-                                <!-- Favorite button -->
+                        <!-- Quantity selector -->
+                        <div v-if="livestock.quantity > 1" class="mb-8">
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Select Quantity</label>
+                            <div
+                                class="flex items-center border border-emerald-200 rounded-full overflow-hidden shadow-sm bg-white">
                                 <button
-                                    class="w-9 h-9 flex items-center justify-center rounded-full shadow-md transition-all duration-200"
-                                    :class="[listing.isFavorite ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-500 hover:bg-red-50 hover:text-red-500']"
-                                    @click="toggleFavorite(listing)" aria-label="Toggle favorite">
-                                    <i class="pi pi-heart-fill text-sm"></i>
+                                    class="px-4 py-2 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50 flex-shrink-0"
+                                    @click="decrementQuantity" :disabled="selectedQuantity <= 1">
+                                    <i class="pi pi-minus"></i>
+                                </button>
+                                <div class="flex-grow text-center py-2 font-medium text-gray-800">{{ selectedQuantity }}
+                                </div>
+                                <button
+                                    class="px-4 py-2 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50 flex-shrink-0"
+                                    @click="incrementQuantity" :disabled="selectedQuantity >= livestock.quantity">
+                                    <i class="pi pi-plus"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="p-5 flex-1 flex flex-col">
-                            <!-- Title -->
-                            <h3 class="text-lg font-bold text-gray-800 hover:text-green-600 transition-colors cursor-pointer line-clamp-2 mb-2"
-                                @click="viewListing(listing.id)">
-                                {{ listing.title }}
-                            </h3>
-
-                            <!-- Location and date -->
-                            <div class="flex items-center text-xs text-gray-500 mb-4">
-                                <i class="pi pi-map-marker mr-1.5 text-green-600"></i>
-                                <span>{{ listing.location }}</span>
-                                <div class="mx-2 h-1 w-1 rounded-full bg-gray-300"></div>
-                                <span>{{ formatDate(listing.listedDate) }}</span>
-                            </div>
-
-                            <!-- Description -->
-                            <div class="bg-gray-50 p-3 rounded-lg mb-4 border border-gray-100">
-                                <p class="text-gray-700 text-xs line-clamp-2">{{ listing.description }}</p>
-                            </div>
-
-                            <!-- Key specs with improved styling -->
-                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-700 mb-4">
-                                <div class="flex items-center bg-gray-100 px-2.5 py-1.5 rounded-full">
-                                    <i class="pi pi-tag text-green-600 mr-1.5"></i>
-                                    <span>{{ listing.category }}</span>
-                                </div>
-                                <div class="flex items-center bg-gray-100 px-2.5 py-1.5 rounded-full">
-                                    <i class="pi pi-calendar text-green-600 mr-1.5"></i>
-                                    <span>{{ listing.age }} {{ listing.ageUnit }}</span>
-                                </div>
-                                <div class="flex items-center bg-gray-100 px-2.5 py-1.5 rounded-full">
-                                    <i class="pi pi-heart text-green-600 mr-1.5"></i>
-                                    <span>{{ listing.healthStatus }}</span>
-                                </div>
-                                <div v-if="listing.quantity > 1"
-                                    class="flex items-center bg-gray-100 px-2.5 py-1.5 rounded-full">
-                                    <i class="pi pi-th-large text-green-600 mr-1.5"></i>
-                                    <span>{{ listing.quantity }} Left </span>
-                                </div>
-                            </div>
-
-                            <!-- Spacer to push button to bottom -->
-                            <div class="flex-grow"></div>
-
-                            <!-- Button with improved styling -->
-                            <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
-                                class="p-button-rounded p-button-success w-full font-medium text-sm mt-3 shadow-sm hover:shadow-md transition-shadow duration-200"
-                                @click="viewListing(listing.id)" />
+                        <!-- CTA buttons -->
+                        <div class="flex gap-4">
+                            <Button label="Buy Now" icon="pi pi-shopping-cart"
+                                class="p-button-raised flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border-0 shadow-lg text-base py-3 rounded-full font-medium transition-all duration-300 transform hover:translate-y-[-2px]"
+                                @click="buyNow" />
+                            <Button label="Contact" icon="pi pi-comments"
+                                class="p-button-outlined flex-1 border-emerald-500 text-emerald-600 hover:bg-emerald-50 text-base py-3 rounded-full font-medium transition-all duration-300"
+                                @click="contactSeller" />
                         </div>
+                    </div>
+                </div>
+
+                <!-- Thumbnail gallery - redesigned as a horizontal strip -->
+                <div class="p-5 bg-gradient-to-r from-emerald-50 to-teal-50 border-t border-emerald-100">
+                    <div class="flex overflow-x-auto gap-4 pb-2 scrollbar-thin">
+                        <div v-for="(image, index) in additionalImages" :key="index"
+                            class="flex-shrink-0 cursor-pointer transition-all duration-300"
+                            @click="selectImage(index)">
+                            <div class="relative w-24 h-24 rounded-xl overflow-hidden shadow-sm transform hover:scale-105"
+                                :class="selectedImage === index ? 'ring-3 ring-emerald-500 ring-offset-2' : 'opacity-80 hover:opacity-100'">
+                                <img :src="image" class="w-full h-full object-cover" />
+                            </div>
+                        </div>
+
+                        <div v-if="livestock.videoUrl" class="flex-shrink-0 cursor-pointer transition-all duration-300"
+                            @click="playVideo">
+                            <div
+                                class="relative w-24 h-24 rounded-xl overflow-hidden bg-black shadow-sm transform hover:scale-105">
+                                <img :src="livestock.videoThumbnail" class="w-full h-full object-cover opacity-80" />
+                                <div class="absolute inset-0 flex items-center justify-center bg-black/30">
+                                    <div class="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center">
+                                        <i class="pi pi-play text-emerald-600"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seller information - Repositioned above main content -->
+            <div
+                class="bg-white rounded-2xl shadow-lg p-6 mb-8 border-l-4 border-emerald-500 transform hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center">
+                    <Avatar :image="seller.avatarUrl" shape="circle" class="mr-4" size="large" />
+                    <div class="flex-grow">
+                        <h3 class="text-lg font-bold text-gray-800">{{ seller.name }}</h3>
+                        <div class="flex items-center mt-1">
+                            <Rating :modelValue="seller.rating" readonly :cancel="false" :stars="5" class="mr-2" />
+                            <span class="text-sm text-gray-600">{{ seller.rating }} ({{ seller.reviewCount }}
+                                reviews)</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <Button icon="pi pi-user"
+                            class="p-button-rounded p-button-outlined border-emerald-500 text-emerald-600 hover:bg-emerald-50 transform hover:scale-110 transition-all duration-300"
+                            v-tooltip="'View Profile'" @click="viewSellerProfile" />
+                        <Button icon="pi pi-envelope"
+                            class="p-button-rounded p-button-outlined border-blue-500 text-blue-600 hover:bg-blue-50 transform hover:scale-110 transition-all duration-300"
+                            v-tooltip="'Contact Seller'" @click="contactSeller" />
+                        <Button v-if="seller.showPhoneNumber" icon="pi pi-phone"
+                            class="p-button-rounded p-button-outlined border-emerald-500 text-emerald-600 hover:bg-emerald-50 transform hover:scale-110 transition-all duration-300"
+                            v-tooltip="'Call Seller'" @click="callSeller" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left side content -->
+                <div class="lg:col-span-8">
+                    <!-- Tabbed content with enhanced design -->
+                    <div
+                        class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8 transform hover:shadow-xl transition-all duration-300">
+                        <TabView class="livestock-tabs product-tabs">
+                            <TabPanel header="Description">
+                                <div class="p-8">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                        <i class="pi pi-info-circle mr-2 text-emerald-600"></i> About this Livestock
+                                    </h3>
+                                    <p class="text-gray-700 leading-relaxed text-lg">{{ livestock.description }}</p>
+                                </div>
+                            </TabPanel>
+
+                            <TabPanel header="Specifications">
+                                <div class="p-8">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <i class="pi pi-list mr-2 text-emerald-600"></i> Detailed Specifications
+                                    </h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div v-for="(detail, index) in livestockDetails" :key="index"
+                                            class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl overflow-hidden shadow-sm transform hover:translate-y-[-2px] transition-all duration-300">
+                                            <div
+                                                class="bg-gradient-to-r from-emerald-200 to-teal-200 py-3 px-4 border-l-4 border-emerald-500">
+                                                <span class="font-medium text-gray-800">{{ detail.label }}</span>
+                                            </div>
+                                            <div class="py-3 px-4">
+                                                <span class="text-gray-800 font-medium">{{ detail.value }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabPanel>
+
+                            <TabPanel header="Location & Delivery">
+                                <div class="p-8">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <i class="pi pi-map-marker mr-2 text-emerald-600"></i> Location & Delivery
+                                        Information
+                                    </h3>
+
+                                    <div class="mb-8">
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-3">Pickup Location</h4>
+                                        <div class="bg-blue-50 rounded-xl p-4 border-l-4 border-blue-500">
+                                            <div class="flex items-start">
+                                                <i class="pi pi-map-marker text-blue-600 text-xl mt-1 mr-3"></i>
+                                                <div>
+                                                    <p class="text-gray-800 font-medium mb-1">{{ livestock.location }}
+                                                    </p>
+                                                    <p class="text-gray-600 text-sm">Exact location will be shared after
+                                                        purchase confirmation</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-8">
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-3">Delivery Options</h4>
+                                        <div class="bg-emerald-50 rounded-xl p-4 border-l-4 border-emerald-500">
+                                            <div class="flex items-start">
+                                                <i class="pi pi-truck text-emerald-600 text-xl mt-1 mr-3"></i>
+                                                <div>
+                                                    <p class="text-gray-800 font-medium mb-1">{{
+                                                        livestock.deliveryOption }}</p>
+                                                    <p class="text-gray-600">{{ livestock.deliveryDetails }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="livestock.restrictions">
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-3">Restrictions</h4>
+                                        <div class="bg-amber-50 rounded-xl p-4 border-l-4 border-amber-500">
+                                            <div class="flex items-start">
+                                                <i
+                                                    class="pi pi-exclamation-triangle text-amber-600 text-xl mt-1 mr-3"></i>
+                                                <div>
+                                                    <p class="text-gray-700">{{ livestock.restrictions }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabPanel>
+
+                            <TabPanel header="Reviews">
+                                <div class="p-8">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <i class="pi pi-star mr-2 text-emerald-600"></i> Customer Reviews
+                                    </h3>
+
+                                    <div v-if="reviews.length === 0" class="text-center py-6">
+                                        <i class="pi pi-inbox text-4xl text-gray-300 mb-3"></i>
+                                        <p class="text-gray-500">No reviews yet. Be the first to review!</p>
+                                    </div>
+
+                                    <div v-else class="space-y-6">
+                                        <div v-for="review in reviews" :key="review.id"
+                                            class="bg-gradient-to-r from-gray-50 to-white rounded-xl p-5 shadow-sm transform hover:shadow-md transition-all duration-300">
+                                            <div class="flex items-start">
+                                                <Avatar v-if="review.avatarUrl" :image="review.avatarUrl" shape="circle"
+                                                    class="mr-4" />
+                                                <Avatar v-else :label="review.username.charAt(0)" shape="circle"
+                                                    class="mr-4"
+                                                    style="background-color: var(--emerald-500); color: #ffffff" />
+
+                                                <div class="flex-grow">
+                                                    <div class="flex justify-between items-start">
+                                                        <h4 class="font-semibold text-gray-800">{{ review.username }}
+                                                        </h4>
+                                                        <span class="text-xs text-gray-500">{{ formatDate(review.date)
+                                                            }}</span>
+                                                    </div>
+                                                    <Rating :modelValue="review.rating" readonly :cancel="false"
+                                                        :stars="5" class="my-2" />
+                                                    <p class="text-gray-700 mt-2">{{ review.comment }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabPanel>
+                        </TabView>
+                    </div>
+                </div>
+
+                <!-- Right side sidebar -->
+                <div class="lg:col-span-4">
+                    <!-- Similar listings -->
+                    <div
+                        class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8 transform hover:shadow-xl transition-all duration-300">
+                        <div class="px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600">
+                            <h3 class="text-lg font-bold text-white flex items-center">
+                                <i class="pi pi-tag mr-2"></i> Similar Listings
+                            </h3>
+                        </div>
+
+                        <div class="p-4">
+                            <div v-if="similarListings.length === 0" class="text-center py-6">
+                                <i class="pi pi-inbox text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-gray-500">No similar listings found</p>
+                            </div>
+
+                            <div v-else class="space-y-4">
+                                <div v-for="item in similarListings" :key="item.id"
+                                    class="bg-gradient-to-r from-gray-50 to-white rounded-xl overflow-hidden shadow-sm transform hover:translate-y-[-2px] transition-all duration-300 hover:shadow-md cursor-pointer"
+                                    @click="viewListing(item.id)">
+                                    <div class="flex">
+                                        <div class="w-24 h-24 flex-shrink-0">
+                                            <img :src="item.imageUrl" :alt="item.title"
+                                                class="w-full h-full object-cover" />
+                                        </div>
+                                        <div class="p-3 flex-grow">
+                                            <h4 class="font-medium text-gray-800 line-clamp-1">{{ item.title }}</h4>
+                                            <div class="flex items-center text-sm text-emerald-600 font-medium mt-1">
+                                                <i class="pi pi-tag mr-1 text-xs"></i>
+                                                <span>{{ item.breed }}</span>
+                                            </div>
+                                            <div class="flex justify-between items-center mt-2">
+                                                <span class="font-bold text-emerald-700">${{ formatPrice(item.price)
+                                                    }}</span>
+                                                <span class="text-xs text-gray-500">{{ formatDate(item.listedDate)
+                                                    }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Help & Support -->
+                    <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg p-6 text-white">
+                        <h3 class="text-lg font-bold mb-4 flex items-center">
+                            <i class="pi pi-question-circle mr-2"></i> Need Help?
+                        </h3>
+                        <p class="mb-4 text-white/90">Have questions about this livestock or the buying process? Our
+                            support team is here to help.</p>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <i class="pi pi-envelope mr-3 text-lg"></i>
+                                <span>support@livestockmarket.com</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="pi pi-phone mr-3 text-lg"></i>
+                                <span>+63 912 345 6789</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="pi pi-clock mr-3 text-lg"></i>
+                                <span>Available 7 days a week, 8am-8pm</span>
+                            </div>
+                        </div>
+                        <Button label="Contact Support" icon="pi pi-comments"
+                            class="mt-4 w-full p-button-outlined border-white text-white hover:bg-white/20" />
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Dialog for contacting seller with improved styling -->
-        <Dialog v-model:visible="contactDialogVisible" header="Contact Seller" :style="{ width: '450px' }"
-            class="contact-dialog">
-            <div class="p-5">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
-                    <textarea v-model="contactMessage" placeholder="Write your message to the seller"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
-                        rows="4"></textarea>
+        <!-- Contact Dialog -->
+        <Dialog v-model:visible="contactDialogVisible" modal header="Contact Seller" class="contact-dialog"
+            :style="{ width: '90%', maxWidth: '550px' }">
+            <div class="p-fluid">
+                <div class="field mb-6">
+                    <label for="message" class="font-medium text-gray-700 mb-2 block">Your Message</label>
+                    <textarea id="message" v-model="contactMessage" rows="5"
+                        class="w-full p-3 rounded-lg border-gray-300 focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                        placeholder="I'm interested in your Brahman Cow. Is it still available?"></textarea>
                 </div>
-                <Button label="Send Message" icon="pi pi-send"
-                    class="w-full p-button-success shadow-md hover:shadow-lg transition-shadow duration-200"
-                    @click="sendMessage" />
+
+                <div class="flex gap-4">
+                    <Button label="Send" icon="pi pi-send"
+                        class="p-button-raised bg-emerald-600 hover:bg-emerald-700 border-0" @click="sendMessage" />
+                    <Button label="Cancel" class="p-button-outlined border-gray-300 text-gray-700 hover:bg-gray-50"
+                        @click="contactDialogVisible = false" />
+                </div>
             </div>
         </Dialog>
 
-        <!-- Dialog for video preview with improved styling -->
-        <Dialog v-model:visible="videoDialogVisible" header="Video Preview" :style="{ width: '90%', maxWidth: '900px' }"
-            class="video-dialog">
-            <div class="p-4">
-                <div class="relative bg-black w-full rounded-lg overflow-hidden shadow-lg" style="padding-top: 56.25%">
-                    <img src="/src/assets/Bull.jpg" class="absolute inset-0 w-full h-full object-cover" />
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <i
-                            class="pi pi-play text-6xl text-white opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer"></i>
-                    </div>
-                </div>
-                <div class="mt-4 text-center text-gray-700">
-                    <p class="text-sm">{{ livestock.title }} - Video Preview</p>
-                </div>
+        <!-- Video Dialog -->
+        <Dialog v-model:visible="videoDialogVisible" modal header="Video Preview" class="video-dialog"
+            :style="{ width: '90%', maxWidth: '800px' }">
+            <div class="aspect-video bg-black rounded-lg flex items-center justify-center">
+                <p class="text-white">Video player would be implemented here</p>
+                <!-- In a real app, you would use a video player component here -->
+                <!-- <video controls class="w-full h-full">
+                    <source :src="livestock.videoUrl" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video> -->
             </div>
         </Dialog>
     </div>
 </template>
 
 <style scoped>
-.livestock-card {
-    position: relative;
-    transition: all 0.3s ease;
+.livestock-details-page {
+    min-height: 100vh;
 }
 
-.livestock-card:hover {
-    transform: translateY(-5px);
+.livestock-tabs :deep(.p-tabview-nav) {
+    background: linear-gradient(to right, rgba(16, 185, 129, 0.1), rgba(20, 184, 166, 0.1));
+    border-bottom: 2px solid rgba(16, 185, 129, 0.2);
+    padding: 0 1rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .livestock-details-page .p-tabview-nav li {
-        width: 50%;
-    }
+.livestock-tabs :deep(.p-tabview-nav li .p-tabview-nav-link) {
+    background: transparent;
+    border: none;
+    color: #374151;
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+    transition: all 0.3s;
+}
+
+.livestock-tabs :deep(.p-tabview-nav li .p-tabview-nav-link:hover) {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: transparent;
+    color: #047857;
+}
+
+.livestock-tabs :deep(.p-tabview-nav li.p-highlight .p-tabview-nav-link) {
+    background: #fff;
+    border-radius: 0.5rem 0.5rem 0 0;
+    border-bottom: 3px solid #10b981;
+    color: #047857;
+    font-weight: 600;
+}
+
+.contact-dialog :deep(.p-dialog-header) {
+    background: #10b981;
+    color: white;
+}
+
+/* For the gallery thumbnails scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+    cursor: pointer;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(16, 185, 129, 0.4);
+    border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(16, 185, 129, 0.6);
+}
+
+/* Line clamp for text truncation */
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 </style>

@@ -16,6 +16,9 @@ import Tag from 'primevue/tag';
 import SelectButton from 'primevue/selectbutton';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
+import Panel from 'primevue/panel';
+import RadioButton from 'primevue/radiobutton';
+import Ripple from 'primevue/ripple';
 
 interface FilterOptions {
     category: any;
@@ -52,10 +55,13 @@ export default defineComponent({
         Tag,
         SelectButton,
         Dialog,
-        InputText
+        InputText,
+        Panel,
+        RadioButton
     },
     directives: {
-        tooltip: Tooltip
+        tooltip: Tooltip,
+        ripple: Ripple
     },
     props: {
         filters: {
@@ -63,7 +69,7 @@ export default defineComponent({
             required: true
         },
         categories: {
-            type: Array,
+            type: Array as PropType<{ id: number; name: string; icon?: string }[]>,
             required: true
         },
         breeds: {
@@ -75,11 +81,11 @@ export default defineComponent({
             default: false
         },
         savedLocations: {
-            type: Array,
+            type: Array as PropType<{ name: string }[]>,
             default: () => []
         }
     },
-    emits: ['apply-filters', 'clear-filters', 'update:filters', 'save-preset', 'category-change', 'save-location'],
+    emits: ['apply-filters', 'clear-filters', 'update:filters', 'category-change', 'save-location'],
     setup(props, { emit }) {
         // Create a local copy of filters to avoid direct mutation
         const filterValues = reactive<FilterOptions>({
@@ -90,17 +96,17 @@ export default defineComponent({
             priceRange: [...props.filters.priceRange],
             location: props.filters.location,
             locationRadius: props.filters.locationRadius || 50,
-            certified: props.filters.certified,
-            auction: props.filters.auction,
+            certified: props.filters.certified || false,
+            auction: props.filters.auction || false,
             gender: props.filters.gender || null,
             weight: props.filters.weight || null,
-            weightUnit: props.filters.weightUnit || 'lbs',
+            weightUnit: props.filters.weightUnit || 'kg',  // Changed default to kg
             availableImmediate: props.filters.availableImmediate || false,
             healthStatus: props.filters.healthStatus || null,
             lastUpdated: props.filters.lastUpdated || null
         });
 
-        // Watch for changes in props
+        // Watch for changes in props with proper deep clone for arrays
         watch(() => props.filters, (newFilters) => {
             filterValues.category = newFilters.category;
             filterValues.breed = newFilters.breed;
@@ -109,21 +115,18 @@ export default defineComponent({
             filterValues.priceRange = [...newFilters.priceRange];
             filterValues.location = newFilters.location;
             filterValues.locationRadius = newFilters.locationRadius || 50;
-            filterValues.certified = newFilters.certified;
-            filterValues.auction = newFilters.auction;
+            filterValues.certified = newFilters.certified || false;
+            filterValues.auction = newFilters.auction || false;
             filterValues.gender = newFilters.gender || null;
             filterValues.weight = newFilters.weight || null;
-            filterValues.weightUnit = newFilters.weightUnit || 'lbs';
+            filterValues.weightUnit = newFilters.weightUnit || 'kg';  // Changed default to kg
             filterValues.availableImmediate = newFilters.availableImmediate || false;
             filterValues.healthStatus = newFilters.healthStatus || null;
             filterValues.lastUpdated = newFilters.lastUpdated || null;
         }, { deep: true });
 
         const locationSuggestions = ref<string[]>([]);
-        const filterPresetName = ref('');
-        const locationName = ref('');
-        const showPresetDialog = ref(false);
-        const showLocationDialog = ref(false);
+        const showAllCategories = ref(false);
         const expandedSections = reactive({
             basic: true,
             financial: true,
@@ -131,14 +134,18 @@ export default defineComponent({
             advanced: false
         });
 
+        // Track active tab
+        const activeTab = ref('basic');
+        const mobileExpanded = ref(false);
+
         const genderOptions = [
-            { name: 'Male', value: 'male' },
-            { name: 'Female', value: 'female' }
+            { name: 'Male', value: 'male', icon: 'pi pi-mars' },
+            { name: 'Female', value: 'female', icon: 'pi pi-venus' }
         ];
 
         const weightUnitOptions = [
-            { name: 'lbs', value: 'lbs' },
-            { name: 'kg', value: 'kg' }
+            { name: 'kg', value: 'kg' },
+            { name: 'lbs', value: 'lbs' }
         ];
 
         const ageUnitOptions = [
@@ -148,10 +155,52 @@ export default defineComponent({
         ];
 
         const healthStatusOptions = [
-            { name: 'Excellent', value: 'excellent' },
-            { name: 'Good', value: 'good' },
-            { name: 'Fair', value: 'fair' }
+            { name: 'Excellent', value: 'excellent', severity: 'success', icon: 'pi pi-check-circle' },
+            { name: 'Good', value: 'good', severity: 'info', icon: 'pi pi-thumbs-up' },
+            { name: 'Fair', value: 'fair', severity: 'warning', icon: 'pi pi-exclamation-circle' }
         ];
+
+        const radiusOptions = [
+            { value: 100, label: '100 Km' },
+            { value: 150, label: '150 Km' },
+            { value: 200, label: '200 Km' },
+            { value: 250, label: '250 Km' },
+            { value: 300, label: '300 Km' }
+        ];
+
+        const lastUpdatedOptions = [
+            { name: 'Today', value: new Date() },
+            { name: 'Last 7 days', value: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+            { name: 'Last 30 days', value: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+        ];
+
+        // Animal icons for categories using emojis
+        const categoryAnimalIcons = {
+            cattle: '🐄', // Cow emoji for cattle
+            horses: '🐎', // Horse emoji
+            sheep: '🐑', // Sheep emoji
+            goats: '🐐', // Goat emoji
+            pigs: '🐖', // Pig emoji
+            poultry: '🐔', // Chicken emoji for poultry
+            rabbits: '🐇', // Rabbit emoji
+            fish: '🐟', // Fish emoji
+            bees: '🐝', // Bee emoji
+            deer: '🦌', // Deer emoji
+            default: '🐾' // Animal paw print as a generic animal icon
+        };
+
+        const getCategoryAnimalIcon = (category: any) => {
+            if (!category) return categoryAnimalIcons.default;
+            const name = category.name?.toLowerCase() || '';
+
+            for (const [key, icon] of Object.entries(categoryAnimalIcons)) {
+                if (name.includes(key)) {
+                    return icon;
+                }
+            }
+
+            return categoryAnimalIcons.default;
+        };
 
         const ageRangeMax = computed(() => {
             switch (filterValues.ageUnit) {
@@ -171,8 +220,9 @@ export default defineComponent({
             }
         });
 
+        // Improved reactivity handling for age unit changes
         watch(() => filterValues.ageUnit, (newUnit) => {
-            // Convert age range when unit changes
+            // Convert age range when unit changes with better defaults
             if (newUnit === 'days') {
                 filterValues.ageRange = [0, 60]; // Default for days
             } else if (newUnit === 'months') {
@@ -183,26 +233,32 @@ export default defineComponent({
         });
 
         const searchLocation = (event: any) => {
-            // In a real app, this would be an API call
-            const query = event.query.toLowerCase();
-            const locations = [
-                'Austin, TX', 'Dallas, TX', 'Houston, TX', 'Cheyenne, WY',
-                'Des Moines, IA', 'Kansas City, MO', 'Omaha, NE', 'Denver, CO',
-                'Tulsa, OK', 'Amarillo, TX', 'Wichita, KS', 'Boise, ID',
-                'Billings, MT', 'Sioux Falls, SD', 'Fargo, ND', 'Lincoln, NE'
-            ];
+            setTimeout(() => {
+                // In a real app, this would be an API call
+                const query = event.query.toLowerCase();
+                const locations = [
+                    'Manila, PH', 'Quezon City, PH', 'Cebu City, PH', 'Davao City, PH',
+                    'Makati City, PH', 'Cagayan de Oro, PH', 'Iloilo City, PH', 'Baguio City, PH',
+                    'Bacolod City, PH', 'Tacloban City, PH', 'Zamboanga City, PH', 'Angeles City, PH',
+                    'General Santos, PH', 'Caloocan City, PH', 'Marikina City, PH', 'Pasig City, PH'
+                ];
 
-            // Include saved locations
-            const allLocations = [...locations, ...props.savedLocations.map((loc: any) => loc.name)];
+                // Include saved locations
+                const allLocations = [...locations, ...props.savedLocations.map((loc: any) => loc.name)];
 
-            locationSuggestions.value = allLocations.filter(location =>
-                location.toLowerCase().includes(query)
-            );
+                locationSuggestions.value = allLocations.filter(location =>
+                    location.toLowerCase().includes(query)
+                );
+            }, 250); // Debounce
         };
 
         const applyFilters = () => {
             emit('update:filters', { ...filterValues });
             emit('apply-filters');
+            // Auto close mobile view after applying
+            if (window.innerWidth < 768) {
+                mobileExpanded.value = false;
+            }
         };
 
         const clearFilters = () => {
@@ -217,7 +273,7 @@ export default defineComponent({
             filterValues.auction = false;
             filterValues.gender = null;
             filterValues.weight = null;
-            filterValues.weightUnit = 'lbs';
+            filterValues.weightUnit = 'kg';  // Changed default to kg
             filterValues.availableImmediate = false;
             filterValues.healthStatus = null;
             filterValues.lastUpdated = null;
@@ -226,28 +282,29 @@ export default defineComponent({
             emit('clear-filters');
         };
 
-        const savePreset = () => {
-            if (filterPresetName.value) {
-                // In a real app, this would store the preset
-                emit('save-preset', { name: filterPresetName.value, filters: { ...filterValues } });
-                filterPresetName.value = '';
-                showPresetDialog.value = false;
-            }
-        };
-
         const saveLocation = () => {
-            if (locationName.value && filterValues.location) {
-                emit('save-location', {
-                    name: locationName.value,
-                    address: filterValues.location,
-                    radius: filterValues.locationRadius
-                });
-                locationName.value = '';
-                showLocationDialog.value = false;
+            if (filterValues.location) {
+                emit('save-location', filterValues.location);
             }
         };
 
-        const getActiveFiltersCount = () => {
+        const selectCategory = (category: any) => {
+            if (filterValues.category?.id === category.id) {
+                filterValues.category = null;
+                filterValues.breed = null;
+            } else {
+                filterValues.category = category;
+                filterValues.breed = null;
+                emit('category-change', category);
+            }
+        };
+
+        const selectCategoryAndClose = (category: any) => {
+            selectCategory(category);
+            showAllCategories.value = false;
+        };
+
+        const getActiveFiltersCount = computed(() => {
             let count = 0;
             if (filterValues.category) count++;
             if (filterValues.breed) count++;
@@ -263,28 +320,33 @@ export default defineComponent({
             if (filterValues.healthStatus) count++;
             if (filterValues.lastUpdated) count++;
             return count;
+        });
+
+        // Format price to Philippine Peso
+        const formatPrice = (value: number) => {
+            return new Intl.NumberFormat('en-PH', {
+                style: 'currency',
+                currency: 'PHP',
+                maximumFractionDigits: 0
+            }).format(value);
         };
 
-        const activeFiltersCount = computed(() => getActiveFiltersCount());
-
-        const toggleSection = (section: string) => {
-            expandedSections[section as keyof typeof expandedSections] =
-                !expandedSections[section as keyof typeof expandedSections];
+        // Toggle mobile expansion
+        const toggleMobileExpanded = () => {
+            mobileExpanded.value = !mobileExpanded.value;
         };
 
-        const onCategoryChange = () => {
-            // Reset breed when category changes
-            filterValues.breed = null;
-            emit('category-change', filterValues.category);
+        const getGenderIcon = (gender: string | null) => {
+            if (gender === 'male') return 'pi pi-mars';
+            if (gender === 'female') return 'pi pi-venus';
+            return 'pi pi-question-circle';
         };
 
-        const radiusOptions = [
-            { label: '10 miles', value: 10 },
-            { label: '25 miles', value: 25 },
-            { label: '50 miles', value: 50 },
-            { label: '100 miles', value: 100 },
-            { label: '250 miles', value: 250 }
-        ];
+        const getGenderName = (gender: string | null) => {
+            if (gender === 'male') return 'Male';
+            if (gender === 'female') return 'Female';
+            return 'Unknown';
+        };
 
         return {
             filterValues,
@@ -292,586 +354,585 @@ export default defineComponent({
             searchLocation,
             applyFilters,
             clearFilters,
+            saveLocation,
             getActiveFiltersCount,
-            activeFiltersCount,
             genderOptions,
             weightUnitOptions,
             ageUnitOptions,
             healthStatusOptions,
-            filterPresetName,
-            locationName,
-            showPresetDialog,
-            showLocationDialog,
-            savePreset,
-            saveLocation,
+            showAllCategories,
             expandedSections,
-            toggleSection,
-            onCategoryChange,
             ageRangeMax,
             ageRangeStep,
-            radiusOptions
+            selectCategory,
+            selectCategoryAndClose,
+            activeTab,
+            radiusOptions,
+            lastUpdatedOptions,
+            formatPrice,
+            mobileExpanded,
+            toggleMobileExpanded,
+            getGenderIcon,
+            getGenderName,
+            getCategoryAnimalIcon,
         };
     }
 });
 </script>
 
 <template>
-    <Card class="livestock-filters">
-        <template #header>
-            <div class="filter-header">
-                <div class="filter-title">
-                    <h3>Filter Livestock</h3>
-                    <Tag v-if="activeFiltersCount > 0" :value="activeFiltersCount" severity="info" rounded />
-                </div>
-                <div class="header-actions">
-                    <Button icon="pi pi-map-marker" class="p-button-rounded p-button-text p-button-sm"
-                        v-tooltip="'Save Current Location'" @click="showLocationDialog = true" />
-                    <Button icon="pi pi-save" class="p-button-rounded p-button-text p-button-sm"
-                        v-tooltip="'Save Filter Preset'" @click="showPresetDialog = true" />
-                </div>
-            </div>
-        </template>
-        <template #content>
-            <ProgressBar v-if="loading" mode="indeterminate" style="height: 4px" class="mb-3" />
-
-            <div class="filter-section-header" @click="toggleSection('basic')">
-                <h4>Animal Information</h4>
-                <i :class="['pi', expandedSections.basic ? 'pi-chevron-down' : 'pi-chevron-right']"></i>
-            </div>
-            <div v-if="expandedSections.basic" class="filter-section">
-                <div class="p-field">
-                    <label for="category">Category</label>
-                    <Dropdown id="category" v-model="filterValues.category" :options="categories" optionLabel="name"
-                        placeholder="Select Category" class="p-inputtext-sm w-full" @change="onCategoryChange" />
+    <div class="livestock-filters bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-emerald-600 to-green-500 px-4 py-3 md:px-5 md:py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="pi pi-filter text-white text-lg md:text-xl"></i>
+                    <h2 class="text-lg md:text-xl font-bold text-white">Livestock Filters</h2>
+                    <Tag v-if="getActiveFiltersCount > 0" :value="getActiveFiltersCount"
+                        class="bg-white text-emerald-600 font-bold" rounded />
                 </div>
 
-                <div class="p-field">
-                    <label for="breed">Breed</label>
-                    <Dropdown id="breed" v-model="filterValues.breed" :options="breeds" optionLabel="name"
-                        placeholder="Select Breed" class="p-inputtext-sm w-full" :disabled="!filterValues.category" />
+                <!-- Mobile toggle -->
+                <div class="md:hidden">
+                    <Button icon="pi pi-chevron-down" v-if="!mobileExpanded" @click="toggleMobileExpanded"
+                        class="p-button-rounded p-button-sm p-button-text text-white" />
+                    <Button icon="pi pi-chevron-up" v-else @click="toggleMobileExpanded"
+                        class="p-button-rounded p-button-sm p-button-text text-white" />
                 </div>
 
-                <div class="p-field">
-                    <label for="gender">Gender</label>
-                    <Dropdown id="gender" v-model="filterValues.gender" :options="genderOptions" optionLabel="name"
-                        placeholder="Select Gender" class="p-inputtext-sm w-full" />
-                </div>
-
-                <div class="p-field">
-                    <div class="age-range-label">
-                        <label for="age">Age Range</label>
-                        <span class="age-values">{{ filterValues.ageRange[0] }} - {{ filterValues.ageRange[1] }} {{
-                            filterValues.ageUnit }}</span>
-                    </div>
-                    <div class="age-unit-selector">
-                        <SelectButton v-model="filterValues.ageUnit" :options="ageUnitOptions" optionLabel="label" />
-                    </div>
-                    <Slider v-model="filterValues.ageRange" range :min="0" :max="ageRangeMax" :step="ageRangeStep"
-                        class="mt-2" />
-                </div>
-
-                <div class="weight-input">
-                    <div class="p-field weight-field">
-                        <label for="weight">Weight</label>
-                        <InputNumber id="weight" v-model="filterValues.weight" placeholder="Enter weight" :min="0"
-                            :max="5000" class="p-inputtext-sm w-full" />
-                    </div>
-                    <div class="p-field unit-field">
-                        <label for="weightUnit">Unit</label>
-                        <Dropdown id="weightUnit" v-model="filterValues.weightUnit" :options="weightUnitOptions"
-                            optionLabel="name" class="p-inputtext-sm w-full" />
-                    </div>
+                <!-- Desktop actions -->
+                <div class="hidden md:flex items-center gap-2">
+                    <Button icon="pi pi-refresh" class="p-button-rounded p-button-sm p-button-text text-white"
+                        v-tooltip="'Clear All Filters'" @click="clearFilters" />
                 </div>
             </div>
+        </div>
 
-            <Divider />
+        <!-- Loading Indicator -->
+        <ProgressBar v-if="loading" mode="indeterminate" class="h-1" style="--progress-bg: rgb(16 185 129);" />
 
-            <div class="filter-section-header" @click="toggleSection('financial')">
-                <h4>Financial & Location</h4>
-                <i :class="['pi', expandedSections.financial ? 'pi-chevron-down' : 'pi-chevron-right']"></i>
-            </div>
-            <div v-if="expandedSections.financial" class="filter-section">
-                <div class="p-field">
-                    <div class="price-range-label">
-                        <label for="price">Price Range</label>
-                        <span class="price-values">${{ filterValues.priceRange[0].toLocaleString() }} - ${{
-                            filterValues.priceRange[1].toLocaleString() }}</span>
+        <!-- Desktop Filter Content -->
+        <div class="hidden md:block">
+            <!-- Navigation Tabs - IMPROVED ICON-ONLY WITH TOOLTIPS -->
+            <div class="flex border-b border-gray-200">
+                <button v-for="(tab, index) in [
+                    { id: 'basic', icon: 'pi-tag', tooltip: 'Basic Filters' },
+                    { id: 'price', icon: 'pi-dollar', tooltip: 'Price Filters' },
+                    { id: 'location', icon: 'pi-map-marker', tooltip: 'Location Filters' },
+                    { id: 'advanced', icon: 'pi-sliders-h', tooltip: 'Advanced Filters' }
+                ]" :key="index"
+                    class="flex-1 px-4 py-3 text-sm font-medium transition-all duration-200 outline-none focus:outline-none relative"
+                    :class="activeTab === tab.id ?
+                        'text-emerald-600 border-b-2 border-emerald-600' :
+                        'text-gray-500 hover:text-emerald-600 hover:bg-gray-50'" @click="activeTab = tab.id"
+                    v-tooltip="tab.tooltip">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="relative">
+                            <i :class="['pi text-xl', tab.icon]"></i>
+                            <Tag v-if="tab.id === 'basic' && (filterValues.category || filterValues.breed || filterValues.gender)"
+                                severity="success"
+                                class="h-5 w-5 flex items-center justify-center p-0 absolute -top-2 -right-3" rounded />
+                            <Tag v-if="tab.id === 'price' && (filterValues.priceRange[0] > 0 || filterValues.priceRange[1] < 50000)"
+                                severity="success"
+                                class="h-5 w-5 flex items-center justify-center p-0 absolute -top-2 -right-3" rounded />
+                            <Tag v-if="tab.id === 'location' && (filterValues.location || filterValues.locationRadius !== 50)"
+                                severity="success"
+                                class="h-5 w-5 flex items-center justify-center p-0 absolute -top-2 -right-3" rounded />
+                            <Tag v-if="tab.id === 'advanced' && (filterValues.certified || filterValues.auction ||
+                                filterValues.availableImmediate || filterValues.healthStatus || filterValues.weight ||
+                                filterValues.lastUpdated ||
+                                (filterValues.ageRange[0] > 0 || filterValues.ageRange[1] < ageRangeMax))"
+                                severity="success"
+                                class="h-5 w-5 flex items-center justify-center p-0 absolute -top-2 -right-3" rounded />
+                        </div>
                     </div>
-                    <Slider v-model="filterValues.priceRange" range :min="0" :max="50000" class="mt-2" />
-                </div>
+                </button>
+            </div>
+            <!-- Tab Content -->
+            <div class="p-5">
+                <!-- BASIC TAB -->
+                <div v-if="activeTab === 'basic'" class="space-y-6">
+                    <!-- REDESIGNED Category Selection with Animal Icons -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Category</label>
+                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-3 gap-3">
+                            <div v-for="cat in categories.slice(0, 11)" :key="cat.id"
+                                class="relative group overflow-hidden rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105"
+                                @click="selectCategory(cat)" v-tooltip="cat.name">
+                                <!-- Background color & gradient -->
+                                <div class="absolute inset-0 bg-gradient-to-br"
+                                    :class="filterValues.category?.id === cat.id ?
+                                        'from-emerald-500 to-green-600' :
+                                        'from-gray-100 to-gray-200 group-hover:from-emerald-50 group-hover:to-green-100'">
+                                </div>
 
-                <div class="p-field">
-                    <label for="location">Location</label>
-                    <div class="location-input">
-                        <AutoComplete id="location" v-model="filterValues.location" :suggestions="locationSuggestions"
-                            @complete="searchLocation" placeholder="Enter location" class="w-full" />
-                        <Button icon="pi pi-star" class="p-button-rounded p-button-text p-button-sm favorite-btn"
-                            v-tooltip="'Save this location'" @click="showLocationDialog = true" />
+                                <!-- Selected indicator -->
+                                <div v-if="filterValues.category?.id === cat.id"
+                                    class="absolute top-2 right-2 h-5 w-5 bg-white rounded-full flex items-center justify-center">
+                                    <i class="pi pi-check text-emerald-600 text-xs"></i>
+                                </div>
+
+                                <!-- Content with Animal Icons -->
+                                <div class="relative aspect-square flex flex-col items-center justify-center p-3 z-10">
+                                    <div class="h-12 w-12 rounded-full flex items-center justify-center mb-2" :class="filterValues.category?.id === cat.id ?
+                                        'bg-white/30' : 'bg-white/60'">
+                                        <span class="text-2xl">{{ getCategoryAnimalIcon(cat) }}</span>
+                                    </div>
+                                    <span class="text-center font-medium truncate w-full" :class="filterValues.category?.id === cat.id ?
+                                        'text-white' : 'text-gray-800'">
+                                        {{ cat.name }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- "More" button -->
+                            <div class="relative group overflow-hidden rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105"
+                                @click="showAllCategories = true" v-tooltip="'Browse All Categories'">
+                                <!-- Background -->
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-emerald-50 group-hover:to-green-100">
+                                </div>
+
+                                <!-- Content -->
+                                <div class="relative aspect-square flex flex-col items-center justify-center p-3 z-10">
+                                    <div
+                                        class="h-12 w-12 rounded-full bg-white/60 flex items-center justify-center mb-2">
+                                        <i
+                                            class="pi pi-th-large text-xl text-gray-500 group-hover:text-emerald-600"></i>
+                                    </div>
+                                    <span class="text-center font-medium text-gray-800">All Categories</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Breed Selection -->
+                    <div v-if="filterValues.category">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Breed</label>
+                        <Dropdown v-model="filterValues.breed" :options="breeds" optionLabel="name"
+                            placeholder="Select Breed" class="w-full" />
+                    </div>
+
+                    <!-- Gender Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Gender</label>
+                        <div class="flex gap-4">
+                            <div v-for="option in genderOptions" :key="option.value"
+                                class="flex-1 flex flex-col items-center justify-center p-3 rounded-lg cursor-pointer border transition-all duration-300"
+                                :class="filterValues.gender === option.value ?
+                                    'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-md' :
+                                    'border-gray-200 text-gray-600 hover:border-emerald-400 hover:-translate-y-1'"
+                                @click="filterValues.gender = filterValues.gender === option.value ? null : option.value">
+                                <i :class="['text-2xl mb-2', option.icon,
+                                    filterValues.gender === option.value ? 'text-emerald-600' : 'text-gray-500']"></i>
+                                <span class="font-medium">{{ option.name }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-field">
-                    <label for="locationRadius">Search Radius</label>
-                    <SelectButton v-model="filterValues.locationRadius" :options="radiusOptions" optionLabel="label"
-                        class="radius-selector" />
+                <!-- PRICE TAB -->
+                <div v-if="activeTab === 'price'" class="space-y-6">
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Price Range</label>
+                            <span class="text-sm font-medium text-emerald-600">
+                                {{ formatPrice(filterValues.priceRange[0]) }} - {{
+                                    formatPrice(filterValues.priceRange[1]) }}
+                            </span>
+                        </div>
+                        <Slider v-model="filterValues.priceRange" range :min="0" :max="2500000" :step="5000"
+                            class="custom-slider mb-3" />
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>₱0</span>
+                            <span>₱1,250,000</span>
+                            <span>₱2,500,000+</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick price selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Quick Selection</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div v-for="(range, index) in [
+                                { label: 'Budget', values: [0, 250000] },
+                                { label: 'Mid-Range', values: [250000, 1000000] },
+                                { label: 'Premium', values: [1000000, 2500000] }
+                            ]" :key="index" class="p-3 rounded-lg border border-gray-200 cursor-pointer transition-all duration-300 hover:border-emerald-400 hover:-translate-y-1"
+                                @click="filterValues.priceRange = range.values">
+                                <h4 class="font-medium text-gray-700 mb-1">{{ range.label }}</h4>
+                                <p class="text-sm text-emerald-600">{{ formatPrice(range.values[0]) }} - {{
+                                    formatPrice(range.values[1]) }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional financial filters -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Additional Options</label>
+                        <div class="flex flex-wrap gap-3">
+                            <div class="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border transition-all duration-300"
+                                :class="filterValues.auction ?
+                                    'bg-emerald-50 border-emerald-500 text-emerald-700' :
+                                    'border-gray-200 text-gray-600 hover:border-emerald-400'"
+                                @click="filterValues.auction = !filterValues.auction">
+                                <i class="pi pi-ticket" :class="{ 'text-emerald-600': filterValues.auction }"></i>
+                                <span>Auction Only</span>
+                            </div>
+                            <div class="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border transition-all duration-300"
+                                :class="filterValues.certified ?
+                                    'bg-emerald-50 border-emerald-500 text-emerald-700' :
+                                    'border-gray-200 text-gray-600 hover:border-emerald-400'"
+                                @click="filterValues.certified = !filterValues.certified">
+                                <i class="pi pi-check-circle"
+                                    :class="{ 'text-emerald-600': filterValues.certified }"></i>
+                                <span>Certified</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="p-field-checkbox">
-                    <Checkbox id="auction" v-model="filterValues.auction" :binary="true" />
-                    <label for="auction" class="p-ml-2" v-tooltip="'Show livestock available for auction'">
-                        Auction Available
-                    </label>
+                <!-- LOCATION TAB -->
+                <div v-if="activeTab === 'location'" class="space-y-6">
+                    <!-- Location Search -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <div class="flex gap-2">
+                            <AutoComplete v-model="filterValues.location" :suggestions="locationSuggestions"
+                                @complete="searchLocation" placeholder="Enter city, province or barangay" class="flex-1" />
+                            <Button icon="pi pi-heart" class="p-button-rounded p-button-outlined p-button-success"
+                                v-tooltip="'Save Location'" @click="saveLocation" :disabled="!filterValues.location" />
+                        </div>
+                    </div>
+
+                    <!-- Distance Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Distance</label>
+                        <div class="grid grid-cols-5 gap-2">
+                            <div v-for="option in radiusOptions" :key="option.value"
+                                class="flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer border transition-all duration-300"
+                                :class="filterValues.locationRadius === option.value ?
+                                    'bg-emerald-50 border-emerald-500 text-emerald-700' :
+                                    'border-gray-200 text-gray-600 hover:border-emerald-400'"
+                                @click="filterValues.locationRadius = option.value">
+                                <div class="flex items-center justify-center h-8 w-8 rounded-full mb-1"
+                                    :class="filterValues.locationRadius === option.value ? 'bg-emerald-100' : 'bg-gray-100'">
+                                    <span class="text-xs font-bold"
+                                        :class="filterValues.locationRadius === option.value ? 'text-emerald-600' : 'text-gray-500'">
+                                        {{ option.value }}
+                                    </span>
+                                </div>
+                                <span class="text-xs text-center">{{ option.label }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Saved locations -->
+                    <div v-if="savedLocations && savedLocations.length > 0">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Saved Locations</label>
+                        <div class="flex flex-wrap gap-2">
+                            <div v-for="(location, index) in savedLocations" :key="index"
+                                class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg cursor-pointer border border-gray-200 transition-all duration-300 hover:border-emerald-400"
+                                @click="filterValues.location = location.name">
+                                <i class="pi pi-heart-fill text-rose-500 text-sm"></i>
+                                <span class="text-sm">{{ location.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADVANCED TAB -->
+                <div v-if="activeTab === 'advanced'" class="space-y-6">
+                    <!-- Age Range -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Age Range</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-emerald-600">
+                                    {{ filterValues.ageRange[0] }} - {{ filterValues.ageRange[1] }}
+                                </span>
+                                <Dropdown v-model="filterValues.ageUnit" :options="ageUnitOptions" 
+                                    optionLabel="label" optionValue="value" class="p-dropdown-sm" />
+                            </div>
+                        </div>
+                        <Slider v-model="filterValues.ageRange" range :min="0" :max="ageRangeMax" :step="ageRangeStep"
+                            class="custom-slider mb-3" />
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>0 {{ filterValues.ageUnit }}</span>
+                            <span>{{ Math.round(ageRangeMax / 2) }} {{ filterValues.ageUnit }}</span>
+                            <span>{{ ageRangeMax }}+ {{ filterValues.ageUnit }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Weight -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Weight</label>
+                        <div class="flex gap-3 mb-4">
+                            <InputNumber v-model="filterValues.weight" placeholder="Enter weight" 
+                                class="flex-1" :min="0" showButtons />
+                            <Dropdown v-model="filterValues.weightUnit" :options="weightUnitOptions" 
+                                optionLabel="name" optionValue="value" class="w-24" />
+                        </div>
+                    </div>
+
+                    <!-- Health Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Health Status</label>
+                        <div class="flex gap-3">
+                            <div v-for="option in healthStatusOptions" :key="option.value"
+                                class="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg cursor-pointer border transition-all duration-300"
+                                :class="filterValues.healthStatus === option.value ?
+                                    `bg-${option.severity}-50 border-${option.severity}-500 text-${option.severity}-700` :
+                                    'border-gray-200 text-gray-600 hover:border-gray-300'"
+                                @click="filterValues.healthStatus = filterValues.healthStatus === option.value ? null : option.value">
+                                <i :class="['', option.icon,
+                                    filterValues.healthStatus === option.value ? `text-${option.severity}-600` : 'text-gray-500']"></i>
+                                <span class="font-medium">{{ option.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Last Updated -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Last Updated</label>
+                        <div class="flex gap-3">
+                            <div v-for="option in lastUpdatedOptions" :key="option.name"
+                                class="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg cursor-pointer border transition-all duration-300"
+                                :class="filterValues.lastUpdated === option.value ?
+                                    'bg-emerald-50 border-emerald-500 text-emerald-700' :
+                                    'border-gray-200 text-gray-600 hover:border-emerald-400'"
+                                @click="filterValues.lastUpdated = filterValues.lastUpdated === option.value ? null : option.value">
+                                <span class="font-medium">{{ option.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional checkboxes -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <Checkbox v-model="filterValues.availableImmediate" binary :inputId="'availableImmediately'" />
+                            <label :for="'availableImmediately'" class="text-sm text-gray-700 cursor-pointer">
+                                Available for Immediate Delivery
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Apply Button -->
+                <div class="mt-6 flex justify-end">
+                    <Button label="Apply Filters" icon="pi pi-check" 
+                        class="p-button-success" @click="applyFilters" />
                 </div>
             </div>
+        </div>
 
-            <Divider />
+        <!-- Mobile Filter Content -->
+        <div class="md:hidden" :class="{ 'hidden': !mobileExpanded }">
+            <div class="p-4 space-y-5">
+                <!-- Categories -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Category</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div v-for="cat in categories.slice(0, 5)" :key="cat.id"
+                            class="relative group overflow-hidden rounded-xl cursor-pointer transition-all duration-300"
+                            @click="selectCategory(cat)">
+                            <!-- Background -->
+                            <div class="absolute inset-0 bg-gradient-to-br"
+                                :class="filterValues.category?.id === cat.id ?
+                                    'from-emerald-500 to-green-600' :
+                                    'from-gray-100 to-gray-200 group-hover:from-emerald-50 group-hover:to-green-100'">
+                            </div>
 
-            <div class="filter-section-header" @click="toggleSection('additional')">
-                <h4>Additional Options</h4>
-                <i :class="['pi', expandedSections.additional ? 'pi-chevron-down' : 'pi-chevron-right']"></i>
-            </div>
-            <div v-if="expandedSections.additional" class="filter-section">
-                <div class="p-field">
-                    <label for="healthStatus">Health Status</label>
-                    <Dropdown id="healthStatus" v-model="filterValues.healthStatus" :options="healthStatusOptions"
-                        optionLabel="name" placeholder="Select Health Status" class="p-inputtext-sm w-full" />
+                            <!-- Content with Animal Icons -->
+                            <div class="relative aspect-square flex flex-col items-center justify-center p-2 z-10">
+                                <div class="h-8 w-8 rounded-full flex items-center justify-center mb-1"
+                                    :class="filterValues.category?.id === cat.id ? 'bg-white/30' : 'bg-white/60'">
+                                    <span class="text-xl">{{ getCategoryAnimalIcon(cat) }}</span>
+                                </div>
+                                <span class="text-center font-medium truncate w-full text-xs"
+                                    :class="filterValues.category?.id === cat.id ? 'text-white' : 'text-gray-800'">
+                                    {{ cat.name }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- "More" button -->
+                        <div class="relative group overflow-hidden rounded-xl cursor-pointer transition-all duration-300"
+                            @click="showAllCategories = true">
+                            <!-- Background -->
+                            <div class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200">
+                            </div>
+
+                            <!-- Content -->
+                            <div class="relative aspect-square flex flex-col items-center justify-center p-2 z-10">
+                                <div class="h-8 w-8 rounded-full bg-white/60 flex items-center justify-center mb-1">
+                                    <i class="pi pi-ellipsis-h text-gray-500"></i>
+                                </div>
+                                <span class="text-center font-medium text-gray-800 text-xs">More</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="options-container">
-                    <div class="p-field-checkbox">
-                        <Checkbox id="certified" v-model="filterValues.certified" :binary="true" />
-                        <label for="certified" class="p-ml-2" v-tooltip="'Only show livestock with certification'">
-                            Certified Only
+                <!-- Breed Selection (only if category is selected) -->
+                <div v-if="filterValues.category">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Breed</label>
+                    <Dropdown v-model="filterValues.breed" :options="breeds" optionLabel="name"
+                        placeholder="Select Breed" class="w-full" />
+                </div>
+
+                <!-- Price Range -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700">Price Range</label>
+                        <span class="text-sm font-medium text-emerald-600">
+                            {{ formatPrice(filterValues.priceRange[0]) }} - {{ formatPrice(filterValues.priceRange[1]) }}
+                        </span>
+                    </div>
+                    <Slider v-model="filterValues.priceRange" range :min="0" :max="2500000" :step="5000"
+                        class="custom-slider mb-2" />
+                </div>
+
+                <!-- Location Search -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                    <AutoComplete v-model="filterValues.location" :suggestions="locationSuggestions"
+                        @complete="searchLocation" placeholder="Enter city, province or barangay" class="w-full" />
+                </div>
+
+                <!-- Gender Selection as pills -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                    <div class="flex gap-2">
+                        <div v-for="option in genderOptions" :key="option.value"
+                            class="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg cursor-pointer border transition-all duration-300"
+                            :class="filterValues.gender === option.value ?
+                                'bg-emerald-50 border-emerald-500 text-emerald-700' :
+                                'border-gray-200 text-gray-600'"
+                            @click="filterValues.gender = filterValues.gender === option.value ? null : option.value">
+                            <i :class="['', option.icon]"></i>
+                            <span>{{ option.name }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Options (checkboxes) -->
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="filterValues.certified" binary :inputId="'certified'" />
+                        <label :for="'certified'" class="text-sm text-gray-700 cursor-pointer">Certified</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="filterValues.auction" binary :inputId="'auction'" />
+                        <label :for="'auction'" class="text-sm text-gray-700 cursor-pointer">Auction Only</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="filterValues.availableImmediate" binary :inputId="'availableImmediately'" />
+                        <label :for="'availableImmediately'" class="text-sm text-gray-700 cursor-pointer">
+                            Available for Immediate Delivery
                         </label>
                     </div>
+                </div>
 
-                    <div class="p-field-checkbox">
-                        <Checkbox id="availableImmediate" v-model="filterValues.availableImmediate" :binary="true" />
-                        <label for="availableImmediate" class="p-ml-2"
-                            v-tooltip="'Show only livestock available for immediate delivery'">
-                            Available Immediately
-                        </label>
+                <!-- Show More button to reveal advanced filters -->
+                <Button label="Show Advanced Filters" icon="pi pi-sliders-h"
+                    class="p-button-text p-button-plain w-full" @click="expandedSections.advanced = !expandedSections.advanced" />
+
+                <!-- Advanced filters (collapsible) -->
+                <div v-if="expandedSections.advanced" class="space-y-4">
+                    <!-- Age Range -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Age Range</label>
+                            <div class="flex items-center gap-1">
+                                <span class="text-sm font-medium text-emerald-600">
+                                    {{ filterValues.ageRange[0] }} - {{ filterValues.ageRange[1] }}
+                                </span>
+                                <Dropdown v-model="filterValues.ageUnit" :options="ageUnitOptions" 
+                                    optionLabel="label" optionValue="value" class="p-dropdown-sm" />
+                            </div>
+                        </div>
+                        <Slider v-model="filterValues.ageRange" range :min="0" :max="ageRangeMax" :step="ageRangeStep"
+                            class="custom-slider mb-2" />
+                    </div>
+
+                    <!-- Weight -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Weight</label>
+                        <div class="flex gap-2">
+                            <InputNumber v-model="filterValues.weight" placeholder="Enter weight" 
+                                class="flex-1" :min="0" />
+                            <Dropdown v-model="filterValues.weightUnit" :options="weightUnitOptions" 
+                                optionLabel="name" optionValue="value" class="w-24" />
+                        </div>
+                    </div>
+
+                    <!-- Health Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Health Status</label>
+                        <Dropdown v-model="filterValues.healthStatus" :options="healthStatusOptions" 
+                            optionLabel="name" optionValue="value" placeholder="Select Health Status" class="w-full" />
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-3 grid grid-cols-2 gap-3">
+                    <Button label="Clear All" icon="pi pi-trash" 
+                        class="p-button-outlined p-button-secondary" @click="clearFilters" />
+                    <Button label="Apply Filters" icon="pi pi-check" 
+                        class="p-button-success" @click="applyFilters" />
+                </div>
+            </div>
+        </div>
+
+        <!-- All Categories Dialog -->
+        <Dialog v-model:visible="showAllCategories" header="Browse All Categories" 
+            :modal="true" class="p-fluid" :style="{ width: '90vw', maxWidth: '600px' }">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                <div v-for="cat in categories" :key="cat.id"
+                    class="p-3 rounded-lg cursor-pointer border transition-all duration-300"
+                    :class="filterValues.category?.id === cat.id ?
+                        'bg-emerald-50 border-emerald-500 text-emerald-700' :
+                        'border-gray-200 text-gray-600 hover:border-emerald-400'"
+                    @click="selectCategoryAndClose(cat)">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">{{ getCategoryAnimalIcon(cat) }}</span>
+                        <span class="font-medium">{{ cat.name }}</span>
                     </div>
                 </div>
             </div>
-
-            <div v-if="expandedSections.advanced" class="filter-section">
-                <div class="p-field">
-                    <label for="lastUpdated">Last Updated</label>
-                    <Dropdown id="lastUpdated" v-model="filterValues.lastUpdated" :options="[
-                        { name: 'Today', value: new Date() },
-                        { name: 'Last 7 days', value: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-                        { name: 'Last 30 days', value: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-                    ]" optionLabel="name" placeholder="Select Time Frame" class="p-inputtext-sm w-full" />
-                </div>
-            </div>
-
-            <Button v-if="!expandedSections.advanced" label="Show Advanced Options"
-                class="p-button-text p-button-sm w-full my-2" @click="expandedSections.advanced = true" />
-            <Button v-else label="Hide Advanced Options" class="p-button-text p-button-sm w-full my-2"
-                @click="expandedSections.advanced = false" />
-
-            <div class="filter-actions">
-                <Button label="Apply Filters" icon="pi pi-filter" class="p-button-sm p-button-primary"
-                    @click="applyFilters" :disabled="loading" />
-                <Button label="Reset" icon="pi pi-times" class="p-button-outlined p-button-sm" @click="clearFilters"
-                    :disabled="loading || activeFiltersCount === 0" />
-            </div>
-
-            <!-- Save Filter Preset Dialog -->
-            <Dialog v-model:visible="showPresetDialog" header="Save Filter Preset" :modal="true" class="preset-dialog">
-                <div class="p-field">
-                    <label for="presetName">Preset Name</label>
-                    <InputText id="presetName" v-model="filterPresetName" placeholder="Enter preset name"
-                        class="w-full" />
-                </div>
-                <div class="preset-actions">
-                    <Button label="Save" icon="pi pi-save" class="p-button-sm p-button-primary" @click="savePreset" />
-                    <Button label="Cancel" icon="pi pi-times" class="p-button-outlined p-button-sm"
-                        @click="showPresetDialog = false" />
-                </div>
-            </Dialog>
-
-            <!-- Save Location Dialog -->
-            <Dialog v-model:visible="showLocationDialog" header="Save Location" :modal="true" class="location-dialog">
-                <div class="p-field">
-                    <label for="locationName">Location Name</label>
-                    <InputText id="locationName" v-model="locationName" placeholder="Enter a name for this location"
-                        class="w-full" />
-                </div>
-                <div class="location-details">
-                    <p>Address: {{ filterValues.location || 'No location selected' }}</p>
-                    <p>Radius: {{ filterValues.locationRadius }} miles</p>
-                </div>
-                <div class="preset-actions">
-                    <Button label="Save" icon="pi pi-save" class="p-button-sm p-button-primary" @click="saveLocation"
-                        :disabled="!filterValues.location || !locationName" />
-                    <Button label="Cancel" icon="pi pi-times" class="p-button-outlined p-button-sm"
-                        @click="showLocationDialog = false" />
-                </div>
-            </Dialog>
-        </template>
-    </Card>
+        </Dialog>
+    </div>
 </template>
 
 <style scoped>
-.livestock-filters {
-    max-width: 400px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-radius: 12px;
-    background-color: #ffffff;
+.custom-slider :deep(.p-slider-range) {
+    background: rgb(16 185 129);
 }
 
-.filter-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1rem;
-    background-color: #f7f9fc;
-    border-bottom: 1px solid #edf2f7;
-    border-radius: 12px 12px 0 0;
+.custom-slider :deep(.p-slider-handle) {
+    border-color: rgb(16 185 129);
 }
 
-.header-actions {
-    display: flex;
-    gap: 0.25rem;
+/* Improved scrollbar for dialog */
+:deep(.p-dialog-content) {
+    max-height: 70vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
-.filter-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+:deep(.p-dialog-content)::-webkit-scrollbar {
+    width: 6px;
 }
 
-.filter-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #5a67d8;
+:deep(.p-dialog-content)::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
 }
 
-.filter-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    padding: 0.25rem 0;
-    transition: all 0.2s ease;
-}
-
-.filter-section-header:hover {
-    color: #6b7fd7;
-}
-
-.filter-section {
-    margin-bottom: 1rem;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.filter-section h4 {
-    margin-top: 0;
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
-    color: #5a67d8;
-    font-weight: 600;
-}
-
-.p-field {
-    margin-bottom: 1rem;
-}
-
-.p-field label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #606770;
-    font-size: 0.9rem;
-}
-
-.age-range-label,
-.price-range-label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.age-values,
-.price-values {
-    font-size: 0.85rem;
-    color: #606770;
-    font-weight: 500;
-}
-
-.age-unit-selector {
-    margin-bottom: 0.5rem;
-}
-
-.weight-input {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.weight-field {
-    flex: 7;
-}
-
-.unit-field {
-    flex: 3;
-}
-
-.location-input {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.favorite-btn {
-    flex-shrink: 0;
-}
-
-.radius-selector {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-}
-
-.options-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.p-field-checkbox {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.p-field-checkbox label {
-    margin-bottom: 0;
-    margin-left: 0.5rem;
-}
-
-.filter-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 1.5rem;
-    gap: 0.5rem;
-}
-
-.preset-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-.location-details {
-    background-color: #f7f9fc;
-    padding: 0.75rem;
-    border-radius: 8px;
-    margin: 1rem 0;
-}
-
-.location-details p {
-    margin: 0.25rem 0;
-    font-size: 0.9rem;
-    color: #606770;
-}
-
-:deep(.p-button) {
-    flex: 1;
-}
-
-:deep(.p-button-primary) {
-    background-color: #a5b4fc;
-    border-color: #a5b4fc;
-    color: #4338ca;
-}
-
-:deep(.p-button-primary:hover) {
-    background-color: #818cf8;
-    border-color: #818cf8;
-    color: #ffffff;
-}
-
-:deep(.p-button-outlined) {
-    color: #6b7fd7;
-    border-color: #a5b4fc;
-}
-
-:deep(.p-button-outlined:hover) {
-    background-color: #eef2ff;
-    border-color: #818cf8;
-}
-
-:deep(.p-button-text) {
-    color: #6b7fd7;
-}
-
-:deep(.p-button-text:hover) {
-    background-color: #eef2ff;
-}
-
-:deep(.p-card-content) {
-    padding: 1rem;
-}
-
-:deep(.p-slider) {
-    margin-top: 1rem;
-}
-
-:deep(.p-slider .p-slider-range) {
-    background-color: #a5b4fc;
-}
-
-:deep(.p-slider .p-slider-handle) {
-    border-color: #a5b4fc;
-    background: #a5b4fc;
-}
-
-:deep(.p-slider .p-slider-handle:hover) {
-    background: #818cf8;
-    border-color: #818cf8;
-}
-
-:deep(.p-dropdown) {
-    border-color: #cbd5e1;
-}
-
-:deep(.p-dropdown:hover) {
-    border-color: #a5b4fc;
-}
-
-:deep(.p-dropdown .p-dropdown-label) {
-    padding: 0.5rem;
-}
-
-:deep(.p-inputtext) {
-    padding: 0.5rem;
-    border-color: #cbd5e1;
-}
-
-:deep(.p-inputtext:hover) {
-    border-color: #a5b4fc;
-}
-
-:deep(.p-inputtext:focus) {
-    border-color: #a5b4fc;
-    box-shadow: 0 0 0 1px #eef2ff;
-}
-
-:deep(.p-tag) {
-    background-color: #a5b4fc;
-    color: #4338ca;
-}
-
-:deep(.p-progressbar) {
-    height: 4px;
-}
-
-:deep(.p-progressbar .p-progressbar-value) {
-    background-color: #a5b4fc;
-}
-
-:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight) {
-    background-color: #eef2ff;
-    color: #4338ca;
-}
-
-:deep(.p-autocomplete-panel .p-autocomplete-items .p-autocomplete-item.p-highlight) {
-    background-color: #eef2ff;
-    color: #4338ca;
-}
-
-:deep(.p-checkbox .p-checkbox-box) {
-    border-color: #cbd5e1;
-}
-
-:deep(.p-checkbox .p-checkbox-box.p-highlight) {
-    background-color: #a5b4fc;
-    border-color: #a5b4fc;
-}
-
-:deep(.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover) {
-    background-color: #818cf8;
-    border-color: #818cf8;
-}
-
-:deep(.p-divider) {
-    margin: 1rem 0;
-}
-
-:deep(.p-selectbutton .p-button) {
-    background-color: #f7f9fc;
-    border-color: #cbd5e1;
-    color: #64748b;
-    padding: 0.4rem;
-    font-size: 0.875rem;
-}
-
-:deep(.p-selectbutton .p-button.p-highlight) {
-    background-color: #eef2ff;
-    border-color: #a5b4fc;
-    color: #4338ca;
-}
-
-:deep(.p-selectbutton .p-button:not(.p-disabled):not(.p-highlight):hover) {
-    background-color: #eef2ff;
-    border-color: #a5b4fc;
-    color: #4338ca;
-}
-
-:deep(.p-dialog .p-dialog-header) {
-    background-color: #f7f9fc;
-    padding: 1rem;
-    border-bottom: 1px solid #edf2f7;
-}
-
-:deep(.p-dialog .p-dialog-content) {
-    padding: 1rem;
-}
-
-:deep(.p-dialog .p-dialog-footer) {
-    padding: 1rem;
-    border-top: 1px solid #edf2f7;
-}
-
-:deep(.p-tooltip .p-tooltip-text) {
-    background-color: #4338ca;
-    color: #ffffff;
-    font-size: 0.8rem;
-    padding: 0.5rem 0.75rem;
-}
-
-:deep(.p-tooltip .p-tooltip-arrow) {
-    border-top-color: #4338ca;
-}
-
-@media (max-width: 768px) {
-    .livestock-filters {
-        max-width: 100%;
-    }
-
-    .weight-input {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .filter-actions {
-        flex-direction: column;
-    }
+/* Small fix for dropdown in mobile view */
+:deep(.p-dropdown-panel) {
+    z-index: 10000 !important;
 }
 </style>

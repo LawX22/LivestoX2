@@ -1,11 +1,12 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import Badge from 'primevue/badge';
 import Paginator from 'primevue/paginator';
+import router from '../../../router';
+import imageUrl from '/src/assets/Bull.jpg';
 
 interface Livestock {
     id: number;
@@ -35,7 +36,7 @@ interface Livestock {
 }
 
 export default defineComponent({
-    name: 'LivestockListings',
+    name: 'Cards',
     components: {
         Button,
         InputText,
@@ -43,10 +44,10 @@ export default defineComponent({
         Badge,
         Paginator
     },
+    props: {
+        // You can add props if needed for parent-child communication
+    },
     setup() {
-        // Add router
-        const router = useRouter();
-
         // Search and basic filters
         const searchQuery = ref('');
         const selectedCategory = ref<{ name: string; code: string } | null>(null);
@@ -109,7 +110,7 @@ export default defineComponent({
                     location: location,
                     healthStatus: "Vaccinated",
                     feedingType: "Grass-fed",
-                    imageUrl: `/src/assets/Bull.jpg?text=${breeds[breedIndex]}+${i}`,
+                    imageUrl: imageUrl,
                     certified: Math.random() > 0.7,
                     auction: Math.random() > 0.8,
                     availableImmediate: Math.random() > 0.3,
@@ -176,7 +177,7 @@ export default defineComponent({
         const viewListing = (listing: Livestock) => {
             // Store the selected listing in localStorage
             localStorage.setItem('selectedListing', JSON.stringify(listing));
-            
+
             // Navigate to the view page without ID parameter
             router.push('/main/ViewListings');
             console.log('Redirecting to /main/ViewListings without ID parameter');
@@ -236,101 +237,12 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="livestock-marketplace">
-        <!-- Hero/Banner Section with pastel colors -->
-        <div class="relative bg-gradient-to-br from-green-500 to-green-800 text-white overflow-hidden">
-            <!-- Background Pattern -->
-            <div class="absolute inset-0 opacity-10">
-                <div class="absolute inset-0"
-                    style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="container mx-auto px-4 py-16 md:py-24 relative z-10">
-                <!-- Header Section -->
-                <div class="flex flex-col items-center text-center mb-12">
-                    <!-- Logo with improved animation -->
-                    <div
-                        class="bg-white p-4 rounded-full shadow-lg mb-6 transform transition duration-700 hover:scale-105">
-                        <img src="/src/assets/vue.svg" alt="Livestock Marketplace Logo"
-                            class="w-20 h-20 md:w-24 md:h-24" />
-                    </div>
-
-                    <!-- Heading with improved typography -->
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
-                        Find Premium Livestock <span class="block md:inline text-green-100">For Your Farm</span>
-                    </h1>
-
-                    <!-- Subheading with better contrast -->
-                    <p class="text-xl text-green-50 mb-8 leading-relaxed max-w-2xl mx-auto">
-                        Connect directly with trusted breeders and sellers across the Philippines.
-                    </p>
-
-                    <!-- CTA Buttons - Adding multiple options -->
-                    <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                        <button
-                            class="bg-white text-green-700 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 hover:text-green-800 transform hover:scale-105 transition duration-300 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            Become a Farmer
-                        </button>
-                        <button
-                            class="bg-green-800 bg-opacity-60 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-900 transform hover:scale-105 transition duration-300 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                <path fill-rule="evenodd"
-                                    d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            Browse Livestock
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Stats Bar -->
-                <div
-                    class="bg-white bg-opacity-80 rounded-lg shadow-md py-4 px-6 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="text-center">
-                        <p class="text-green-800 font-bold text-2xl md:text-3xl">5,000+</p>
-                        <p class="text-gray-600 text-sm">Active Listings</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-green-800 font-bold text-2xl md:text-3xl">3,200+</p>
-                        <p class="text-gray-600 text-sm">Verified Sellers</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-green-800 font-bold text-2xl md:text-3xl">98%</p>
-                        <p class="text-gray-600 text-sm">Satisfaction Rate</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-green-800 font-bold text-2xl md:text-3xl">78</p>
-                        <p class="text-gray-600 text-sm">Provinces Covered</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Decorative wave divider -->
-            <div class="absolute bottom-0 left-0 right-0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100"
-                    class="w-full h-auto text-white fill-current">
-                    <path
-                        d="M0,64L60,69.3C120,75,240,85,360,80C480,75,600,53,720,48C840,43,960,53,1080,58.7C1200,64,1320,64,1380,64L1440,64L1440,100L1380,100C1320,100,1200,100,1080,100C960,100,840,100,720,100C600,100,480,100,360,100C240,100,120,100,60,100L0,100Z">
-                    </path>
-                </svg>
-            </div>
-        </div>
-
+    <div>
         <!-- Search Section - More elegant and refined -->
         <div class="bg-white border-b shadow-sm sticky top-0 z-10">
             <div class="container mx-auto px-4 py-3">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="w-full md:w-1/2">
+                    <div class="w-full md:w-2/5">
                         <span class="p-input-icon-left w-full relative">
                             <i
                                 class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -338,10 +250,12 @@ export default defineComponent({
                                 class="w-full pl-10 py-2 rounded-full border-gray-300" />
                         </span>
                     </div>
-                    <div class="w-full md:w-auto flex items-center gap-3">
+                    <div class="w-full md:w-auto flex flex-wrap items-center gap-3">
                         <Dropdown v-model="selectedCategory" :options="categories" optionLabel="name"
-                            placeholder="All Categories" class="w-40" />
-                        <Dropdown v-model="sortOption" :options="sortOptions" optionLabel="label" class="w-48" />
+                            placeholder="All Categories" class="w-48"
+                            optionClass="text-ellipsis whitespace-nowrap overflow-hidden" />
+                        <Dropdown v-model="sortOption" :options="sortOptions" optionLabel="label" class="w-52"
+                            optionClass="text-ellipsis whitespace-nowrap overflow-hidden" />
                         <!-- View Toggle -->
                         <div class="flex items-center border rounded-full p-1 bg-gray-100">
                             <button @click="viewMode = 'grid'" class="p-2 rounded-full transition-colors"
@@ -363,7 +277,7 @@ export default defineComponent({
         </div>
 
         <!-- Main Content Area -->
-        <div class="container mx-auto px-4 py-8">
+        <div class="cards-container mx-auto px-4 py-8">
             <!-- Filter chips and result count -->
             <div class="flex flex-wrap items-center gap-2 mb-6">
                 <span class="text-gray-700 font-medium">{{ filteredListings.length }} listings found</span>
@@ -478,8 +392,9 @@ export default defineComponent({
 
                         <!-- Button -->
                         <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
-                            class="p-button-rounded p-button-success w-full font-medium text-sm mt-3"
+                            class="p-button-rounded p-button-success w-full font-medium text-sm mt-3 text-white"
                             @click="viewListing(listing)" />
+
                     </div>
                 </div>
             </div>
@@ -493,8 +408,7 @@ export default defineComponent({
                         <div class="relative h-48 md:h-full overflow-hidden">
                             <img :src="listing.imageUrl" :alt="listing.title"
                                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-                            <div
-                                class="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent md:opacity-40">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent md:opacity-40">
                             </div>
 
                             <!-- Price badge -->
@@ -563,45 +477,36 @@ export default defineComponent({
 
                         <!-- Specs grid -->
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
-                            <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-tags text-green-600 mr-1.5"></i>
-                                    <span class="text-gray-500">Breed</span>
-                                </div>
-                                <span class="font-semibold text-gray-700">{{ listing.breed }}</span>
+                            <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <i class="pi pi-tag text-green-600 mr-1.5"></i>
+                                <span>{{ listing.breed }}</span>
                             </div>
-                            <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-heart text-green-600 mr-1.5"></i>
-                                    <span class="text-gray-500">Health</span>
-                                </div>
-                                <span class="font-semibold text-gray-700">{{ listing.healthStatus }}</span>
+                            <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <i class="pi pi-heart text-green-600 mr-1.5"></i>
+                                <span>{{ listing.healthStatus }}</span>
                             </div>
-                            <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-box text-green-600 mr-1.5"></i>
-                                    <span class="text-gray-500">Weight</span>
-                                </div>
-                                <span class="font-semibold text-gray-700">{{ listing.weight }} {{ listing.weightUnit }}</span>
+                            <div class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <i class="pi pi-weight text-green-600 mr-1.5"></i>
+                                <span>{{ listing.weight }} {{ listing.weightUnit }}</span>
                             </div>
-                            <div class="flex flex-col p-2 border border-gray-200 rounded-md bg-gray-50">
-                                <div class="flex items-center mb-1">
-                                    <i class="pi pi-send text-green-600 mr-1.5"></i>
-                                    <span class="text-gray-500">Feeding</span>
-                                </div>
-                                <span class="font-semibold text-gray-700">{{ listing.feedingType }}</span>
+                            <div v-if="listing.quantity > 1"
+                                class="flex items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                <i class="pi pi-th-large text-green-600 mr-1.5"></i>
+                                <span>{{ listing.quantity }} Left</span>
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
-                        <div class="flex items-center justify-between mt-auto">
-                            <div class="flex items-center">
-                                <Button icon="pi pi-heart" :class="listing.isFavorite ? 'p-button-danger' : 'p-button-outlined p-button-secondary'" 
-                                        class="p-button-rounded mr-2" @click="toggleFavorite(listing)" />
-                                <Button icon="pi pi-share-alt" class="p-button-rounded p-button-outlined p-button-secondary" />
-                            </div>
-                            <Button label="View Details" icon="pi pi-arrow-right" iconPos="right" 
-                                    class="p-button-rounded p-button-success" @click="viewListing(listing)" />
+                        <!-- Action buttons -->
+                        <div class="mt-auto flex items-center gap-3">
+                            <Button label="View Details" icon="pi pi-arrow-right" iconPos="right"
+                                class="p-button-rounded p-button-success flex-1 text-sm text-white"
+                                @click="viewListing(listing)" />
+                            <button
+                                class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-colors"
+                                :class="[listing.isFavorite ? 'bg-red-500 border-red-500 text-white' : 'text-gray-400']"
+                                @click="toggleFavorite(listing)" aria-label="Toggle favorite">
+                                <i class="pi pi-heart-fill"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -609,89 +514,87 @@ export default defineComponent({
 
             <!-- Compact View -->
             <div v-else-if="viewMode === 'compact'" class="overflow-x-auto">
-                <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Livestock</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category/Breed</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age/Gender</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <table class="min-w-full bg-white rounded-lg shadow-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700 text-sm">
+                            <th class="py-3 px-4 text-left">Livestock</th>
+                            <th class="py-3 px-4 text-left">Category</th>
+                            <th class="py-3 px-4 text-left">Breed</th>
+                            <th class="py-3 px-4 text-left">Location</th>
+                            <th class="py-3 px-4 text-left">Price</th>
+                            <th class="py-3 px-4 text-left">Age</th>
+                            <th class="py-3 px-4 text-center">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        <tr v-for="listing in filteredListings" :key="listing.id" class="hover:bg-gray-50">
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="w-12 h-12 relative rounded-lg overflow-hidden">
-                                    <img :src="listing.imageUrl" :alt="listing.title" class="w-full h-full object-cover" />
-                                    <button @click="toggleFavorite(listing)" 
-                                            class="absolute top-0 right-0 w-5 h-5 rounded-bl-lg flex items-center justify-center transition-all duration-200"
-                                            :class="[listing.isFavorite ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-red-500 hover:text-white']">
-                                        <i class="pi pi-heart-fill text-xs"></i>
+                    <tbody>
+                        <tr v-for="listing in filteredListings" :key="listing.id"
+                            class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-md overflow-hidden">
+                                        <img :src="listing.imageUrl" :alt="listing.title"
+                                            class="w-full h-full object-cover" />
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">{{ listing.title }}</div>
+                                        <div class="text-xs text-gray-500">{{ formatDate(listing.listedDate) }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                    {{ listing.category }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-sm text-gray-700">{{ listing.breed }}</td>
+                            <td class="py-3 px-4 text-sm text-gray-700">{{ listing.location }}</td>
+                            <td class="py-3 px-4 text-sm font-medium text-green-600">
+                                ${{ formatPrice(listing.price) }}
+                            </td>
+                            <td class="py-3 px-4 text-sm text-gray-700">
+                                {{ listing.age }} {{ listing.ageUnit }}
+                            </td>
+                            <td class="py-3 px-4">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <button class="text-green-600 hover:text-green-800 transition-colors p-1"
+                                        @click="viewListing(listing)" title="View Details">
+                                        <i class="pi pi-eye"></i>
+                                    </button>
+                                    <button class="transition-colors p-1"
+                                        :class="[listing.isFavorite ? 'text-red-500 hover:text-red-700' : 'text-gray-400 hover:text-red-500']"
+                                        @click="toggleFavorite(listing)" title="Add to Favorites">
+                                        <i class="pi pi-heart-fill"></i>
                                     </button>
                                 </div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900 hover:text-green-600 cursor-pointer" @click="viewListing(listing)">
-                                    {{ listing.title }}
-                                </div>
-                                <div class="text-xs text-gray-500">{{ formatDate(listing.listedDate) }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ listing.category }}</div>
-                                <div class="text-xs text-gray-500">{{ listing.breed }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ listing.location }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ listing.age }} {{ listing.ageUnit }}</div>
-                                <div class="text-xs text-gray-500">{{ listing.gender }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-sm font-medium text-green-600">${{ formatPrice(listing.price) }}</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-right">
-                                <Button icon="pi pi-arrow-right" 
-                                      class="p-button-rounded p-button-success p-button-sm" 
-                                      @click="viewListing(listing)" />
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Empty State -->
-            <div v-if="filteredListings.length === 0" class="py-12 flex flex-col items-center justify-center text-center">
-                <div class="text-gray-400 mb-4">
-                    <i class="pi pi-search text-5xl"></i>
+            <!-- No results message -->
+            <div v-if="filteredListings.length === 0" class="text-center py-16">
+                <div class="mb-4">
+                    <i class="pi pi-search text-5xl text-gray-300"></i>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Livestock Found</h3>
-                <p class="text-gray-500 mb-6 max-w-md">We couldn't find any livestock matching your criteria. Try adjusting your filters or search terms.</p>
-                <Button label="Clear Filters" icon="pi pi-filter-slash" @click="searchQuery = ''; selectedCategory = null" />
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No livestock found</h3>
+                <p class="text-gray-500 mb-6">Try adjusting your search or filters to find what you're looking for.</p>
+                <Button label="Clear Filters" icon="pi pi-filter-slash" class="p-button-outlined"
+                    @click="searchQuery = ''; selectedCategory = null" />
             </div>
 
             <!-- Pagination -->
-            <Paginator v-model:first="first" :rows="12" :totalRecords="filteredListings.length" 
-                      class="p-paginator-top-border mt-8 border-t border-gray-200 pt-6" />
+            <div class="mt-6 flex justify-center">
+                <Paginator v-model:first="first" :rows="10" :totalRecords="filteredListings.length"
+                    class="border rounded-lg shadow-sm" />
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-.livestock-card {
-    transform: translateY(0);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.livestock-card:hover {
-    transform: translateY(-5px);
-}
-
-.p-paginator-top-border .p-paginator {
-    background: transparent;
-    border: none;
+/* Add any additional styles here */
+.p-dropdown {
+    height: auto !important;
 }
 </style>
