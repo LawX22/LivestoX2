@@ -427,7 +427,7 @@ export default defineComponent({
                             <i class="pi pi-shopping-cart mr-2"></i> Market
                             <span class="nav-indicator"></span>
                         </router-link>
-                        <router-link to="/farmer/FarmerLivestockDashboard"
+                        <router-link to="/farmer/FarmerDashboard"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
                             v-if="authStore?.user?.user_metadata?.role === 'Farmer'">
                             <i class="pi pi-chart-bar mr-2"></i>Dashboard

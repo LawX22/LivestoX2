@@ -23,7 +23,7 @@ import UserProfile from '../views/main/UserProfile.vue';
 
 
 // Farmer Pages
-import FarmerLivestockDashboard from '../views/farmer/FarmerLivestockDashboard.vue'; 
+import FarmerDashboard from '../views/farmer/FarmerDashboard.vue'; 
 import PostLivestockForms from '../views/farmer/PostLivestockForms.vue';
 
 // Utility Pages
@@ -50,7 +50,7 @@ const routes = [
 
 
   // Farmer Routes
-  { path: '/farmer/FarmerLivestockDashboard', component: FarmerLivestockDashboard, name: 'FarmerLivestockDashboard' },
+  { path: '/farmer/FarmerDashboard', component: FarmerDashboard, name: 'FarmerDashboard' },
   { path: '/farmer/PostLivestockForms', component: PostLivestockForms, name: 'PostLivestockForms' },
 
   // Admin Routes
