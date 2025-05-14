@@ -433,12 +433,6 @@ export default defineComponent({
                             <i class="pi pi-chart-bar mr-2"></i>Dashboard
                             <span class="nav-indicator"></span>
                         </router-link>
-                               <router-link to="/farmer/FarmerTransaction"
-                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
-                            v-if="authStore?.user?.user_metadata?.role === 'Farmer'">
-                            <i class="pi pi-chart-bar mr-2"></i>Transactions
-                            <span class="nav-indicator"></span>
-                        </router-link>
                         <router-link to="/main/LivestockDashboard"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
                             v-if="authStore?.user?.user_metadata?.role === 'Buyer'">
@@ -641,14 +635,14 @@ export default defineComponent({
                                     <span>Transaction</span>
                                 </router-link>
 
-                                <router-link to="/favorites-listings"
+                                <!-- <router-link to="/favorites-listings"
                                     class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
                                     @click="hideUserMenu">
                                     <div class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 mr-3">
                                         <i class="pi pi-heart text-red-600 text-sm"></i>
                                     </div>
                                     <span>Favorites Listings</span>
-                                </router-link>
+                                </router-link> -->
 
                                 <router-link to="/settings"
                                     class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"

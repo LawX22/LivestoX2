@@ -212,10 +212,10 @@ export default defineComponent({
         <div class="main-content">
 
           <!-- BUYER SIDE -->
-          <!-- <Header :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />  -->
+          <Header :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> 
           
           <!-- FARMER SIDE  -->
-          <FarmerHeader :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+          <!-- <FarmerHeader :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" /> -->
 
 
           <Cards :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
