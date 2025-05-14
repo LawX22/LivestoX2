@@ -15,6 +15,7 @@ import {
   LightBulbIcon,
   Square3Stack3DIcon
 } from '@heroicons/vue/24/solid';
+import router from '../../router';
 
 // Types
 interface Option { label: string; value: string; icon?: string; color?: string; hoverColor?: string; title?: string }
@@ -86,7 +87,7 @@ watch(category, (newCategory) => {
 });
 
 const goBack = () => {
-  window.location.href = '/main/LivestockMarket';
+  router.back();
 };
 
 const nextStep = () => {

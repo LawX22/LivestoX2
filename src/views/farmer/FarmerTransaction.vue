@@ -1,14 +1,41 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import OrderDetailsModal from '../../components/Farmer/OrderDetailsModal.vue'
-import StatusUpdateModal from '../../components/Farmer/StatusUpdateModal.vue'
-import OrderTable, { Order } from '../../components/Farmer/OrderTable.vue'
+import OrderDetailsModal from '../../components/Farmer/Transaction/OrderDetailsModal.vue'
+import StatusUpdateModal from '../../components/Farmer/Transaction/StatusUpdateModal.vue'
+import SendNotificationModal from '../../components/Farmer/Transaction/SendNotificationModal.vue'
+import OrderTable from '../../components/Farmer/Transaction/OrderTable.vue'
 import router from '../../router'
+
+// Define the Order type
+type Order = {
+    id: number;
+    buyer: {
+        name: string;
+        email: string;
+        phone: string;
+        address: string;
+    };
+    items: {
+        name: string;
+        breed: string;
+        quantity: number;
+        weight: number;
+        unitPrice: number;
+    }[];
+    orderDate: Date;
+    totalPrice: number;
+    status: string;
+    estimatedDelivery: Date;
+    paymentStatus: string;
+    paymentMethod: string;
+    notes: string;
+};
 
 export default defineComponent({
     components: {
         OrderDetailsModal,
         StatusUpdateModal,
+        SendNotificationModal,
         OrderTable
     },
     data() {
@@ -27,7 +54,29 @@ export default defineComponent({
             showDetailsModal: false,
             showStatusModal: false,
             showNotificationModal: false,
-            selectedOrder: null as Order | null,
+            selectedOrder: null as { 
+                id: number; 
+                buyer: { 
+                    name: string; 
+                    email: string; 
+                    phone: string; 
+                    address: string; 
+                }; 
+                items: { 
+                    name: string; 
+                    breed: string; 
+                    quantity: number; 
+                    weight: number; 
+                    unitPrice: number; 
+                }[]; 
+                orderDate: Date; 
+                totalPrice: number; 
+                status: string; 
+                estimatedDelivery: Date; 
+                paymentStatus: string; 
+                paymentMethod: string; 
+                notes: string; 
+            } | null,
             newStatus: '',
             notificationTemplate: '',
             notificationMessage: '',
@@ -61,17 +110,17 @@ export default defineComponent({
                 { id: 'In Transit', name: 'In Transit' },
                 { id: 'Delivered', name: 'Delivered' },
                 { id: 'Cancelled', name: 'Cancelled' }
-            ] as const,
+            ],
 
             // Mock order data
             orders: [
                 {
                     id: 10043,
                     buyer: {
-                        name: 'Maria Santos',
+                        name: 'Dhaiel Malinao',
                         email: 'maria.santos@email.com',
                         phone: '+63 912 345 6789',
-                        address: '123 Rizal Avenue, Makati City, Metro Manila'
+                        address: '123 Lepiten St. Avenue, Bogo City, Cebu'
                     },
                     items: [
                         {
@@ -86,8 +135,8 @@ export default defineComponent({
                     totalPrice: 170000,
                     status: 'Pending',
                     estimatedDelivery: new Date('2025-05-25'),
-                    paymentStatus: 'Partial',
-                    paymentMethod: 'Bank Transfer',
+                    paymentStatus: 'Pending',
+                    paymentMethod: 'On Hand Cash',
                     notes: 'Buyer requested health certificates'
                 },
                 // ... rest of your orders data
@@ -343,6 +392,28 @@ export default defineComponent({
         },
         updatePagination(newPagination: { currentPage: number; perPage: number }) {
             this.pagination = newPagination;
+        },
+        // Helper method to get order count by status
+        getOrderCountByStatus(status: string): number {
+            // For 'All' return total
+            if (status === 'All') {
+                return this.orderStats.total;
+            }
+
+            // Convert status to the corresponding property name in orderStats
+            const statusKey = status.toLowerCase().replace(/\s+/g, '');
+
+            // Map to orderStats property names
+            const statusMap: Record<string, keyof typeof this.orderStats> = {
+                'pending': 'pending',
+                'processing': 'processing',
+                'readyforpickup': 'readyForPickup',
+                'intransit': 'inTransit',
+                'delivered': 'delivered',
+                'cancelled': 'cancelled'
+            };
+
+            return this.orderStats[statusMap[statusKey] as keyof typeof this.orderStats] || 0;
         }
     },
     mounted() {
@@ -360,7 +431,7 @@ export default defineComponent({
                 <div class="flex justify-between items-center">
                     <div class="flex items-center space-x-4">
                         <button @click="goBack"
-                            class="p-2 rounded-full hover:bg-green-600 hover:shadow-lg transition-all flex items-center justify-center">
+                            class="p-2 rounded-full hover:bg-green-600 hover:shadow-lg transition-all duration-200 flex items-center justify-center">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -386,7 +457,7 @@ export default defineComponent({
                                 class="pl-10 pr-4 py-2 rounded-lg bg-green-700 text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-green-300 shadow-inner transition-all duration-300 hover:bg-green-600 w-64">
                         </div>
                         <button @click="openFiltersModal"
-                            class="flex items-center bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow-md transition-all">
+                            class="flex items-center bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -396,7 +467,7 @@ export default defineComponent({
                             Filters
                         </button>
                         <button @click="exportData"
-                            class="flex items-center bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow-md transition-all">
+                            class="flex items-center bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -413,7 +484,7 @@ export default defineComponent({
             <!-- Dashboard Stats -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div
-                    class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 transform hover:scale-105 transition-transform duration-300 hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:scale-105 transition-transform duration-200 hover:shadow-xl">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-green-100 mr-4 shadow-md">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -435,7 +506,7 @@ export default defineComponent({
                 </div>
 
                 <div
-                    class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 transform hover:scale-105 transition-transform duration-300 hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:scale-105 transition-transform duration-200 hover:shadow-xl">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-green-100 mr-4 shadow-md">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -450,13 +521,13 @@ export default defineComponent({
                             <p class="text-3xl font-bold text-gray-800">{{ formatCurrency(orderStats.totalRevenue) }}
                             </p>
                             <p class="text-xs text-gray-500">Monthly Target: {{ formatCurrency(orderStats.revenueTarget)
-                            }}</p>
+                                }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div
-                    class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 transform hover:scale-105 transition-transform duration-300 hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:scale-105 transition-transform duration-200 hover:shadow-xl">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-green-100 mr-4 shadow-md">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -477,7 +548,7 @@ export default defineComponent({
                 </div>
 
                 <div
-                    class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 transform hover:scale-105 transition-transform duration-300 hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 hover:scale-105 transition-transform duration-200 hover:shadow-xl">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-yellow-100 mr-4 shadow-md">
                             <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -498,7 +569,8 @@ export default defineComponent({
             <!-- Status Tabs -->
             <div class="col-span-full bg-white rounded-xl shadow-lg p-4 mb-8">
                 <div class="flex flex-wrap items-center justify-between">
-                    <div class="flex space-x-1 overflow-x-auto pb-2">
+                    <div
+                        class="flex space-x-1 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                         <button v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id" :class="{
                             'bg-green-600 text-white': currentTab === tab.id,
                             'bg-white text-gray-700 hover:bg-gray-100': currentTab !== tab.id
@@ -509,8 +581,7 @@ export default defineComponent({
                                 'bg-green-700 text-white': currentTab === tab.id,
                                 'bg-gray-200 text-gray-700': currentTab !== tab.id
                             }">
-                                {{ orderStats[tab.id.replace(/\s+/g, '').toLowerCase() as keyof typeof orderStats] || 0
-                                }}
+                                {{ getOrderCountByStatus(tab.id) }}
                             </span>
                         </button>
                     </div>
@@ -528,12 +599,13 @@ export default defineComponent({
                 @update-pagination="updatePagination" />
 
             <!-- Order Details Modal -->
-            <OrderDetailsModal v-if="showDetailsModal" :order="selectedOrder" :formatDate="formatDate"
+            <OrderDetailsModal v-if="showDetailsModal && selectedOrder" :order="selectedOrder" :formatDate="formatDate"
                 :formatTime="formatTime" :formatCurrency="formatCurrency" @close="closeDetailsModal" />
 
             <!-- Status Update Modal -->
-            <StatusUpdateModal v-if="showStatusModal" :order="selectedOrder" :statusOptions="statusOptions"
-                :currentStatus="newStatus" @close="closeStatusModal" @save="saveStatusUpdate" />
+            <StatusUpdateModal :show="showStatusModal" :order="selectedOrder" :statusOptions="statusOptions"
+                :initialStatus="newStatus" :currentStatus="newStatus" @close="closeStatusModal"
+                @save="saveStatusUpdate" />
 
             <!-- Filters Modal -->
             <div v-if="showFiltersModal"
@@ -569,16 +641,24 @@ export default defineComponent({
                     </div>
                     <div class="mt-6 flex justify-end space-x-3">
                         <button @click="resetFilters"
-                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
                             Reset
                         </button>
                         <button @click="applyFilters"
-                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                            class="px-4 py-2 bg-green-600 rounded-lg text-white hover:bg-green-700 transition-colors duration-200">
                             Apply Filters
                         </button>
                     </div>
                 </div>
             </div>
+
+            <SendNotificationModal :show="showNotificationModal" :order="selectedOrder"
+                :notification-template="notificationTemplate" :notification-message="notificationMessage"
+                @close="closeNotificationModal" @send-sms="sendSms" @send-email="sendEmail"
+                @update:notificationTemplate="(val: string) => notificationTemplate = val"
+                @update:notificationMessage="(val: string) => notificationMessage = val" 
+                />
+
         </div>
     </div>
 </template>

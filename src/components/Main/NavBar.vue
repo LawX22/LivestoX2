@@ -433,6 +433,12 @@ export default defineComponent({
                             <i class="pi pi-chart-bar mr-2"></i>Dashboard
                             <span class="nav-indicator"></span>
                         </router-link>
+                               <router-link to="/farmer/FarmerTransaction"
+                            class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
+                            v-if="authStore?.user?.user_metadata?.role === 'Farmer'">
+                            <i class="pi pi-chart-bar mr-2"></i>Transactions
+                            <span class="nav-indicator"></span>
+                        </router-link>
                         <router-link to="/main/LivestockDashboard"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative"
                             v-if="authStore?.user?.user_metadata?.role === 'Buyer'">

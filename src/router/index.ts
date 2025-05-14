@@ -26,6 +26,7 @@ import UserProfile from '../views/main/UserProfile.vue';
 import FarmerDashboard from '../views/farmer/FarmerDashboard.vue'; 
 import PostLivestockForms from '../views/farmer/PostLivestockForms.vue';
 import FarmerTransaction from '../views/farmer/FarmerTransaction.vue';
+import YourLivestocks from '../views/farmer/YourLivestocks.vue';
 
 // Utility Pages
 import UnderConstructionPage from '../views/utility/UnderConstructionPage.vue';
@@ -54,6 +55,7 @@ const routes = [
   { path: '/farmer/FarmerDashboard', component: FarmerDashboard, name: 'FarmerDashboard' },
   { path: '/farmer/PostLivestockForms', component: PostLivestockForms, name: 'PostLivestockForms' },
   { path: '/farmer/FarmerTransaction', component: FarmerTransaction, name: 'FarmerTransaction' },
+  { path: '/farmer/YourLivestocks', component: YourLivestocks, name: 'YourLivestocks' },
 
   // Admin Routes
   { path: '/admin/adminDashboard', component: AdminDashboard, name: 'AdminDashboard' },
