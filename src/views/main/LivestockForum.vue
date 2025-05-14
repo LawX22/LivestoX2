@@ -152,10 +152,3 @@ onMounted(() => {
     </div>
 </template>
 
-<style scoped>
-/* Any component-specific styles */
-.sticky {
-    position: sticky;
-    top: 0;
-}
-</style>

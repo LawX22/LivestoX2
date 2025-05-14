@@ -13,7 +13,6 @@ import 'primeicons/primeicons.css';
 // Import CSS
 import './assets/css/style.css';
 import './assets/css/auth/auth.css';
-import './assets/css/auth/LandingPage.css';
 import './assets/css/admin/UserManagement.css';
 import './assets/css/main/LivestockMarket.css';
 
