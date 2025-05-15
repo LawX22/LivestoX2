@@ -234,14 +234,21 @@ const handleFileUpload = async (event: Event) => {
   (event.target as HTMLInputElement).value = "";
 };
 
-const handleVideoUpload = (event: Event) => {
+const handleVideoUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = (e) =>
-    e.target?.result && (videoPreview.value = e.target.result as string);
-  reader.readAsDataURL(file);
+  const uniqueFilePath = `videos/${Date.now()}_${file.name}`;
+
+  try {
+    const publicUrl = await upload(file, uniqueFilePath);
+    if (publicUrl) {
+      videoPreview.value = publicUrl;
+    }
+  } catch (err) {
+    console.error("Video upload failed:", err);
+  }
+
   (event.target as HTMLInputElement).value = "";
 };
 
@@ -293,9 +300,7 @@ const submitForm = () => {
     available_immediate: availableImmediate.value,
     description: description.value,
     image_url: imagePreviewUrls.value,
-    video: "test",
-    // images: imagePreviewUrls.value,
-    // video: videoPreview.value ?? null
+    video: videoPreview.value ?? null
   };
 
   livestock.saveListing(formData);
