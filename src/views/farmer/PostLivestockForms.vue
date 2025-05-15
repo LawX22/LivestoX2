@@ -292,7 +292,7 @@ const submitForm = () => {
     auction: auction.value,
     available_immediate: availableImmediate.value,
     description: description.value,
-    image_url: { test: "test" },
+    image_url: imagePreviewUrls.value,
     video: "test",
     // images: imagePreviewUrls.value,
     // video: videoPreview.value ?? null
