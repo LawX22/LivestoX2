@@ -1,17 +1,59 @@
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
+<script setup lang="ts">
 import NavBar from '../../components/Main/NavBar.vue';
 import LivestockListingsTable from '../../components/Farmer/Dashboard/LivestockListingsTable.vue';
 import TransactionsTable from '../../components/Farmer/Dashboard/TransactionsTable.vue';
+import { computed, onMounted, ref } from 'vue';
+import { useAuthStore } from '../../stores/authContext';
+import { livestock } from '../../services/livestockService';
+import { farmers } from '../../services/farmerService';
 
-export default defineComponent({
-  name: 'FarmerDashboard',
-  components: {
-    NavBar,
-    LivestockListingsTable,
-    TransactionsTable
-  },
-  setup() {
+
+interface DashboardList {
+  id: string;
+  title: string;
+  breed: string;
+  age: string;
+  price: number;
+  status: string;
+  quantity: number;
+  images:  Record<string, any>;
+  description: string;
+}
+
+interface FarmProfile {
+  farm_name: string;
+  location: string;
+  certifications: string;
+  totalAcreage: number;
+  completenessPercentage: number;
+}
+
+const authStore = useAuthStore();
+
+const livestockListings = ref<DashboardList[]>([]);
+const farmProfile = ref<FarmProfile>();
+
+const fetchListings = async () => {
+  const sellerId = authStore.userId;
+  if (!sellerId) return;
+
+  try {
+    livestockListings.value = await livestock.getListingsBySeller(sellerId);
+    farmProfile.value = await farmers.getFarmerData(sellerId);
+  } catch (error) {
+    console.error("Could not fetch listings:", error);
+  }
+};
+
+onMounted(() => {
+  fetchListings();
+});
+
+const totalListingsCount = computed(() => livestockListings.value.length);
+const limitedListings = computed(() => {
+  return livestockListings.value.slice(0, 5);
+});
+
     // Currency exchange rate (approximately 1 USD = 56.50 PHP as of May 2025)
     const phpRate = 56.50;
 
@@ -22,47 +64,10 @@ export default defineComponent({
 
     // Existing setup code with PHP conversions
     const dashboardStats = ref({
-      totalListings: 15,
       totalSales: 53,
       yearToDateRevenue: 87450, // Will be displayed in PHP
       pendingOffers: 7
     });
-
-    const livestockListings = ref([
-      {
-        id: 1,
-        title: 'Prime Angus Bulls',
-        breed: 'Black Angus',
-        age: '24-28 months',
-        price: 3500, // Will be displayed in PHP
-        status: 'Active',
-        quantity: 5,
-        images: [],
-        description: 'High-quality Black Angus bulls with excellent genetics and health records.'
-      },
-      {
-        id: 2,
-        title: 'Hereford Breeding Heifers',
-        breed: 'Hereford',
-        age: '18-20 months',
-        price: 2800, // Will be displayed in PHP
-        status: 'Active',
-        quantity: 8,
-        images: [],
-        description: 'Purebred Hereford heifers, ready for breeding, excellent temperament.'
-      },
-      {
-        id: 3,
-        title: 'Holstein Dairy Cows',
-        breed: 'Holstein',
-        age: '3-4 years',
-        price: 3200, // Will be displayed in PHP
-        status: 'Active',
-        quantity: 4,
-        images: [],
-        description: 'Productive Holstein dairy cows with excellent milk production records.'
-      }
-    ]);
 
     const buyerMessages = ref([
       {
@@ -124,14 +129,6 @@ export default defineComponent({
       }
     ]);
 
-    const farmProfile = ref({
-      name: 'Mark\'s Livestock Farm',
-      location: 'Central Valley, Luzon, Philippines',
-      certifications: ['Organic', 'Animal Welfare Approved', 'PH-GAP'],
-      totalAcreage: 250,
-      completenessPercentage: 75
-    });
-
     const listingInsights = ref({
       totalViews: 120,
       averageListingDuration: 45,
@@ -140,10 +137,6 @@ export default defineComponent({
 
     const addNewListing = () => {
       console.log('Add new listing clicked');
-    };
-
-    const viewAllSales = () => {
-      console.log('View all sales clicked');
     };
 
     const viewAllListings = () => {
@@ -169,26 +162,6 @@ export default defineComponent({
     const editProfile = () => {
       console.log('Edit profile clicked');
     };
-
-    return {
-      dashboardStats,
-      livestockListings,
-      buyerMessages,
-      transactionHistory,
-      farmProfile,
-      listingInsights,
-      addNewListing,
-      viewAllSales,
-      viewAllListings,
-      viewFullAnalytics,
-      viewAllMessages,
-      viewAllTransactions,
-      viewTransactionDetails,
-      editProfile,
-      formatToPHP
-    };
-  }
-});
 </script>
 
 <template>
@@ -212,7 +185,7 @@ export default defineComponent({
               </svg>
               Farmer Dashboard
             </h1>
-            <p class="text-green-100 text-lg">Welcome back, {{ farmProfile.name.split('\'')[0] }}! Here's your
+            <p class="text-green-100 text-lg">Welcome back, {{ authStore.userMetadata.firstname }}! Here's your
               livestock business at a glance.</p>
           </div>
           <div class="mt-4 md:mt-0">
@@ -248,7 +221,7 @@ export default defineComponent({
                       Total Listings
                     </p>
                     <p class="text-2xl font-bold text-green-700">
-                      {{ dashboardStats.totalListings }}
+                      {{ totalListingsCount }}
                     </p>
                   </div>
                   <div class="bg-green-100 text-green-600 p-3 rounded-full shadow-sm">
@@ -328,7 +301,7 @@ export default defineComponent({
 
           <!-- Livestock Listings Table Section - Now using the component -->
           <LivestockListingsTable 
-            :listings="livestockListings" 
+            :listings="limitedListings" 
             :formatToPHP="formatToPHP" 
             @view-all="viewAllListings" 
             @add-new="addNewListing" 
@@ -373,34 +346,34 @@ export default defineComponent({
               <div class="flex items-center mb-4">
                 <div
                   class="h-16 w-16 bg-gradient-to-br from-green-100 to-teal-100 rounded-full flex items-center justify-center text-green-700 text-xl font-bold">
-                  {{ farmProfile.name.charAt(0) }}
+                  {{ farmProfile?.farm_name.charAt(0) }} 
                 </div>
                 <div class="ml-4">
-                  <h4 class="font-semibold text-lg text-neutral-800">{{ farmProfile.name }}</h4>
-                  <p class="text-sm text-neutral-500">{{ farmProfile.location }}</p>
+                  <h4 class="font-semibold text-lg text-neutral-800">{{ farmProfile?.farm_name }}</h4>
+                  <p class="text-sm text-neutral-500">{{ farmProfile?.location }}</p>
                 </div>
               </div>
 
-              <div class="mb-4 border-t border-neutral-100 pt-4">
+              <!-- <div class="mb-4 border-t border-neutral-100 pt-4">
                 <div class="flex justify-between items-center mb-2">
                   <h5 class="text-sm font-medium text-neutral-600">Profile Completeness</h5>
-                  <span class="text-xs font-medium text-neutral-500">{{ farmProfile.completenessPercentage }}%</span>
+                  <span class="text-xs font-medium text-neutral-500">{{ farmProfile?.completenessPercentage }}%</span>
                 </div>
                 <div class="w-full bg-neutral-200 rounded-full h-2">
                   <div class="bg-green-500 h-2 rounded-full"
-                    :style="{ width: farmProfile.completenessPercentage + '%' }"></div>
+                    :style="{ width: farmProfile?.completenessPercentage + '%' }"></div>
                 </div>
-              </div>
+              </div> -->
 
-              <div class="mb-4">
+              <!-- <div class="mb-4">
                 <h5 class="text-sm font-medium text-neutral-600 mb-2">Farm Size</h5>
                 <p class="text-sm text-neutral-800">{{ farmProfile.totalAcreage }} acres</p>
-              </div>
+              </div> -->
 
               <div>
                 <h5 class="text-sm font-medium text-neutral-600 mb-2">Certifications</h5>
                 <div class="flex flex-wrap gap-2">
-                  <span v-for="(cert, index) in farmProfile.certifications" :key="index"
+                  <span v-for="(cert, index) in farmProfile?.certifications" :key="index"
                     class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
                     {{ cert }}
                   </span>

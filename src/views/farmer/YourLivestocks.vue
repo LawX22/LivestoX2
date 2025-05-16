@@ -1,8 +1,30 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import Cards from '../../components/Main/Market/Cards.vue'; 
+import { useAuthStore } from '../../stores/authContext';
+import { onMounted, ref } from 'vue';
+import { livestock } from '../../services/livestockService';
+import { AnimalListing } from '../../types/listing';
 
 const router = useRouter();
+const authStore = useAuthStore();
+
+const listings = ref<AnimalListing[]>([]);
+
+const fetchListings = async () => {
+  const sellerId = authStore.userId;
+  if (!sellerId) return;
+
+  try {
+    listings.value = await livestock.getListingsBySeller(sellerId);
+  } catch (error) {
+    console.error("Could not fetch listings:", error);
+  }
+};
+
+onMounted(() => {
+  fetchListings();
+});
 
 // Navigation functions
 const goBack = () => {
@@ -37,6 +59,6 @@ const goToAddLivestockForm = () => {
     </div>
 
     <!-- Cards Component -->
-    <Cards />
+    <Cards :listings="listings"/>
   </div>
 </template>
