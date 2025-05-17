@@ -222,7 +222,7 @@ export default defineComponent({
           <!-- BUYER SIDE -->
           <Header v-else :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
 
-          <Cards :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+          <Cards :listings="listings" :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
         </div>
       </div>
     </div>
