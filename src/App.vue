@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import { supabase } from './lib/supabaseClient'
+import { useAuthStore } from './stores/authContext'
 
-const session = ref()
-onMounted(() => {
-    supabase.auth.getSession().then(({ data }) => {
-        session.value = data.session
-        if (data.session?.user) {
-          console.log('User Metadata:', data.session.user.user_metadata);  // Accessing user metadata
-        }
-    })
-    supabase.auth.onAuthStateChange((_, _session) => {
-        session.value = _session
-    })
+const authStore = useAuthStore()
+
+onMounted(async () => {
+  await authStore.getSession()
+
+  supabase.auth.onAuthStateChange((_, session) => {
+    authStore.session = session
+    authStore.user = session?.user || null
+  })
 })
 </script>
+
 <template>
-    <router-view></router-view>
+  <router-view />
 </template>

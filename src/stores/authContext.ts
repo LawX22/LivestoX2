@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
-import { ref, Ref } from 'vue';
+import { computed, ref, Ref } from 'vue';
 import { supabase } from '../lib/supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
+import { UserData } from '../types/user';
 
 export const useAuthStore = defineStore('auth', () => {
   const session: Ref<Session | null> = ref(null);
@@ -24,10 +25,15 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = _session ? _session.user : null;
   });
 
+  const userMetadata = computed<UserData>(() => user.value?.user_metadata || {});
+  const userId = computed<string | null>(() => user.value?.id ?? null);
+
   return {
     session,
     user,
     logout,
     getSession,
+    userMetadata,
+    userId,
   };
 });
