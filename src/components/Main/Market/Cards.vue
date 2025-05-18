@@ -591,10 +591,3 @@ export default defineComponent({
         </div>
     </div>
 </template>
-
-<style scoped>
-/* Add any additional styles here */
-.p-dropdown {
-    height: auto !important;
-}
-</style>

@@ -22,19 +22,19 @@ export default defineComponent({
         const router = useRouter();
         
         // Method to navigate to PostLivestockForms
-        const postLivestocks = () => {
-            router.push('/farmer/PostLivestockForms');
-            console.log('Redirecting to /farmer/PostLivestockForms');
+        const myLivestocks = () => {
+            router.push('/farmer/YourLivestocks');
+            console.log('Redirecting to /farmer/YourLivestocks');
         };
 
         // Method to navigate to farmer profile
         const manageProfile = () => {
-            router.push('/farmer/profile');
-            console.log('Redirecting to /farmer/profile');
+            router.push('/main/UserProfile');
+            console.log('Redirecting to /main/UserProfile');
         };
 
         return {
-          postLivestocks,
+          myLivestocks,
           manageProfile
         };
     }
@@ -75,7 +75,7 @@ export default defineComponent({
 
                     <!-- CTA Buttons - Adding multiple options -->
                     <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                        <button @click="postLivestocks"
+                        <button @click="myLivestocks"
                             class="bg-white text-green-700 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-50 hover:text-green-800 transform hover:scale-105 transition duration-300 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
                                 fill="currentColor">
@@ -83,7 +83,7 @@ export default defineComponent({
                                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
                                     clip-rule="evenodd" />
                             </svg>
-                            Add New Livestock
+                            My Livestocks
                         </button>
                         <button @click="manageProfile"
                             class="bg-green-800 bg-opacity-60 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-900 transform hover:scale-105 transition duration-300 flex items-center justify-center">
