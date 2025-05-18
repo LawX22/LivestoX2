@@ -5,7 +5,8 @@ import TransactionsTable from '../../components/Farmer/Dashboard/TransactionsTab
 import { computed, onMounted, ref } from 'vue';
 import { useAuthStore } from '../../stores/authContext';
 import { livestock } from '../../services/livestockService';
-import { farmers } from '../../services/farmerService';
+import { farmers } from '../../services/account/farmerService';
+
 
 
 interface DashboardList {

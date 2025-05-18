@@ -13,10 +13,10 @@ import Dropdown from 'primevue/dropdown';
 import InputMask from 'primevue/inputmask';
 import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
-import { checkEmailAvailable, checkUsernameAvailable, resendEmailOtp, signUpBuyer, verifyEmailOtp } from '../../lib/aut';
 import imageUrl from '/src/assets/vue.svg';
 import { useAuthStore } from '../../stores/authContext';
 import LeftPanel from '../../components/Auth/LeftPanel.vue';
+import { auth } from '../../services/auth/authService';
 
 export default defineComponent({
     name: 'SignUpPage',
@@ -146,7 +146,7 @@ export default defineComponent({
                 return false;
             }
 
-            let validEmail = await checkEmailAvailable(email.value);
+            let validEmail = await auth.checkEmailAvailable(email.value);
             if (!validEmail) {
                 toast.add({
                     severity: 'error',
@@ -221,7 +221,7 @@ export default defineComponent({
 
         const validateVerificationCode = async (): Promise<boolean> => {
             try {
-                await verifyEmailOtp(email.value, verificationCode.value);
+                await auth.verifyEmailOtp(email.value, verificationCode.value);
             } catch (error) {
                 const errorMessage = (error instanceof Error) ? error.message : 'Token has expired or is invalid.';
                 toast.add({
@@ -293,7 +293,7 @@ export default defineComponent({
                 usernameError.value = '';
 
                 // Simulate API call
-                let validUsername = await checkUsernameAvailable(username.value);
+                let validUsername = await auth.checkUsernameAvailable(username.value);
 
                 if (!validUsername) {
                     usernameError.value = 'This username is already taken';
@@ -328,7 +328,7 @@ export default defineComponent({
             try {
                 loading.value = true;
 
-                await signUpBuyer(email.value, confirmPassword.value, additionalInfo.value = {
+                await auth.signUpBuyer(email.value, confirmPassword.value, additionalInfo.value = {
                     firstname: firstName.value,
                     lastname: lastName.value,
                     username: username.value,
@@ -439,7 +439,7 @@ export default defineComponent({
             try {
                 loading.value = true;
 
-                await resendEmailOtp(email.value);
+                await auth.resendEmailOtp(email.value);
 
                 toast.add({
                     severity: 'success',

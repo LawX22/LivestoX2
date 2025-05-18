@@ -2,9 +2,9 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/authContext';
-import { upgradeUserAccount } from '../../lib/upgradeAccount';
-import { upload } from '../../lib/storage/upload';
 import LeftPanel from '../../components/Auth/LeftPanel.vue';
+import { upload } from '../../services/storage/upload';
+import { upgradeUserAccount } from '../../services/account/upgradeService';
 
 export default defineComponent({
     name: 'FarmSignupForm',
@@ -289,7 +289,6 @@ export default defineComponent({
                     livestockTypes.value.join(','),
                     farmCertifications.value.join(','),
                     farmDocumentations.value,
-                    `${visitDays.value.join(', ')} at ${visitTime.value}` // Adding visitScheduleStr
                 );
 
                 // Mock successful farm account upgrade

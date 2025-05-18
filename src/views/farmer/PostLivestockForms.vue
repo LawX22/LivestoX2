@@ -19,7 +19,7 @@ import router from "../../router";
 import { livestock } from "../../services/livestockService";
 import { AnimalListing } from "../../types/listing";
 import { useAuthStore } from "../../stores/authContext";
-import { upload } from "../../lib/storage/upload";
+import { upload } from "../../services/storage/upload";
 
 // Types
 interface Option {

@@ -9,10 +9,10 @@ import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
 import Divider from 'primevue/divider';
 import ProgressSpinner from 'primevue/progressspinner';
-import { signIn } from '../../lib/aut';
 import imageUrl from '/src/assets/vue.svg';
 import { useAuthStore } from '../../stores/authContext';
 import LeftPanel from '../../components/Auth/LeftPanel.vue';
+import { auth } from '../../services/auth/authService';
 
 export default defineComponent({
     name: 'SignInPage',
@@ -92,7 +92,7 @@ export default defineComponent({
 
                 // Replace with your actual authentication logic
                 // await new Promise(resolve => setTimeout(resolve, 1000));
-                await signIn(email.value, password.value);
+                await auth.signIn(email.value, password.value);
 
                 // Mock successful login
                 toast.add({
