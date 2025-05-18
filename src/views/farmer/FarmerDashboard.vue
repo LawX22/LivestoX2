@@ -84,7 +84,17 @@ export default defineComponent({
     ]);
 
     // Recent Transaction History Data
-    const transactionHistory = ref([
+    type TransactionStatus = "Completed" | "Processing" | "Pending";
+    interface Transaction {
+      id: number;
+      buyer: string;
+      amount: number;
+      date: string;
+      method: string;
+      reference: string;
+      status: TransactionStatus;
+    }
+    const transactionHistory = ref<Transaction[]>([
       {
         id: 1,
         buyer: 'Mountain Valley Ranch',

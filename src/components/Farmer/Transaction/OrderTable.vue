@@ -139,7 +139,7 @@ export default defineComponent({
     </div>
 
     <!-- Orders table -->
-    <div v-else class="overflow-x-auto">
+    <div v-else class="overflow-x-auto scrollbar-thin">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-green-50">
           <tr>
@@ -366,24 +366,3 @@ export default defineComponent({
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Custom scrollbar for horizontal overflow */
-.scrollbar-thin::-webkit-scrollbar {
-  height: 4px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 20px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 20px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-</style>

@@ -1,788 +1,512 @@
 <script lang="ts">
-import router from '../../router';
+import { defineComponent } from 'vue'
+import OrderDetailsModal from '../../components/Main/Transaction/OrderDetailsModal.vue'
+import OrderTable from '../../components/Main/Transaction/OrderTable.vue'
+import ContactSellerModal from '../../components/Main/Transaction/ContactSellerModal.vue'
+import router from '../../router'
 
-// Types
-interface Animal {
-  name: string;
-  species: string;
-  breed: string;
-  age: string;
-  gender: string;
-  weight: string;
-  health: string;
-  description: string;
-  image: string | null;
-}
-
-interface Purchase {
+// Define the Order type
+type Order = {
   id: number;
-  orderId: string;
-  price: number;
-  purchaseDate: string;
-  status: 'processing' | 'in-transit' | 'delivered' | 'canceled';
-  fulfilmentType: 'delivery' | 'pickup';
-  estimatedDelivery?: string;
-  deliveredDate?: string;
-  trackingNumber?: string;
-  estimatedPickupDate?: string;
-  pickupLocation?: string;
-  pickedUpDate?: string;
-  animal: Animal;
-}
+  seller: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    farmName: string;
+  };
+  items: {
+    name: string;
+    breed: string;
+    quantity: number;
+    weight: number;
+    unitPrice: number;
+  }[];
+  orderDate: Date;
+  totalPrice: number;
+  status: string;
+  estimatedDelivery: Date;
+  paymentStatus: string;
+  paymentMethod: string;
+  notes: string;
+};
 
-interface FilterOption {
-  value: string;
-  label: string;
-}
-
-interface StatusTab {
-  value: string;
-  label: string;
-  icon?: string;
-}
-
-// Vue component
-export default {
+export default defineComponent({
+  components: {
+    OrderDetailsModal,
+    OrderTable,
+    ContactSellerModal
+  },
   data() {
     return {
       searchQuery: '',
-      fulfilmentFilter: 'all',
-      sortBy: 'newest',
-      activeTabIndex: 0,
-      currentPage: 1,
-      itemsPerPage: 5,
-      isFullScreen: true, 
+      dateFilter: {
+        start: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
+        end: new Date().toISOString().split('T')[0]
+      },
+      showFiltersModal: false,
+      currentTab: 'All',
+      pagination: {
+        currentPage: 1,
+        perPage: 8
+      },
+      showDetailsModal: false,
+      showContactModal: false,
+      selectedOrder: null as Order | null,
+      messageToSeller: '',
 
-      // Filter options
-      fulfilmentOptions: [
-        { value: 'all', label: 'All Fulfillment Types' },
-        { value: 'delivery', label: 'Home Delivery' },
-        { value: 'pickup', label: 'Farm Pickup' }
-      ] as FilterOption[],
-      
-      sortOptions: [
-        { value: 'newest', label: 'Newest First' },
-        { value: 'oldest', label: 'Oldest First' },
-        { value: 'price-high', label: 'Price: High to Low' },
-        { value: 'price-low', label: 'Price: Low to High' }
-      ] as FilterOption[],
-      
-      statusTabs: [
-        { value: 'all', label: 'All Orders' },
-        { value: 'processing', label: 'Processing' },
-        { value: 'in-transit', label: 'In Transit' },
-        { value: 'delivered', label: 'Delivered' },
-        { value: 'canceled', label: 'Canceled' }
-      ] as StatusTab[],
+      // Status classes for styling
+      statusClasses: {
+        'Pending': 'bg-yellow-100 text-yellow-800',
+        'Processing': 'bg-blue-100 text-blue-800',
+        'Ready for Pickup': 'bg-indigo-100 text-indigo-800',
+        'In Transit': 'bg-purple-100 text-purple-800',
+        'Delivered': 'bg-green-100 text-green-800',
+        'Cancelled': 'bg-red-100 text-red-800'
+      },
 
-      // Sample data (would be fetched from API in real app)
-      purchases: [
+      // Tabs
+      tabs: [
+        { id: 'All', name: 'All Orders' },
+        { id: 'Pending', name: 'Pending' },
+        { id: 'Processing', name: 'Processing' },
+        { id: 'Ready for Pickup', name: 'Ready' },
+        { id: 'In Transit', name: 'In Transit' },
+        { id: 'Delivered', name: 'Delivered' },
+        { id: 'Cancelled', name: 'Cancelled' }
+      ],
+
+      // Mock order data (from buyer's perspective)
+      orders: [
         {
-          id: 1,
-          orderId: 'ORD-2023-001',
-          price: 1200.00,
-          purchaseDate: '2023-05-10',
-          status: 'delivered',
-          fulfilmentType: 'delivery',
-          estimatedDelivery: '2023-05-15',
-          deliveredDate: '2023-05-14',
-          trackingNumber: 'TRK12345678',
-          animal: {
-            name: 'Daisy',
-            species: 'Cow',
-            breed: 'Holstein',
-            age: '3 years',
-            gender: 'Female',
-            weight: '650 kg',
-            health: 'Excellent',
-            description: 'Daisy is a healthy Holstein dairy cow with a great milk production record and calm temperament.',
-            image: null
-          }
+          id: 10043,
+          seller: {
+            name: 'Juan Dela Cruz',
+            farmName: 'Green Pastures Livestock Farm',
+            email: 'juan.delacruz@email.com',
+            phone: '+63 912 345 6789',
+            address: '456 Farm Road, Bogo City, Cebu'
+          },
+          items: [
+            {
+              name: 'Holstein Cattle',
+              breed: 'Holstein Friesian',
+              quantity: 2,
+              weight: 1050,
+              unitPrice: 85000
+            }
+          ],
+          orderDate: new Date('2025-05-05T09:30:00'),
+          totalPrice: 170000,
+          status: 'Pending',
+          estimatedDelivery: new Date('2025-05-25'),
+          paymentStatus: 'Pending',
+          paymentMethod: 'On Hand Cash',
+          notes: 'Requested health certificates'
         },
-        {
-          id: 2,
-          orderId: 'ORD-2023-002',
-          price: 350.00,
-          purchaseDate: '2023-05-15',
-          status: 'in-transit',
-          fulfilmentType: 'delivery',
-          estimatedDelivery: '2023-05-25',
-          trackingNumber: 'TRK87654321',
-          animal: {
-            name: 'Max',
-            species: 'Goat',
-            breed: 'Nubian',
-            age: '1.5 years',
-            gender: 'Male',
-            weight: '70 kg',
-            health: 'Good',
-            description: 'Max is a friendly Nubian goat that produces high-quality milk. He is well-behaved and easy to handle.',
-            image: null
-          }
-        },
-        {
-          id: 3,
-          orderId: 'ORD-2023-003',
-          price: 800.00,
-          purchaseDate: '2023-05-18',
-          status: 'processing',
-          fulfilmentType: 'pickup',
-          estimatedPickupDate: '2023-05-28',
-          pickupLocation: 'Green Valley Farm, 123 Rural Road',
-          animal: {
-            name: 'Bella',
-            species: 'Pig',
-            breed: 'Berkshire',
-            age: '8 months',
-            gender: 'Female',
-            weight: '120 kg',
-            health: 'Excellent',
-            description: 'Bella is a purebred Berkshire pig with excellent genetics. She comes from a line of award-winning show pigs.',
-            image: null
-          }
-        },
-        {
-          id: 4,
-          orderId: 'ORD-2023-004',
-          price: 250.00,
-          purchaseDate: '2023-05-20',
-          status: 'canceled',
-          fulfilmentType: 'delivery',
-          animal: {
-            name: 'Charlie',
-            species: 'Chicken',
-            breed: 'Rhode Island Red',
-            age: '10 months',
-            gender: 'Male',
-            weight: '3.5 kg',
-            health: 'Good',
-            description: 'Charlie is a robust rooster with vibrant plumage. He would make an excellent addition to any flock.',
-            image: null
-          }
-        },
-        {
-          id: 5,
-          orderId: 'ORD-2023-005',
-          price: 1500.00,
-          purchaseDate: '2023-05-22',
-          status: 'processing',
-          fulfilmentType: 'pickup',
-          estimatedPickupDate: '2023-06-01',
-          pickupLocation: 'Green Valley Farm, 123 Rural Road',
-          animal: {
-            name: 'Thunder',
-            species: 'Horse',
-            breed: 'Quarter Horse',
-            age: '5 years',
-            gender: 'Male',
-            weight: '500 kg',
-            health: 'Excellent',
-            description: 'Thunder is a well-trained quarter horse with a gentle temperament. Perfect for trail riding or farm work.',
-            image: null
-          }
-        }
-      ] as Purchase[]
-    };
+        // ... more orders
+      ],
+
+      // Order statistics
+      orderStats: {
+        total: 8,
+        totalSpent: 706875,
+        delivered: 1,
+        pending: 2,
+        processing: 2,
+        readyForPickup: 1,
+        inTransit: 1,
+        cancelled: 1,
+        percentChange: 12.5,
+        upcomingDeliveries: 1
+      }
+    }
   },
   computed: {
-    filteredPurchases(): Purchase[] {
-      let result = [...this.purchases];
+    filteredOrders() {
+      let result = this.orders;
 
-      // Search filter
+      // Filter by search query
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
-        result = result.filter(purchase =>
-          purchase.animal.name.toLowerCase().includes(query) ||
-          purchase.orderId.toLowerCase().includes(query)
+        result = result.filter(order =>
+          order.seller.name.toLowerCase().includes(query) ||
+          order.seller.farmName.toLowerCase().includes(query) ||
+          order.id.toString().includes(query) ||
+          order.items.some(item =>
+            item.name.toLowerCase().includes(query) ||
+            item.breed.toLowerCase().includes(query)
+          )
         );
       }
 
-      // Fulfillment filter
-      if (this.fulfilmentFilter !== 'all') {
-        result = result.filter(purchase => purchase.fulfilmentType === this.fulfilmentFilter);
+      // Filter by tab (status)
+      if (this.currentTab !== 'All') {
+        result = result.filter(order => order.status === this.currentTab);
       }
 
-      // Status filter
-      const currentTabValue = this.getCurrentTabValue();
-      if (currentTabValue !== 'all') {
-        result = result.filter(purchase => purchase.status === currentTabValue);
-      }
+      // Filter by date range
+      if (this.dateFilter.start && this.dateFilter.end) {
+        const startDate = new Date(this.dateFilter.start);
+        const endDate = new Date(this.dateFilter.end);
+        endDate.setHours(23, 59, 59); // Set to end of day
 
-      // Sort
-      result.sort((a, b) => {
-        switch (this.sortBy) {
-          case 'newest':
-            return new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime();
-          case 'oldest':
-            return new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime();
-          case 'price-high':
-            return b.price - a.price;
-          case 'price-low':
-            return a.price - b.price;
-          default:
-            return 0;
-        }
-      });
+        result = result.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate >= startDate && orderDate <= endDate;
+        });
+      }
 
       return result;
     },
-    paginatedPurchases(): Purchase[] {
-      const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-      const endIndex = startIndex + this.itemsPerPage;
-      return this.filteredPurchases.slice(startIndex, endIndex);
+    paginatedOrders() {
+      const startIndex = (this.pagination.currentPage - 1) * this.pagination.perPage;
+      const endIndex = startIndex + this.pagination.perPage;
+      return this.filteredOrders.slice(startIndex, endIndex);
     },
-    totalPages(): number {
-      return Math.ceil(this.filteredPurchases.length / this.itemsPerPage);
-    },
-    displayedPages(): (number | string)[] {
-      const totalPages = this.totalPages;
-      const currentPage = this.currentPage;
-
-      // If 7 or fewer pages, show all
-      if (totalPages <= 7) {
-        return Array.from({ length: totalPages }, (_, i) => i + 1);
-      }
-
-      // Always show first and last page
-      const pages: (number | string)[] = [1];
-
-      // For pages near the beginning
-      if (currentPage <= 3) {
-        pages.push(2, 3, 4, '...', totalPages);
-      }
-      // For pages near the end
-      else if (currentPage >= totalPages - 2) {
-        pages.push('...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-      }
-      // For pages in the middle
-      else {
-        pages.push('...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
-      }
-
-      return pages;
-    },
-    hasActiveFilters(): boolean {
-      return this.searchQuery !== '' || this.fulfilmentFilter !== 'all';
-    },
-    appContainerClass(): object {
-      return {
-        'min-h-screen': true,
-        'w-screen': this.isFullScreen,
-        'overflow-x-hidden': true,
-        'bg-gray-50': true
-      };
+    totalPages() {
+      return Math.ceil(this.filteredOrders.length / this.pagination.perPage);
     }
   },
   methods: {
-    formatDate(dateString: string | undefined): string {
-      if (!dateString) return 'N/A';
-
-      const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-      return new Date(dateString).toLocaleDateString('en-US', options);
+    formatDate(date: string | number | Date) {
+      return new Date(date).toLocaleDateString('en-PH', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
     },
-    getCurrentTabValue(): string {
-      return this.statusTabs[this.activeTabIndex].value;
+    formatTime(date: string | number | Date) {
+      return new Date(date).toLocaleTimeString('en-PH', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     },
-    getCurrentTabLabel(): string {
-      return this.statusTabs[this.activeTabIndex].label;
+    formatCurrency(amount: number | bigint) {
+      return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+      }).format(amount);
     },
-    getOrdersByStatus(status: string): Purchase[] {
-      if (status === 'all') {
-        return this.paginatedPurchases;
+    isOrderUpcoming(order: Order) {
+      if (order.status === 'In Transit' || order.status === 'Ready for Pickup') {
+        const today = new Date();
+        const estimatedDelivery = new Date(order.estimatedDelivery);
+        const daysDifference = Math.ceil((estimatedDelivery.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        return daysDifference <= 5;
       }
-      return this.paginatedPurchases.filter(purchase => purchase.status === status);
+      return false;
+    },
+    openFiltersModal() {
+      this.showFiltersModal = true;
+    },
+    closeFiltersModal() {
+      this.showFiltersModal = false;
+    },
+    applyFilters() {
+      this.pagination.currentPage = 1;
+      this.closeFiltersModal();
+    },
+    resetFilters() {
+      this.searchQuery = '';
+      this.dateFilter = {
+        start: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
+        end: new Date().toISOString().split('T')[0]
+      };
+      this.currentTab = 'All';
+      this.pagination.currentPage = 1;
+    },
+    viewOrderDetails(order: Order | null) {
+      this.selectedOrder = order;
+      this.showDetailsModal = true;
+    },
+    closeDetailsModal() {
+      this.showDetailsModal = false;
+      this.selectedOrder = null;
+    },
+    contactSeller(order: Order | null) {
+      this.selectedOrder = order;
+      this.messageToSeller = '';
+      this.showContactModal = true;
+    },
+    closeContactModal() {
+      this.showContactModal = false;
+    },
+    sendMessageToSeller() {
+      if (!this.messageToSeller || !this.selectedOrder) return;
+
+      // In a real app, this would send to backend
+      console.log(`Sending message to ${this.selectedOrder.seller.name}: ${this.messageToSeller}`);
+
+      this.showSuccessNotification('Message sent to seller successfully');
+      this.closeContactModal();
+    },
+    showSuccessNotification(message: string) {
+      // In a real application, use a toast or notification system
+      alert(message);
+    },
+    exportData() {
+      console.log('Exporting order data...');
+      this.showSuccessNotification('Order data exported successfully');
+    },
+    goBack() {
+      router.back();
+    },
+    updatePagination(newPagination: { currentPage: number; perPage: number }) {
+      this.pagination = newPagination;
     },
     getOrderCountByStatus(status: string): number {
-      if (status === 'all') {
-        return this.filteredPurchases.length;
-      }
-      return this.filteredPurchases.filter(purchase => purchase.status === status).length;
-    },
-    getStatusLabel(status: string): string {
-      const statusMap: Record<string, string> = {
-        'processing': 'Processing',
-        'in-transit': 'In Transit',
-        'delivered': 'Delivered',
-        'canceled': 'Canceled'
-      };
-      return statusMap[status] || status;
-    },
-    getStatusColor(status: string): string {
-      const statusColorMap: Record<string, string> = {
-        'processing': 'bg-yellow-100 text-yellow-800',
-        'in-transit': 'bg-blue-100 text-blue-800',
-        'delivered': 'bg-green-100 text-green-800',
-        'canceled': 'bg-red-100 text-red-800'
-      };
-      return statusColorMap[status] || '';
-    },
-    clearFilters(): void {
-      this.searchQuery = '';
-      this.fulfilmentFilter = 'all';
-      this.currentPage = 1; // Reset pagination
-    },
-    goToPage(page: number): void {
-      this.currentPage = page;
-    },
-    goToPreviousPage(): void {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
-    },
-    goToNextPage(): void {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
-    },
-    viewDetails(purchase: Purchase): void {
-      console.log('View details for:', purchase.orderId);
-      // Navigate to purchase details page
-    },
-    trackShipment(purchase: Purchase): void {
-      console.log('Track shipment:', purchase.trackingNumber);
-      // Open shipping tracking in new window
-    },
-    getDirections(purchase: Purchase): void {
-      console.log('Get directions to:', purchase.pickupLocation);
-      // Open map directions
-    },
-    cancelOrder(purchase: Purchase): void {
-      console.log('Cancel order:', purchase.orderId);
-      // Implement cancel order logic
-    },
-    leaveReview(purchase: Purchase): void {
-      console.log('Leave review for:', purchase.animal.name);
-      // Navigate to review page
-    },
-    goToMarketplace(): void {
-      console.log('Navigate to marketplace');
-      // Navigate to marketplace page
-    },
-     goBack: () => {
-      router.back(); // This will go back one step in the browser history
+      if (status === 'All') return this.orderStats.total;
 
+      const statusKey = status.toLowerCase().replace(/\s+/g, '');
+      const statusMap: Record<string, keyof typeof this.orderStats> = {
+        'pending': 'pending',
+        'processing': 'processing',
+        'readyforpickup': 'readyForPickup',
+        'intransit': 'inTransit',
+        'delivered': 'delivered',
+        'cancelled': 'cancelled'
+      };
+
+      return this.orderStats[statusMap[statusKey] as keyof typeof this.orderStats] || 0;
     }
+  },
+  mounted() {
+    // Calculate order statistics
+    const statuses = this.orders.map(order => order.status);
+
+    this.orderStats = {
+      ...this.orderStats,
+      total: this.orders.length,
+      totalSpent: this.orders.reduce((sum, order) => sum + order.totalPrice, 0),
+      pending: statuses.filter(status => status === 'Pending').length,
+      processing: statuses.filter(status => status === 'Processing').length,
+      readyForPickup: statuses.filter(status => status === 'Ready for Pickup').length,
+      inTransit: statuses.filter(status => status === 'In Transit').length,
+      delivered: statuses.filter(status => status === 'Delivered').length,
+      cancelled: statuses.filter(status => status === 'Cancelled').length,
+      upcomingDeliveries: this.orders.filter(order => this.isOrderUpcoming(order)).length
+    };
   }
-};
+})
 </script>
 
 <template>
-  <div :class="appContainerClass">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-      <!-- Back button -->
-      <button 
-        @click="goBack"
-        class="mb-4 flex items-center text-green-700 hover:text-green-900 font-medium transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Previous Page
-      </button>
-
-      <div class="bg-gradient-to-r from-green-800 to-green-600 rounded-xl shadow-lg mb-6 p-6">
-        <h1 class="text-3xl font-bold text-white flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
-          My Livestock Purchases
-        </h1>
-        <p class="text-green-100 mt-2">Manage and track your farm animal purchases</p>
-      </div>
-
-      <!-- Filters -->
-      <div class="mb-6">
-        <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-green-600">
-          <div class="flex flex-col md:flex-row md:items-center gap-4">
-            <div class="flex-1 relative">
-              <input 
-                id="search" 
-                v-model="searchQuery" 
-                placeholder="Search by animal name or order ID"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" 
-              />
-              <span class="absolute right-3 top-3 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  <div class="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-xl sticky top-0 z-10">
+      <div class="container mx-auto px-6 py-4">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <button @click="goBack"
+              class="p-2 rounded-full hover:bg-blue-600 hover:shadow-lg transition-all duration-200 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                </path>
+              </svg>
+            </button>
+            <div class="flex flex-col">
+              <h1 class="text-2xl font-bold tracking-tight">My Livestock Orders</h1>
+              <p class="text-blue-200 text-sm">Track and manage your livestock purchases in the Philippines</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg class="w-5 h-5 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </span>
+              <input v-model="searchQuery" placeholder="Search orders, sellers, or livestock..."
+                class="pl-10 pr-4 py-2 rounded-lg bg-blue-700 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-inner transition-all duration-300 hover:bg-blue-600 w-64">
             </div>
-            <div class="w-full md:w-48">
-              <select 
-                v-model="fulfilmentFilter"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none appearance-none bg-white"
-              >
-                <option v-for="option in fulfilmentOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
+            <button @click="openFiltersModal"
+              class="flex items-center bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
+                </path>
+              </svg>
+              Filters
+            </button>
+            <button @click="exportData"
+              class="flex items-center bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              Export
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+      <!-- Dashboard Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div
+          class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:scale-105 transition-transform duration-200 hover:shadow-xl">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 mr-4 shadow-md">
+              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                </path>
+              </svg>
             </div>
-            <div class="w-full md:w-48">
-              <select 
-                v-model="sortBy"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none appearance-none bg-white"
-              >
-                <option v-for="option in sortOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
+            <div>
+              <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Orders</p>
+              <p class="text-3xl font-bold text-gray-800">{{ orderStats.total }}</p>
+              <p class="text-sm text-blue-600" v-if="orderStats.percentChange > 0">+{{
+                orderStats.percentChange }}% this month</p>
             </div>
-            <div class="w-full md:w-auto">
-              <button 
-                @click="clearFilters" 
-                :disabled="!hasActiveFilters" 
-                :class="[
-                  'px-4 py-3 rounded-lg border font-medium transition-colors text-center w-full md:w-auto',
-                  hasActiveFilters ? 'border-green-500 hover:bg-green-50 text-green-700' : 'border-gray-300 text-gray-400 cursor-not-allowed'
-                ]"
-              >
-                Clear Filters
-              </button>
+          </div>
+        </div>
+
+        <div
+          class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:scale-105 transition-transform duration-200 hover:shadow-xl">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 mr-4 shadow-md">
+              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                </path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Spent</p>
+              <p class="text-3xl font-bold text-gray-800">{{ formatCurrency(orderStats.totalSpent) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:scale-105 transition-transform duration-200 hover:shadow-xl">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 mr-4 shadow-md">
+              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Completed</p>
+              <p class="text-3xl font-bold text-gray-800">{{ orderStats.delivered }}</p>
+              <div class="mt-1 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div class="bg-blue-600 h-full rounded-full"
+                  :style="{ width: `${(orderStats.delivered / orderStats.total) * 100}%` }"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 hover:scale-105 transition-transform duration-200 hover:shadow-xl">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-yellow-100 mr-4 shadow-md">
+              <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Upcoming</p>
+              <p class="text-3xl font-bold text-gray-800">{{ orderStats.upcomingDeliveries }}</p>
+              <p class="text-xs text-yellow-600">Deliveries/pickups soon</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Status Tabs -->
-      <div class="mb-6">
-        <div class="flex overflow-x-auto scrollbar-hide border-b border-gray-200">
-          <button 
-            v-for="(tab, index) in statusTabs" 
-            :key="tab.value" 
-            @click="activeTabIndex = index" 
-            :class="[
-              'px-4 py-3 font-medium whitespace-nowrap flex items-center',
-              'transition-colors border-b-2 -mb-px',
-              activeTabIndex === index ? 'border-green-500 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'
-            ]"
-          >
-            <span class="mr-2">
-              <svg v-if="tab.value === 'all'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-              <svg v-else-if="tab.value === 'processing'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <svg v-else-if="tab.value === 'in-transit'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-              </svg>
-              <svg v-else-if="tab.value === 'delivered'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <svg v-else-if="tab.value === 'canceled'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </span>
-            {{ tab.label }}
-            <span 
-              v-if="getOrderCountByStatus(tab.value) > 0"
-              class="ml-2 bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full font-semibold"
-            >
-              {{ getOrderCountByStatus(tab.value) }}
-            </span>
-          </button>
-        </div>
-
-        <!-- Orders Section -->
-        <div class="mt-6">
-          <div v-if="paginatedPurchases.length > 0" class="space-y-6">
-            <div v-for="purchase in paginatedPurchases" :key="purchase.id" class="mb-6">
-              <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-                <!-- Header Section -->
-                <div class="flex flex-col md:flex-row justify-between p-5 border-b border-gray-100 bg-green-50">
-                  <div>
-                    <span class="text-sm text-gray-600">Order ID: <span class="font-semibold">{{ purchase.orderId }}</span></span>
-                    <h2 class="text-xl font-semibold mt-1 text-green-800">{{ purchase.animal.name }}</h2>
-                    <p class="text-gray-700 flex items-center gap-1">
-                      <span>{{ purchase.animal.species }} • {{ purchase.animal.breed }}</span>
-                    </p>
-                  </div>
-                  <div class="mt-4 md:mt-0 text-right">
-                    <span class="font-bold text-xl text-green-700">${{ purchase.price.toFixed(2) }}</span>
-                    <p class="text-gray-600 text-sm">Purchased on {{ formatDate(purchase.purchaseDate) }}</p>
-                  </div>
-                </div>
-
-                <!-- Status and Fulfillment Section -->
-                <div class="p-5 border-b border-gray-100">
-                  <!-- Status Display -->
-                  <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-medium text-gray-700">Order Status</h3>
-                    <span :class="[
-                      'px-3 py-1 text-sm font-medium rounded-full',
-                      purchase.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                      purchase.status === 'in-transit' ? 'bg-blue-100 text-blue-800' :
-                      purchase.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                      'bg-red-100 text-red-800'
-                    ]">
-                      {{ getStatusLabel(purchase.status) }}
-                    </span>
-                  </div>
-
-                  <!-- Fulfillment Info -->
-                  <div class="mt-2 p-4 bg-green-50 rounded-lg">
-                    <div class="flex items-center gap-2">
-                      <svg v-if="purchase.fulfilmentType === 'delivery'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                      </svg>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                      </svg>
-                      <span class="font-medium text-green-800">{{ purchase.fulfilmentType === 'delivery' ? 'Home Delivery' : 'Farm Pickup' }}</span>
-                    </div>
-                    <div class="ml-7 mt-2">
-                      <div v-if="purchase.fulfilmentType === 'delivery'">
-                        <div v-if="purchase.status === 'processing'" class="text-sm text-gray-600">
-                          <div class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Estimated delivery: {{ purchase.estimatedDelivery ? formatDate(purchase.estimatedDelivery) : 'To be determined' }}</span>
-                          </div>
-                        </div>
-                        <div v-else-if="purchase.status === 'in-transit'" class="text-sm text-gray-600">
-                          <div class="flex items-center gap-1 mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Estimated delivery: {{ purchase.estimatedDelivery ? formatDate(purchase.estimatedDelivery) : 'To be determined' }}</span>
-                          </div>
-                          <div class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                            </svg>
-                            <span>Tracking #: {{ purchase.trackingNumber || 'Not available' }}</span>
-                          </div>
-                        </div>
-                        <div v-else-if="purchase.status === 'delivered'" class="text-sm text-gray-600">
-                          <div class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Delivered on: {{ purchase.deliveredDate ? formatDate(purchase.deliveredDate) : 'N/A' }}</span>
-                          </div>
-                        </div>
-                        <div v-else class="text-sm text-gray-600">
-                          <div class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>This order has been canceled</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div v-else>
-                        <div v-if="purchase.status === 'processing'" class="text-sm text-gray-600">
-                          <div class="flex items-center gap-1 mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Ready for pickup: {{ purchase.estimatedPickupDate ? formatDate(purchase.estimatedPickupDate) : 'To be determined' }}</span>
-                          </div>
-                          <div class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span>{{ purchase.pickupLocation || 'Location to be determined' }}</span>
-                          </div>
-                        </div>
-                        <div v-else-if="purchase.status === 'delivered'" class="text-sm text-gray-600">
-                          <div class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Picked up on: {{ purchase.pickedUpDate ? formatDate(purchase.pickedUpDate) : 'N/A' }}</span>
-                          </div>
-                        </div>
-                        <div v-else-if="purchase.status === 'canceled'" class="text-sm text-gray-600">
-                          <div class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>This order has been canceled</span>
-                          </div>
-                        </div>
-                        <div v-else class="text-sm text-gray-600">
-                          <div class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span>{{ purchase.pickupLocation || 'Location to be determined' }}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Animal Details Section -->
-                <div class="p-5 border-b border-gray-100">
-                  <h3 class="font-medium text-gray-700 mb-3">Animal Details</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <ul class="space-y-2">
-                        <li class="text-sm">
-                          <span class="text-gray-500">Breed:</span>
-                          <span class="ml-2 text-gray-800">{{ purchase.animal.breed }}</span>
-                        </li>
-                        <li class="text-sm">
-                          <span class="text-gray-500">Age:</span>
-                          <span class="ml-2 text-gray-800">{{ purchase.animal.age }}</span>
-                        </li>
-                        <li class="text-sm">
-                          <span class="text-gray-500">Gender:</span>
-                          <span class="ml-2 text-gray-800">{{ purchase.animal.gender }}</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div>
-                      <ul class="space-y-2">
-                        <li class="text-sm">
-                          <span class="text-gray-500">Weight:</span>
-                          <span class="ml-2 text-gray-800">{{ purchase.animal.weight }}</span>
-                        </li>
-                        <li class="text-sm">
-                          <span class="text-gray-500">Health:</span>
-                          <span class="ml-2 text-gray-800">{{ purchase.animal.health }}</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div class="mt-3">
-                    <p class="text-sm text-gray-700">{{ purchase.animal.description }}</p>
-                  </div>
-                </div>
-
-                <!-- Actions Section -->
-                <div class="p-5 flex flex-wrap gap-3">
-                  <button 
-                    @click="viewDetails(purchase)"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center gap-1"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    View Details
-                  </button>
-                  <button 
-                    v-if="purchase.status === 'in-transit' && purchase.trackingNumber"
-                    @click="trackShipment(purchase)"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex items-center gap-1"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                    Track Shipment
-                  </button>
-                  <button 
-                    v-if="purchase.status === 'processing' && purchase.fulfilmentType === 'pickup'"
-                    @click="getDirections(purchase)"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex items-center gap-1"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Get Directions
-                  </button>
-                  <button 
-                    v-if="purchase.status === 'processing'"
-                    @click="cancelOrder(purchase)"
-                    class="px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 font-medium transition-colors flex items-center gap-1"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Cancel Order
-                  </button>
-                  <button 
-                    v-if="purchase.status === 'delivered'"
-                    @click="leaveReview(purchase)"
-                    class="px-4 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg hover:bg-yellow-100 font-medium transition-colors flex items-center gap-1"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
-                    Leave Review
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-else class="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            <h3 class="mt-4 text-lg font-medium text-gray-700">No orders found</h3>
-            <p class="mt-2 text-gray-500 text-center max-w-md">
-              We couldn't find any orders matching your current filters. Try adjusting your search criteria or add new animals to your collection.
-            </p>
-            <button 
-              @click="goToMarketplace"
-              class="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Browse Marketplace
+      <div class="col-span-full bg-white rounded-xl shadow-lg p-4 mb-8">
+        <div class="flex flex-wrap items-center justify-between">
+          <div
+            class="flex space-x-1 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <button v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id" :class="{
+              'bg-blue-600 text-white': currentTab === tab.id,
+              'bg-white text-gray-700 hover:bg-gray-100': currentTab !== tab.id
+            }"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 whitespace-nowrap mr-2 mb-2">
+              {{ tab.name }}
+              <span v-if="tab.id !== 'All'" class="ml-1 px-2 py-0.5 rounded-full text-xs" :class="{
+                'bg-blue-700 text-white': currentTab === tab.id,
+                'bg-gray-200 text-gray-700': currentTab !== tab.id
+              }">
+                {{ getOrderCountByStatus(tab.id) }}
+              </span>
             </button>
+          </div>
+          <div class="text-sm text-gray-500">
+            Showing {{ filteredOrders.length }} of {{ orders.length }} orders
           </div>
         </div>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="mt-6 flex justify-center">
-        <div class="flex items-center space-x-1">
-          <button
-            @click="goToPreviousPage"
-            :disabled="currentPage <= 1"
-            :class="[
-              'px-3 py-2 rounded-lg',
-              currentPage <= 1 
-                ? 'text-gray-400 cursor-not-allowed' 
-                : 'text-green-700 hover:bg-green-50'
-            ]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          
-          <div v-for="page in displayedPages" :key="page" class="mx-1">
-            <button
-              v-if="typeof page === 'number'"
-              @click="goToPage(page)"
-              :class="[
-                'px-3 py-1 rounded-lg',
-                currentPage === page
-                  ? 'bg-green-600 text-white font-medium'
-                  : 'text-gray-700 hover:bg-green-50'
-              ]"
-            >
-              {{ page }}
+      <!-- Order Table -->
+      <OrderTable :orders="paginatedOrders" :statusClasses="statusClasses" :totalPages="totalPages"
+        :pagination="pagination" :formatDate="formatDate" :formatTime="formatTime" :formatCurrency="formatCurrency"
+        :isOrderUrgent="isOrderUpcoming" :filteredOrders="filteredOrders" @view-details="viewOrderDetails"
+        @contact-seller="contactSeller" @update-pagination="updatePagination" />
+
+      <!-- Order Details Modal -->
+      <OrderDetailsModal v-if="showDetailsModal && selectedOrder" :order="selectedOrder" :formatDate="formatDate"
+        :formatTime="formatTime" :formatCurrency="formatCurrency" @close="closeDetailsModal" />
+
+      <!-- Contact Seller Modal -->
+      <ContactSellerModal v-if="showContactModal && selectedOrder" :seller="selectedOrder.seller"
+        :message="messageToSeller" @close="closeContactModal" @send-message="sendMessageToSeller"
+        @update:message="(val: string) => messageToSeller = val" />
+
+      <!-- Filters Modal -->
+      <div v-if="showFiltersModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Filter Orders</h3>
+            <button @click="closeFiltersModal" class="text-gray-500 hover:text-gray-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
             </button>
-            <span v-else class="px-2 text-gray-400">{{ page }}</span>
           </div>
-          
-          <button
-            @click="goToNextPage"
-            :disabled="currentPage >= totalPages"
-            :class="[
-              'px-3 py-2 rounded-lg',
-              currentPage >= totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-green-700 hover:bg-green-50'
-            ]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+              <div class="grid grid-cols-2 gap-2">
+                <input v-model="dateFilter.start" type="date"
+                  class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <input v-model="dateFilter.end" type="date"
+                  class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select v-model="currentTab"
+                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <option v-for="tab in tabs" :key="tab.id" :value="tab.id">{{ tab.name }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-6 flex justify-end space-x-3">
+            <button @click="resetFilters"
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+              Reset
+            </button>
+            <button @click="applyFilters"
+              class="px-4 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-700 transition-colors duration-200">
+              Apply Filters
+            </button>
+          </div>
         </div>
       </div>
     </div>
