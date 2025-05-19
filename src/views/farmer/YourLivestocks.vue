@@ -4,12 +4,12 @@ import Cards from '../../components/Main/Market/Cards.vue';
 import { useAuthStore } from '../../stores/authContext';
 import { onMounted, ref } from 'vue';
 import { livestock } from '../../services/livestockService';
-import { AnimalListing } from '../../types/listing';
+import { LivestockListing } from '../../types/listing';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const listings = ref<AnimalListing[]>([]);
+const listings = ref<LivestockListing[]>([]);
 
 const fetchListings = async () => {
   const sellerId = authStore.userId;

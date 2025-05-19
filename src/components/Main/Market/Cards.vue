@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Dropdown from "primevue/dropdown";
 import Paginator from "primevue/paginator";
 import router from "../../../router";
-import { AnimalListing } from "../../../types/listing";
+import { LivestockListing } from "../../../types/listing";
 
 // Search and basic filters
 const searchQuery = ref("");
@@ -14,25 +14,19 @@ const sortOption = ref({ value: "newest", label: "Newest First" });
 const first = ref(0);
 
 const props = defineProps<{
-  listings: AnimalListing[]
+  listings: LivestockListing[];
 }>();
-
-watch(() => props.listings, (newVal) => {
-  console.log('Listings updated:', newVal);
-});
 
 // View mode toggle (grid, list, compact)
 const viewMode = ref<"grid" | "list" | "compact">("grid");
 
-// Options for dropdowns
-const categories = ref([
-  { name: "Cattle", code: "cattle" },
-  { name: "Pigs", code: "pigs" },
-  { name: "Goats", code: "goats" },
-  { name: "Sheep", code: "sheep" },
-  { name: "Horses", code: "horses" },
-  { name: "Poultry", code: "poultry" },
-]);
+const categories = computed(() => {
+  const uniqueCategories = Array.from(
+    new Set(props.listings.map(item => item.category))
+  ).map(category => ({ name: category, code: category.toLowerCase() }));
+
+  return uniqueCategories;
+});
 
 const sortOptions = ref([
   { value: "newest", label: "Newest First" },
@@ -41,69 +35,6 @@ const sortOptions = ref([
   { value: "price_high", label: "Price: High to Low" },
   { value: "popularity", label: "Popularity" },
 ]);
-
-// Livestock listings
-// const listings = computed(() => props.listings);
-// Livestock listings
-// const listings = ref<Livestock[]>([]);
-
-// Generate mock listings data
-// const generateListings = () => {
-//   const items: Livestock[] = [];
-//   const categories = ["Cattle", "Pigs", "Goats", "Sheep", "Horses", "Poultry"];
-//   const breeds = [
-//     "Brahman",
-//     "Angus",
-//     "Holstein",
-//     "Jersey",
-//     "Duroc",
-//     "Hampshire",
-//   ];
-//   const genders = ["Male", "Female"];
-//   const locations = [
-//     "Cebu City",
-//     "Mandaue City",
-//     "Lapu-Lapu City",
-//     "Bogo City",
-//     "Toledo City",
-//   ];
-
-//   for (let i = 0; i < 20; i++) {
-//     const categoryIndex = i % categories.length;
-//     const breedIndex = i % breeds.length;
-//     const gender = genders[i % 2];
-//     const location = locations[i % locations.length];
-//     const daysAgo = Math.floor(Math.random() * 30);
-
-//     items.push({
-//       id: i + 1,
-//       title: `${breeds[breedIndex]} ${categories[categoryIndex]} - ${gender}`,
-//       description:
-//         "Quality livestock for sale. Well cared for and in excellent health.",
-//       category: categories[categoryIndex],
-//       breed: breeds[breedIndex],
-//       age: Math.floor(Math.random() * 5) + 1,
-//       ageUnit: "years",
-//       gender: gender,
-//       weight: Math.floor(Math.random() * 500) + 200,
-//       weightUnit: "kg",
-//       price: Math.floor(Math.random() * 4000) + 500,
-//       negotiable: Math.random() > 0.5,
-//       quantity: Math.floor(Math.random() * 5) + 1,
-//       location: location,
-//       healthStatus: "Vaccinated",
-//       feedingType: "Grass-fed",
-//       imageUrl: imageUrl,
-//       certified: Math.random() > 0.7,
-//       auction: Math.random() > 0.8,
-//       availableImmediate: Math.random() > 0.3,
-//       isFavorite: Math.random() > 0.9,
-//       listedDate: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000),
-//     });
-//   }
-
-//   return items;
-// };
 
 const filteredListings = computed(() => {
   let result = props.listings;
@@ -133,12 +64,16 @@ const filteredListings = computed(() => {
     switch (sortOption.value.value) {
       case "newest":
         result = [...result].sort(
-          (a, b) => new Date(b.listed_date).getTime() - new Date(a.listed_date).getTime()
+          (a, b) =>
+            new Date(b.listed_date).getTime() -
+            new Date(a.listed_date).getTime()
         );
         break;
       case "oldest":
         result = [...result].sort(
-          (a, b) => new Date(a.listed_date).getTime() - new Date(b.listed_date).getTime()
+          (a, b) =>
+            new Date(a.listed_date).getTime() -
+            new Date(b.listed_date).getTime()
         );
         break;
       case "price_low":
@@ -159,7 +94,7 @@ const filteredListings = computed(() => {
 });
 
 // Updated method to view a listing - redirects to the ViewListings route without using ID
-const viewListing = (listing: AnimalListing) => {
+const viewListing = (listing: LivestockListing) => {
   // Store the selected listing in localStorage
   localStorage.setItem("selectedListing", JSON.stringify(listing));
 
@@ -179,7 +114,7 @@ const formatPrice = (price: number): string => {
 const formatDate = (date: Date): string => {
   // Calculate days ago
   const now = new Date();
-  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffTime = Math.abs(now.getTime() - new Date(date).getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
@@ -193,9 +128,6 @@ const formatDate = (date: Date): string => {
   }
 };
 
-// onMounted(() => {
-//   listings.value = generateListings();
-// });
 </script>
 
 <template>
@@ -306,7 +238,7 @@ const formatDate = (date: Date): string => {
       >
         <div
           v-for="listing in filteredListings"
-          :key="listing.id ?? 0"
+          :key="listing.id"
           class="livestock-card bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col"
         >
           <div class="relative">
