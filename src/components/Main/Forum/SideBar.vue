@@ -1,233 +1,177 @@
 <script setup lang="ts">
-// Define props for the component
-defineProps({
-    topics: {
-        type: Array as () => { category: string }[],
-        required: true
-    },
-    activeCategory: {
-        type: String,
-        default: 'all'
-    }
-});
+import { ref } from 'vue';
 
-// Emit events to parent component
-const emit = defineEmits(['category-selected']);
+// Recent activity mock data
+const recentActivity = [
+  {
+    id: 1,
+    type: 'new_post',
+    user: 'RanchHand42',
+    title: 'Best practices for cattle nutrition during winter months',
+    time: '2 hours ago'
+  },
+  {
+    id: 2,
+    type: 'comment',
+    user: 'OrganicFarmer',
+    title: 'Organic treatments for common poultry parasites',
+    time: '4 hours ago'
+  },
+  {
+    id: 3,
+    type: 'like',
+    user: 'GoatWhisperer',
+    title: 'Preventing and treating hoof rot in goats',
+    time: '6 hours ago'
+  },
+  {
+    id: 4,
+    type: 'new_post',
+    user: 'PigFarmer101',
+    title: 'Managing heat stress in pigs during summer',
+    time: '8 hours ago'
+  }
+];
 
-// Handle category selection
-const selectCategory = (category: string) => {
-    emit('category-selected', category);
+// Top contributors mock data
+const topContributors = [
+  { name: 'RanchHand42', posts: 86, avatar: '/src/assets/Bull.jpg' },
+  { name: 'OrganicFarmer', posts: 73, avatar: '/src/assets/Bull.jpg' },
+  { name: 'GoatWhisperer', posts: 65, avatar: '/src/assets/Bull.jpg' },
+  { name: 'PigFarmer101', posts: 52, avatar: '/src/assets/Bull.jpg' },
+  { name: 'ChickenLady', posts: 48, avatar: '/src/assets/Bull.jpg' }
+];
+
+// Popular tags with post counts
+const popularTags = [
+  { name: 'Nutrition', count: 124 },
+  { name: 'Health', count: 98 },
+  { name: 'Breeding', count: 87 },
+  { name: 'Equipment', count: 76 },
+  { name: 'Pasture Management', count: 65 },
+  { name: 'Diseases', count: 58 },
+  { name: 'Marketing', count: 43 },
+  { name: 'Sustainability', count: 37 }
+];
+
+
+// Toggle sidebar visibility on mobile
+const showMobileSidebar = ref(false);
+
+const toggleMobileSidebar = () => {
+  showMobileSidebar.value = !showMobileSidebar.value;
 };
 </script>
 
 <template>
-    <div class="space-y-6">
-        <!-- Quick stats card -->
-        <div
-            class="bg-white rounded-xl shadow-md p-6 border border-green-100 hover:shadow-lg transition-shadow duration-300">
-            <h3 class="font-bold text-lg text-green-800 mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Forum at a Glance
-            </h3>
-            <div class="grid grid-cols-3 gap-4">
-                <div class="text-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200">
-                    <div class="text-green-800 font-bold text-2xl mb-1">{{ topics.length }}</div>
-                    <div class="text-xs text-gray-600 font-medium uppercase tracking-wide">Topics</div>
-                </div>
-                <div class="text-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200">
-                    <div class="text-green-800 font-bold text-2xl mb-1">2,568</div>
-                    <div class="text-xs text-gray-600 font-medium uppercase tracking-wide">Members</div>
-                </div>
-                <div class="text-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200">
-                    <div class="text-green-800 font-bold text-2xl mb-1">47</div>
-                    <div class="text-xs text-gray-600 font-medium uppercase tracking-wide">Online</div>
-                </div>
-            </div>
+  <!-- Mobile toggle button -->
+  <button @click="toggleMobileSidebar" class="md:hidden fixed bottom-6 right-6 z-20 p-4 bg-green-600 text-white rounded-full shadow-lg">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+    </svg>
+  </button>
+
+  <!-- Sidebar - hidden on mobile by default, toggled with button -->
+  <aside :class="[
+    'w-full md:w-1/4 bg-white rounded-lg shadow-md p-6',
+    'md:block', // Always visible on desktop
+    showMobileSidebar ? 'fixed inset-0 z-10 overflow-y-auto' : 'hidden' // Toggle on mobile
+  ]">
+    <!-- Close button for mobile sidebar -->
+    <button @click="toggleMobileSidebar" class="md:hidden absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <!-- Forum Stats -->
+    <div class="mb-8">
+      <h3 class="font-semibold text-lg mb-4 text-gray-800">Forum Stats</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-green-50 p-3 rounded-lg text-center">
+          <p class="text-2xl font-bold text-green-700">1,245</p>
+          <p class="text-sm text-gray-600">Total Posts</p>
         </div>
-
-        <!-- Categories -->
-        <div
-            class="bg-white rounded-xl shadow-md overflow-hidden border border-green-100 hover:shadow-lg transition-shadow duration-300">
-            <div class="bg-gradient-to-r from-green-700 to-green-600 text-white px-5 py-4">
-                <h3 class="font-bold flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    Livestock Categories
-                </h3>
-            </div>
-            <div class="p-4 space-y-2">
-                <!-- Category buttons with animal icons -->
-                <button class="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center"
-                    :class="[
-                        'all' === activeCategory
-                            ? 'bg-green-600 text-white font-medium shadow-md'
-                            : 'bg-green-50 text-green-800 hover:bg-green-200 hover:shadow-sm'
-                    ]" @click="selectCategory('all')">
-                    <span class="text-xl mr-2">🐾</span>
-                    <span class="capitalize font-medium">All</span>
-                    <span :class="[
-                        'ml-auto text-xs rounded-full px-2 py-1 font-semibold',
-                        'all' === activeCategory
-                            ? 'bg-white text-green-800'
-                            : 'bg-green-600 text-white'
-                    ]">
-                        {{ topics.length }}
-                    </span>
-                </button>
-
-                <button class="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center"
-                    :class="[
-                        'cattle' === activeCategory
-                            ? 'bg-green-600 text-white font-medium shadow-md'
-                            : 'bg-green-50 text-green-800 hover:bg-green-200 hover:shadow-sm'
-                    ]" @click="selectCategory('cattle')">
-                    <span class="text-xl mr-2">🐄</span>
-                    <span class="capitalize font-medium">Cattle</span>
-                    <span :class="[
-                        'ml-auto text-xs rounded-full px-2 py-1 font-semibold',
-                        'cattle' === activeCategory
-                            ? 'bg-white text-green-800'
-                            : 'bg-green-600 text-white'
-                    ]">
-                        {{topics.filter(t => t.category === 'cattle').length}}
-                    </span>
-                </button>
-
-                <button class="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center"
-                    :class="[
-                        'poultry' === activeCategory
-                            ? 'bg-green-600 text-white font-medium shadow-md'
-                            : 'bg-green-50 text-green-800 hover:bg-green-200 hover:shadow-sm'
-                    ]" @click="selectCategory('poultry')">
-                    <span class="text-xl mr-2">🐔</span>
-                    <span class="capitalize font-medium">Poultry</span>
-                    <span :class="[
-                        'ml-auto text-xs rounded-full px-2 py-1 font-semibold',
-                        'poultry' === activeCategory
-                            ? 'bg-white text-green-800'
-                            : 'bg-green-600 text-white'
-                    ]">
-                        {{topics.filter(t => t.category === 'poultry').length}}
-                    </span>
-                </button>
-
-                <button class="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center"
-                    :class="[
-                        'sheep' === activeCategory
-                            ? 'bg-green-600 text-white font-medium shadow-md'
-                            : 'bg-green-50 text-green-800 hover:bg-green-200 hover:shadow-sm'
-                    ]" @click="selectCategory('sheep')">
-                    <span class="text-xl mr-2">🐑</span>
-                    <span class="capitalize font-medium">Sheep</span>
-                    <span :class="[
-                        'ml-auto text-xs rounded-full px-2 py-1 font-semibold',
-                        'sheep' === activeCategory
-                            ? 'bg-white text-green-800'
-                            : 'bg-green-600 text-white'
-                    ]">
-                        {{topics.filter(t => t.category === 'sheep').length}}
-                    </span>
-                </button>
-
-                <button class="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center"
-                    :class="[
-                        'swine' === activeCategory
-                            ? 'bg-green-600 text-white font-medium shadow-md'
-                            : 'bg-green-50 text-green-800 hover:bg-green-200 hover:shadow-sm'
-                    ]" @click="selectCategory('swine')">
-                    <span class="text-xl mr-2">🐖</span>
-                    <span class="capitalize font-medium">Swine</span>
-                    <span :class="[
-                        'ml-auto text-xs rounded-full px-2 py-1 font-semibold',
-                        'swine' === activeCategory
-                            ? 'bg-white text-green-800'
-                            : 'bg-green-600 text-white'
-                    ]">
-                        {{topics.filter(t => t.category === 'swine').length}}
-                    </span>
-                </button>
-
-                <button class="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center"
-                    :class="[
-                        'goats' === activeCategory
-                            ? 'bg-green-600 text-white font-medium shadow-md'
-                            : 'bg-green-50 text-green-800 hover:bg-green-200 hover:shadow-sm'
-                    ]" @click="selectCategory('goats')">
-                    <span class="text-xl mr-2">🐐</span>
-                    <span class="capitalize font-medium">Goats</span>
-                    <span :class="[
-                        'ml-auto text-xs rounded-full px-2 py-1 font-semibold',
-                        'goats' === activeCategory
-                            ? 'bg-white text-green-800'
-                            : 'bg-green-600 text-white'
-                    ]">
-                        {{topics.filter(t => t.category === 'goats').length}}
-                    </span>
-                </button>
-
-                <button class="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center"
-                    :class="[
-                        'horses' === activeCategory
-                            ? 'bg-green-600 text-white font-medium shadow-md'
-                            : 'bg-green-50 text-green-800 hover:bg-green-200 hover:shadow-sm'
-                    ]" @click="selectCategory('horses')">
-                    <span class="text-xl mr-2">🐎</span>
-                    <span class="capitalize font-medium">Horses</span>
-                    <span :class="[
-                        'ml-auto text-xs rounded-full px-2 py-1 font-semibold',
-                        'horses' === activeCategory
-                            ? 'bg-white text-green-800'
-                            : 'bg-green-600 text-white'
-                    ]">
-                        {{topics.filter(t => t.category === 'horses').length}}
-                    </span>
-                </button>
-            </div>
+        <div class="bg-green-50 p-3 rounded-lg text-center">
+          <p class="text-2xl font-bold text-green-700">3,782</p>
+          <p class="text-sm text-gray-600">Members</p>
         </div>
-
-        <!-- Recent activity -->
-        <div
-            class="bg-white rounded-xl shadow-md overflow-hidden border border-green-100 hover:shadow-lg transition-shadow duration-300">
-            <div class="bg-gradient-to-r from-green-700 to-green-600 text-white px-5 py-4">
-                <h3 class="font-bold flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Recent Activity
-                </h3>
-            </div>
-            <div class="p-4">
-                <div v-for="i in 3" :key="i"
-                    class="border-b border-gray-100 last:border-0 py-3 hover:bg-green-50 transition-colors duration-200 rounded-lg px-3">
-                    <div class="flex items-start">
-                        <div class="w-10 h-10 rounded-full bg-green-100 flex-shrink-0 mr-3 overflow-hidden">
-                            <img src="/src/assets/Bull.jpg" alt="User avatar"
-                                class="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                            <div class="text-sm font-medium">User posted in <span
-                                    class="text-green-700 hover:text-green-900 transition-colors duration-200 hover:underline cursor-pointer">Topic
-                                    Title</span></div>
-                            <div class="text-xs text-gray-500 mt-1">{{ i === 1 ? '2 hours ago' : i === 2 ? '4 hours ago'
-                                : 'Yesterday' }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-3 text-center">
-                    <button class="text-sm text-green-700 hover:text-green-900 font-medium hover:underline px-4 py-2">
-                        View All Activity
-                    </button>
-                </div>
-            </div>
+        <div class="bg-green-50 p-3 rounded-lg text-center">
+          <p class="text-2xl font-bold text-green-700">512</p>
+          <p class="text-sm text-gray-600">Active Today</p>
         </div>
+        <div class="bg-green-50 p-3 rounded-lg text-center">
+          <p class="text-2xl font-bold text-green-700">24</p>
+          <p class="text-sm text-gray-600">New Topics</p>
+        </div>
+      </div>
     </div>
+
+    <!-- Recent Activity -->
+    <div class="mb-8">
+      <h3 class="font-semibold text-lg mb-4 text-gray-800">Recent Activity</h3>
+      <div class="space-y-3">
+        <div v-for="activity in recentActivity" :key="activity.id" class="p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-start">
+            <div class="mr-3">
+              <div v-if="activity.type === 'new_post'" class="bg-green-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <div v-else-if="activity.type === 'comment'" class="bg-blue-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <div v-else-if="activity.type === 'like'" class="bg-red-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <p class="text-sm">
+                <span class="font-medium text-gray-900">{{ activity.user }}</span>
+                <span v-if="activity.type === 'new_post'" class="text-gray-600"> posted </span>
+                <span v-else-if="activity.type === 'comment'" class="text-gray-600"> commented on </span>
+                <span v-else-if="activity.type === 'like'" class="text-gray-600"> liked </span>
+                <span class="font-medium">{{ activity.title }}</span>
+              </p>
+              <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Contributors -->
+    <div class="mb-8">
+      <h3 class="font-semibold text-lg mb-4 text-gray-800">Top Contributors</h3>
+      <div class="space-y-3">
+        <div v-for="contributor in topContributors" :key="contributor.name" class="flex items-center justify-between p-2 hover:bg-green-50 rounded-lg">
+          <div class="flex items-center">
+            <img :src="contributor.avatar" :alt="contributor.name" class="w-8 h-8 rounded-full mr-3" />
+            <span class="font-medium text-gray-900">{{ contributor.name }}</span>
+          </div>
+          <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">{{ contributor.posts }} posts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popular Tags -->
+    <div class="mb-8">
+      <h3 class="font-semibold text-lg mb-4 text-gray-800">Popular Tags</h3>
+      <div class="flex flex-wrap gap-2">
+        <span v-for="tag in popularTags" :key="tag.name" 
+          class="px-2 py-1 bg-gray-100 hover:bg-green-100 text-gray-700 hover:text-green-800 rounded-full text-sm cursor-pointer transition-colors flex items-center">
+          {{ tag.name }}
+          <span class="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">{{ tag.count }}</span>
+        </span>
+      </div>
+    </div>
+
+  </aside>
 </template>
