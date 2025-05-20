@@ -12,6 +12,7 @@ const searchQuery = ref("");
 const selectedCategory = ref<{ name: string; code: string } | null>(null);
 const sortOption = ref({ value: "newest", label: "Newest First" });
 const first = ref(0);
+const selectedListing = ref();
 
 const props = defineProps<{
   listings: LivestockListing[];
@@ -95,13 +96,10 @@ const filteredListings = computed(() => {
 
 // Updated method to view a listing - redirects to the ViewListings route without using ID
 const viewListing = (listing: LivestockListing) => {
-  // Store the selected listing in localStorage
-  localStorage.setItem("selectedListing", JSON.stringify(listing));
 
-  // Navigate to the view page without ID parameter
-  router.push("/main/ViewListings");
-  console.log("Redirecting to /main/ViewListings without ID parameter");
+  router.push({ path: '/main/ViewListings', query: { id: listing.id } });
 };
+
 
 // const toggleFavorite = (listing: AnimalListing) => {
 //   listing.isFavorite = !listing.isFavorite;
