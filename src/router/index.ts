@@ -21,6 +21,7 @@ import ViewListings from '../views/main/ViewListings.vue';
 import BuyerTransaction from '../views/main/BuyerTransaction.vue';
 import UserProfile from '../views/main/UserProfile.vue';
 
+import Reviews from '../views/main/Reviews.vue';
 
 // Farmer Pages
 import FarmerDashboard from '../views/farmer/FarmerDashboard.vue'; 
@@ -50,6 +51,7 @@ const routes = [
   { path: '/main/BuyerTransaction', component: BuyerTransaction, name: 'BuyerTransaction' },
   { path: '/main/UserProfile', component: UserProfile, name: 'UserProfile' },
 
+  { path: '/main/Reviews', component: Reviews, name: 'Reviews' },
 
   // Farmer Routes
   { path: '/farmer/FarmerDashboard', component: FarmerDashboard, name: 'FarmerDashboard' },

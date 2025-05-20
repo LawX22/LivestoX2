@@ -5,7 +5,8 @@ import Filters from '../../components/Main/Market/Filters.vue';
 import Header from '../../components/Main/Market/Header.vue';
 import Cards from '../../components/Main/Market/Cards.vue';
 import FarmerHeader from '../../components/Main/Market/FarmerHeader.vue';
-import Footer from '../../components/Main/Market/Footer.vue'; 
+import Footer from '../../components/Main/Market/Footer.vue';
+import { useAuthStore } from '../../stores/authContext';
 
 export default defineComponent({
   name: 'LivestockMarket',
@@ -23,6 +24,8 @@ export default defineComponent({
     const filteredListings = ref([]);
     const savedLocations = ref<any[]>([]);
     const savedPresets = ref<any[]>([]);
+
+    const authStore = useAuthStore();
 
     // Initialize default filter values
     const filters = reactive({
@@ -190,7 +193,8 @@ export default defineComponent({
       updateFilters,
       handleSavePreset,
       handleCategoryChange,
-      handleSaveLocation
+      handleSaveLocation,
+      authStore,
     };
   }
 });
@@ -211,17 +215,17 @@ export default defineComponent({
         </div> -->
         <div class="main-content">
 
-          <!-- BUYER SIDE -->
-          <!-- <Header :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />  -->
-          
           <!-- FARMER SIDE  -->
-          <FarmerHeader :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
+          <FarmerHeader v-if="authStore?.user?.user_metadata?.role === 'Farmer'" :loading="loading" :filters="filters"
+            @refresh-listings="handleApplyFilters" />
 
+          <!-- BUYER SIDE -->
+          <Header v-else :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
 
           <Cards :loading="loading" :filters="filters" @refresh-listings="handleApplyFilters" />
         </div>
       </div>
     </div>
-    <Footer /> 
+    <Footer />
   </div>
 </template>
