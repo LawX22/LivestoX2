@@ -12,6 +12,8 @@ import UserManagement from '../views/admin/UserManagement.vue';
 
 // Main Pages
 import LandingPage from '../views/main/LandingPage.vue';
+import AboutUs from '../views/main/AboutUs.vue';
+
 import BuyerDashboard from '../views/main/BuyerDashboard.vue';   
 import LivestockMarket from '../views/main/LivestockMarket.vue';
 import Message from '../views/main/Message.vue';
@@ -42,6 +44,8 @@ const routes = [
 
   // Main Routes
   { path: '/', component: LandingPage, name: 'LandingPage' },
+  { path: '/main/AboutUs', component: AboutUs, name: 'AboutUs' },
+
   { path: '/main/LivestockMarket', component: LivestockMarket, name: 'LivestockMarket' },
   { path: '/main/BuyerDashboard', component: BuyerDashboard, name: 'BuyerDashboard' },
   { path: '/main/Message', component: Message, name: 'Message' },
