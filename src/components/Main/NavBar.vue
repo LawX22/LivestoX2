@@ -83,33 +83,6 @@ export default defineComponent({
                 read: false,
                 online: true
             },
-            {
-                id: '2',
-                sender: 'Mike Johnson',
-                senderAvatar: '',
-                message: 'I\'ve posted a new topic in the forum about organic feed alternatives. Would love your input!',
-                time: '1h ago',
-                read: false,
-                online: false
-            },
-            {
-                id: '3',
-                sender: 'Sarah Williams',
-                senderAvatar: '',
-                message: 'Thanks for your help yesterday with the breeding program guidance!',
-                time: '2h ago',
-                read: true,
-                online: true
-            },
-            {
-                id: '4',
-                sender: 'David Thompson',
-                senderAvatar: '',
-                message: 'Could you share that article about sustainable farming practices?',
-                time: '1d ago',
-                read: true,
-                online: false
-            }
         ]);
 
         // Enhanced notifications with types
@@ -123,42 +96,6 @@ export default defineComponent({
                 type: 'info',
                 icon: 'pi-comments'
             },
-            {
-                id: '2',
-                title: 'Order Update',
-                message: 'Your order #A1245 has been shipped by Farmer Mike.',
-                time: '1h ago',
-                read: false,
-                type: 'success',
-                icon: 'pi-truck'
-            },
-            {
-                id: '3',
-                title: 'Price Drop Alert',
-                message: 'The price for Boer Goats has dropped by 10%. Check it out!',
-                time: '6h ago',
-                read: false,
-                type: 'warning',
-                icon: 'pi-tag'
-            },
-            {
-                id: '4',
-                title: 'Saved Listing Update',
-                message: 'The livestock you saved (Duroc Pigs) is now low in stock.',
-                time: '1d ago',
-                read: true,
-                type: 'info',
-                icon: 'pi-exclamation-circle'
-            },
-            {
-                id: '5',
-                title: 'Transaction Completed',
-                message: 'Your payment for 5 Brahman Cattle has been successfully processed.',
-                time: '2d ago',
-                read: true,
-                type: 'success',
-                icon: 'pi-check-circle'
-            }
         ]);
 
         // Compute unread counts
@@ -417,11 +354,11 @@ export default defineComponent({
                     </div>
 
                     <nav class="flex space-x-5">
-                        <!-- <router-link to="/"
+                        <router-link to="/"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
                             <i class="pi pi-home mr-2"></i> Home
                             <span class="nav-indicator"></span>
-                        </router-link> -->
+                        </router-link>
                         <router-link to="/main/LivestockMarket"
                             class="nav-link text-gray-700 hover:text-green-600 px-3 py-2 rounded-md transition-all duration-300 flex items-center relative">
                             <i class="pi pi-shopping-cart mr-2"></i> Market
@@ -635,15 +572,6 @@ export default defineComponent({
                                     <span>Transaction</span>
                                 </router-link>
 
-                                <!-- <router-link to="/favorites-listings"
-                                    class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                                    @click="hideUserMenu">
-                                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 mr-3">
-                                        <i class="pi pi-heart text-red-600 text-sm"></i>
-                                    </div>
-                                    <span>Favorites Listings</span>
-                                </router-link> -->
-
                                 <router-link to="/settings"
                                     class="flex items-center px-4 py-2 hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-colors duration-200"
                                     @click="hideUserMenu">
@@ -695,132 +623,3 @@ export default defineComponent({
         </div>
     </div>
 </template>
-
-
-<style scoped>
-/* Enhanced Navigation Links */
-.nav-link {
-    position: relative;
-    overflow: hidden;
-}
-
-.nav-indicator {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    height: 2px;
-    width: 0;
-    background: linear-gradient(to right, #16a34a, #4ade80);
-    transform: translateX(-50%);
-    transition: width 0.3s ease, box-shadow 0.3s ease;
-}
-
-.nav-link:hover .nav-indicator {
-    width: 80%;
-    box-shadow: 0 0 8px #16a34a, 0 0 15px rgba(22, 163, 74, 0.5);
-}
-
-.router-link-active {
-    color: #16a34a !important;
-    font-weight: 500;
-}
-
-.router-link-active .nav-indicator {
-    width: 80%;
-    box-shadow: 0 0 8px #16a34a, 0 0 15px rgba(22, 163, 74, 0.5);
-}
-
-/* Pulse Animation for Notifications */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.2);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.pulse-animation {
-    animation: pulse 1.5s infinite;
-}
-
-/* User Menu Animation */
-.user-menu-animated {
-    animation: slideDown 0.3s ease-out;
-    transform-origin: top right;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-@keyframes slideDown {
-    0% {
-        opacity: 0;
-        transform: translateY(-10px) scale(0.95);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Avatar Background Gradient */
-.avatar-gradient {
-    background: linear-gradient(135deg, #4F46E5, #60a5fa);
-    color: white;
-}
-
-/* Custom Button Hover Effects */
-.hover-lift {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Custom Scrollbar for Dropdown Menus */
-.max-h-96 {
-    scrollbar-width: thin;
-    scrollbar-color: #d1d5db transparent;
-}
-
-.max-h-96::-webkit-scrollbar {
-    width: 6px;
-}
-
-.max-h-96::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.max-h-96::-webkit-scrollbar-thumb {
-    background-color: #d1d5db;
-    border-radius: 20px;
-}
-
-/* Card Hover Effects */
-.hover-card-shadow {
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-}
-
-.hover-card-shadow:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transform: translateY(-4px);
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .nav-link {
-        padding: 0.5rem 0.75rem;
-    }
-
-    .user-profile-toggle {
-        padding: 0.5rem;
-    }
-}
-</style>

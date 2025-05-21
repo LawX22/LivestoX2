@@ -16,7 +16,7 @@ import InputNumber from 'primevue/inputnumber';
 import { checkEmailAvailable, checkUsernameAvailable, resendEmailOtp, signUpBuyer, verifyEmailOtp } from '../../lib/aut';
 import imageUrl from '/src/assets/vue.svg';
 import { useAuthStore } from '../../stores/authContext';
-import LeftPanel from '../../components/Landing/LeftPanel.vue';
+import LeftPanel from '../../components/Auth/LeftPanel.vue';
 
 export default defineComponent({
     name: 'SignUpPage',

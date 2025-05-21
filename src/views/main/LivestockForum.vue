@@ -64,14 +64,14 @@ const handleContributorClick = (contributor) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-green-50 to-green-100 flex flex-col">
+  <div class="min-h-screen bg-gradient-to-b from-green-50 to-green-100 flex flex-col font-sans text-gray-800 bg-gray-50 antialiased">
     <!-- Fixed Navbar -->
-    <div class="sticky top-0 z-50 w-full">
+    <div class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-95 backdrop-blur-sm shadow-lg">
       <NavBar />
     </div>
 
     <!-- Hero section with parallax effect -->
-    <div class="relative bg-gradient-to-r from-green-500 to-green-800 py-12 px-4 mb-8 shadow-xl overflow-hidden">
+    <div class="relative bg-gradient-to-r from-green-500 to-green-800 py-12 px-4 mb-8 mt-10 shadow-xl overflow-hidden">
       <div class="container mx-auto max-w-full px-4 sm:px-6 lg:px-8 relative z-10">
         <h1 class="text-5xl font-bold text-white mb-3 tracking-tight">Livestock Forum</h1>
         <p class="text-green-100 text-xl max-w-3xl leading-relaxed">Connect with fellow farmers, ranchers, and

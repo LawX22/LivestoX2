@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue';
-import NavBar from '../../components/Landing/NavBar.vue';
+import NavBar from '../../components/Main/NavBar.vue';
 import Footer from '../../components/Landing/Footer.vue';
 import AnimalsMarketplace from '../../components/Landing/AnimalsMarketplace.vue';
 import CommunityForum from '../../components/Landing/CommunityForum.vue';

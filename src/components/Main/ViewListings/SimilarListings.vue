@@ -24,7 +24,15 @@ export default defineComponent({
             default: () => []
         }
     },
-    emits: ['viewListing', 'toggleFavorite']
+    emits: ['viewListing', 'toggleFavorite'],
+    methods: {
+        goToLivestockMarket() {
+            this.$router.push('/main/LivestockMarket');
+        },
+        viewListingDetails(listingId: string | number) {
+            this.$router.push(`/main/ViewListings/${listingId}`);
+        }
+    }
 });
 </script>
 
@@ -43,7 +51,7 @@ export default defineComponent({
             <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 <div v-for="listing in listings" :key="listing.id"
                     class="bg-gradient-to-br from-white to-emerald-50 rounded-xl overflow-hidden shadow-sm border border-emerald-100 cursor-pointer transform hover:-translate-y-2 hover:shadow-lg transition-all duration-300"
-                    @click="$emit('viewListing', listing.id)">
+                    @click="viewListingDetails(listing.id)">
                     <div class="relative aspect-video">
                         <img :src="listing.imageUrl" :alt="listing.title" class="w-full h-full object-cover" />
                         <div v-if="listing.certified"
@@ -67,12 +75,29 @@ export default defineComponent({
                             <i class="pi pi-map-marker mr-1"></i>
                             <span class="truncate">{{ listing.location }}</span>
                         </div>
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between text-sm mb-4">
                             <span class="text-gray-600">{{ listing.breed }}</span>
                             <span class="text-gray-600">{{ listing.age }} {{ listing.ageUnit }}</span>
                         </div>
+                        <button 
+                            @click.stop="$router.push(`/main/ViewListings/${listing.id}`)" 
+                            class="w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium py-2 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                            <i class="pi pi-eye mr-2"></i>
+                            View Details
+                        </button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Livestock Market Button -->
+            <div class="mt-8 flex justify-center">
+                <button 
+                    @click="goToLivestockMarket" 
+                    class="flex items-center bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-full font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                    <i class="pi pi-shopping-cart mr-2"></i>
+                    Browse Livestock Market
+                    <i class="pi pi-arrow-right ml-2"></i>
+                </button>
             </div>
         </div>
     </div>

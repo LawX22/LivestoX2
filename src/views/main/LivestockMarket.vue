@@ -201,8 +201,8 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="livestock-market">
-    <div class="navbar-container">
+  <div class="livestock-market font-sans text-gray-800 bg-gray-50 antialiased ">
+    <div class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-95 backdrop-blur-sm shadow-lg">
       <NavBar />
     </div>
     <div class="main-container">

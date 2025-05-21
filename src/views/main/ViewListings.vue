@@ -292,11 +292,7 @@ export default defineComponent({
             if (selectedQuantity.value > 1) {
                 selectedQuantity.value--;
             }
-        };
-
-        const contactSeller = () => {
-            contactDialogVisible.value = true;
-        };
+        };  
 
         const buyNow = () => {
             // In a real app, this would redirect to checkout or payment page
@@ -396,7 +392,6 @@ export default defineComponent({
             toggleFavorite,
             incrementQuantity,
             decrementQuantity,
-            contactSeller,
             buyNow,
             goBack,
             viewSellerProfile,
@@ -621,44 +616,54 @@ export default defineComponent({
                         <h1 class="text-2xl font-bold text-gray-800 mb-3">{{ livestock.title }}</h1>
                     </div>
 
-                    <!-- Price card - removed sticky positioning -->
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                        <div class="p-6">
-                            <!-- Title (hidden on mobile) -->
-                            <h1 class="hidden lg:block text-2xl font-bold text-gray-800 mb-5">{{ livestock.title }}</h1>
+                    <!-- Price card -->
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 border border-gray-100">
+                        <!-- Card Header with Image -->
+                        <div class="relative h-48 bg-gray-100">
+                            <img src="/src/assets/Bull.jpg" alt="Livestock" class="w-full h-full object-cover" />
+                            <div class="absolute top-0 right-0 m-4">
+                                <span v-if="livestock.negotiable"
+                                    class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium inline-flex items-center">
+                                    <i class="pi pi-tag mr-1 text-xs"></i>
+                                    Negotiable
+                                </span>
+                            </div>
+                        </div>
 
-                            <!-- Price display -->
+                        <div class="p-6">
+                            <!-- Title -->
+                            <h1 class="text-2xl font-bold text-gray-800 mb-3">{{ livestock.title }}</h1>
+
+                            <!-- Price and Availability -->
                             <div class="flex justify-between items-center mb-6">
                                 <div>
                                     <div class="text-sm text-gray-500 mb-1">Price per unit</div>
-                                    <div class="flex items-center">
-                                        <span class="text-3xl font-bold text-gray-800">₱{{ formatPrice(livestock.price)
-                                            }}</span>
-                                        <span v-if="livestock.negotiable"
-                                            class="ml-2 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md text-xs font-medium">
-                                            Negotiable
-                                        </span>
+                                    <div class="text-3xl font-bold text-gray-800">₱{{ formatPrice(livestock.price) }}
                                     </div>
                                 </div>
 
-                                <div v-if="livestock.quantity > 1" class="text-right">
-                                    <div class="text-sm text-gray-500 mb-1">Available</div>
-                                    <div class="font-semibold text-gray-800">{{ livestock.quantity }} units</div>
+                                <div v-if="livestock.quantity > 1"
+                                    class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-center">
+                                    <div class="text-xs uppercase font-semibold tracking-wide">Available</div>
+                                    <div class="font-bold text-lg">{{ livestock.quantity }}</div>
                                 </div>
                             </div>
 
-                            <!-- Key specs -->
-                            <div class="grid grid-cols-3 gap-3 mb-6">
-                                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <!-- Key specs with icons -->
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div class="bg-gray-50 rounded-xl p-4 text-center flex flex-col items-center">
+                                    <i class="pi pi-calendar text-gray-400 mb-2 text-lg"></i>
                                     <div class="text-xs text-gray-500 mb-1">Age</div>
                                     <div class="font-medium text-gray-800">{{ livestock.age }} {{ livestock.ageUnit }}
                                     </div>
                                 </div>
-                                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                                <div class="bg-gray-50 rounded-xl p-4 text-center flex flex-col items-center">
+                                    <i class="pi pi-user text-gray-400 mb-2 text-lg"></i>
                                     <div class="text-xs text-gray-500 mb-1">Gender</div>
                                     <div class="font-medium text-gray-800">{{ livestock.gender }}</div>
                                 </div>
-                                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                                <div class="bg-gray-50 rounded-xl p-4 text-center flex flex-col items-center">
+                                    <i class="pi pi-chart-bar text-gray-400 mb-2 text-lg"></i>
                                     <div class="text-xs text-gray-500 mb-1">Weight</div>
                                     <div class="font-medium text-gray-800">{{ livestock.weight }} {{
                                         livestock.weightUnit }}</div>
@@ -667,34 +672,50 @@ export default defineComponent({
 
                             <!-- Quantity selector -->
                             <div v-if="livestock.quantity > 1" class="mb-6">
-                                <label class="text-sm font-medium text-gray-700 mb-2 block">Quantity</label>
-                                <div class="flex items-center">
-                                    <Button icon="pi pi-minus" class="p-button-rounded p-button-outlined p-button-sm"
-                                        @click="decrementQuantity" :disabled="selectedQuantity <= 1" />
-                                    <div class="px-4 font-medium text-lg">{{ selectedQuantity }}</div>
-                                    <Button icon="pi pi-plus" class="p-button-rounded p-button-outlined p-button-sm"
-                                        @click="incrementQuantity" :disabled="selectedQuantity >= livestock.quantity" />
-                                    <div class="ml-2 text-sm text-gray-500">(Max {{ livestock.quantity }})</div>
+                                <label class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="pi pi-shopping-cart mr-2 text-gray-400"></i>
+                                    Select Quantity
+                                </label>
+                                <div class="flex items-center bg-gray-50 rounded-xl p-2">
+                                    <button
+                                        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors"
+                                        @click="decrementQuantity" :disabled="selectedQuantity <= 1">
+                                        <i class="pi pi-minus" :class="{ 'text-gray-400': selectedQuantity <= 1 }"></i>
+                                    </button>
+                                    <div class="flex-grow text-center font-medium text-lg">{{ selectedQuantity }}</div>
+                                    <button
+                                        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors"
+                                        @click="incrementQuantity" :disabled="selectedQuantity >= livestock.quantity">
+                                        <i class="pi pi-plus"
+                                            :class="{ 'text-gray-400': selectedQuantity >= livestock.quantity }"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-2 text-sm text-gray-500 text-center">
+                                    (Maximum of {{ livestock.quantity }} units available)
                                 </div>
                             </div>
 
                             <!-- Total price calculation -->
-                            <div v-if="selectedQuantity > 1" class="mb-6 p-3 bg-emerald-50 rounded-xl">
+                            <div v-if="selectedQuantity > 1"
+                                class="mb-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-emerald-700">Total Price:</span>
+                                    <span class="text-emerald-700 font-medium">Total Price:</span>
                                     <span class="text-xl font-bold text-emerald-800">₱{{ formatPrice(livestock.price *
                                         selectedQuantity) }}</span>
                                 </div>
                             </div>
 
                             <!-- Action buttons -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <Button class="p-button-outlined p-button-success" @click="contactSeller">
-                                    <i class="pi pi-comments mr-2"></i> Contact Seller
-                                </Button>
-                                <Button class="p-button-success" @click="buyNow">
+                            <div class="grid grid-cols-2 gap-4">
+                                <button
+                                    class="py-3 px-4 bg-white border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
+                                    <i class="pi pi-envelope mr-2"></i> Contact Seller
+                                </button>
+                                <button
+                                    class="py-3 px-4 bg-emerald-600 rounded-xl text-white font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center"
+                                    @click="buyNow">
                                     <i class="pi pi-shopping-cart mr-2"></i> Buy Now
-                                </Button>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -702,91 +723,94 @@ export default defineComponent({
                     <!-- Seller info card -->
                     <SellerInfoCard :seller="seller" @view-profile="viewSellerProfile" @call-seller="callSeller" />
 
-                   <!-- Reviews Section -->
-<div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6 mt-6">
-    <div class="p-6">
-        <!-- Header with Rating Summary -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <h3 class="text-lg font-semibold text-gray-800">Customer Reviews</h3>
-            <div class="flex items-center">
-                <span class="text-2xl font-bold text-gray-800 mr-2">{{ seller.rating }}</span>
-                <div class="flex flex-col">
-                    <Rating :modelValue="seller.rating" :readonly="true" :cancel="false" :stars="5" class="mb-1" />
-                    <span class="text-sm text-gray-500">{{ seller.reviewCount }} reviews</span>
-                </div>
-            </div>
-        </div>
+                    <!-- Reviews Section -->
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6 mt-6">
+                        <div class="p-6">
+                            <!-- Header with Rating Summary -->
+                            <div
+                                class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                                <h3 class="text-lg font-semibold text-gray-800">Customer Reviews</h3>
+                                <div class="flex items-center">
+                                    <span class="text-2xl font-bold text-gray-800 mr-2">{{ seller.rating }}</span>
+                                    <div class="flex flex-col">
+                                        <Rating :modelValue="seller.rating" :readonly="true" :cancel="false" :stars="5"
+                                            class="mb-1" />
+                                        <span class="text-sm text-gray-500">{{ seller.reviewCount }} reviews</span>
+                                    </div>
+                                </div>
+                            </div>
 
-        <!-- Rating breakdown - Simplified -->
-        <div class="mb-8">
-            <div v-for="star in 5" :key="star" class="flex items-center mb-2">
-                <div class="w-8 text-sm text-gray-600">{{ 6 - star }}</div>
-                <div class="w-full bg-gray-100 rounded-full h-1.5 mx-2">
-                    <div class="bg-amber-400 h-1.5 rounded-full"
-                        :style="{ width: `${(6 - star === 5 ? 70 : 6 - star === 4 ? 20 : 10 - star)}%` }">
-                    </div>
-                </div>
-                <div class="text-xs text-gray-500 w-8">
-                    {{ (6 - star === 5 ? 70 : 6 - star === 4 ? 20 : 10 - star) }}%
-                </div>
-            </div>
-        </div>
+                            <!-- Rating breakdown - Simplified -->
+                            <div class="mb-8">
+                                <div v-for="star in 5" :key="star" class="flex items-center mb-2">
+                                    <div class="w-8 text-sm text-gray-600">{{ 6 - star }}</div>
+                                    <div class="w-full bg-gray-100 rounded-full h-1.5 mx-2">
+                                        <div class="bg-amber-400 h-1.5 rounded-full"
+                                            :style="{ width: `${(6 - star === 5 ? 70 : 6 - star === 4 ? 20 : 10 - star)}%` }">
+                                        </div>
+                                    </div>
+                                    <div class="text-xs text-gray-500 w-8">
+                                        {{ (6 - star === 5 ? 70 : 6 - star === 4 ? 20 : 10 - star) }}%
+                                    </div>
+                                </div>
+                            </div>
 
-        <!-- Seller Response & History - Simplified -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- Response metrics -->
-            <div class="flex items-start space-x-6">
-                <div>
-                    <div class="text-sm text-gray-500 mb-1">Response time</div>
-                    <div class="font-medium text-gray-800">{{ seller.responseTime }}</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500 mb-1">Response rate</div>
-                    <div class="font-medium text-gray-800">98%</div>
-                </div>
-            </div>
+                            <!-- Seller Response & History - Simplified -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <!-- Response metrics -->
+                                <div class="flex items-start space-x-6">
+                                    <div>
+                                        <div class="text-sm text-gray-500 mb-1">Response time</div>
+                                        <div class="font-medium text-gray-800">{{ seller.responseTime }}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-500 mb-1">Response rate</div>
+                                        <div class="font-medium text-gray-800">98%</div>
+                                    </div>
+                                </div>
 
-            <!-- Seller History -->
-            <div class="flex items-start space-x-6">
-                <div>
-                    <div class="text-sm text-gray-500 mb-1">Member since</div>
-                    <div class="font-medium text-gray-800">{{ seller.memberSince }}</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500 mb-1">Total listings</div>
-                    <div class="font-medium text-gray-800">{{ seller.totalListings }}</div>
-                </div>
-            </div>
-        </div>
+                                <!-- Seller History -->
+                                <div class="flex items-start space-x-6">
+                                    <div>
+                                        <div class="text-sm text-gray-500 mb-1">Member since</div>
+                                        <div class="font-medium text-gray-800">{{ seller.memberSince }}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-500 mb-1">Total listings</div>
+                                        <div class="font-medium text-gray-800">{{ seller.totalListings }}</div>
+                                    </div>
+                                </div>
+                            </div>
 
-        <!-- Title with view all link -->
-        <div class="flex justify-between items-center mb-4">
-            <h4 class="font-medium text-gray-800">Recent Reviews</h4>
-            <router-link to="/main/Reviews" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                View all {{ seller.reviewCount }} reviews
-            </router-link>
-        </div>
+                            <!-- Title with view all link -->
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="font-medium text-gray-800">Recent Reviews</h4>
+                                <router-link to="/main/Reviews"
+                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                    View all {{ seller.reviewCount }} reviews
+                                </router-link>
+                            </div>
 
-        <!-- Recent Reviews - Simplified -->
-        <div class="space-y-6">
-            <div v-for="(review) in reviews.slice(0, 3)" :key="review.id"
-                class="border-b border-gray-100 last:border-b-0 pb-6 last:pb-0">
-                <div class="flex justify-between mb-3">
-                    <div class="flex items-center">
-                        <Avatar :image="review.avatarUrl" :label="review.username?.charAt(0)"
-                            shape="circle" class="mr-3" />
-                        <div>
-                            <div class="font-medium text-gray-800">{{ review.username }}</div>
-                            <div class="text-xs text-gray-500">{{ formatDate(review.date) }}</div>
+                            <!-- Recent Reviews - Simplified -->
+                            <div class="space-y-6">
+                                <div v-for="(review) in reviews.slice(0, 3)" :key="review.id"
+                                    class="border-b border-gray-100 last:border-b-0 pb-6 last:pb-0">
+                                    <div class="flex justify-between mb-3">
+                                        <div class="flex items-center">
+                                            <Avatar :image="review.avatarUrl" :label="review.username?.charAt(0)"
+                                                shape="circle" class="mr-3" />
+                                            <div>
+                                                <div class="font-medium text-gray-800">{{ review.username }}</div>
+                                                <div class="text-xs text-gray-500">{{ formatDate(review.date) }}</div>
+                                            </div>
+                                        </div>
+                                        <Rating :modelValue="review.rating" :readonly="true" :cancel="false" />
+                                    </div>
+                                    <p class="text-gray-600 pl-12">{{ review.comment }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <Rating :modelValue="review.rating" :readonly="true" :cancel="false" />
-                </div>
-                <p class="text-gray-600 pl-12">{{ review.comment }}</p>
-            </div>
-        </div>
-    </div>
-</div>
                 </div>
             </div>
 
@@ -801,32 +825,6 @@ export default defineComponent({
                         <div class="flex items-center justify-center bg-gray-900 text-center p-10">
                             <span class="text-white text-lg">Video playback would be implemented here</span>
                         </div>
-                    </div>
-                </div>
-            </Dialog>
-
-            <!-- Contact dialog -->
-            <Dialog v-model:visible="contactDialogVisible" modal header="Contact Seller" class="w-full max-w-lg"
-                dismissableMask>
-                <div class="p-4">
-                    <div class="mb-4">
-                        <h3 class="mb-2 font-medium">Message to: {{ seller.name }}</h3>
-                        <div class="mb-2">
-                            <label for="contactMessage" class="block text-sm font-medium text-gray-700 mb-1">
-                                Your message
-                            </label>
-                            <textarea id="contactMessage" v-model="contactMessage" rows="6"
-                                placeholder="I'm interested in this listing. Is it still available?"
-                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"></textarea>
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <Button class="p-button-outlined" @click="contactDialogVisible = false">
-                            Cancel
-                        </Button>
-                        <Button class="p-button-success">
-                            <i class="pi pi-send mr-2"></i> Send Message
-                        </Button>
                     </div>
                 </div>
             </Dialog>
