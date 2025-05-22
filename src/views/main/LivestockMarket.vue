@@ -14,8 +14,8 @@ const authStore = useAuthStore();
 const listings = ref<LivestockListing[]>([]);
 
 const fetchListings = async () => {
-  const sellerId = authStore.userId;
-  if (!sellerId) return;
+  // const sellerId = authStore.userId;
+  // if (!sellerId) return;
 
   try {
     listings.value = await livestock.getListingsForMarket();

@@ -8,7 +8,7 @@ import Rating from "primevue/rating";
 import Avatar from "primevue/avatar";
 import Dialog from "primevue/dialog";
 import { useRoute, useRouter } from "vue-router";
-import { livestock as livestockRepo } from '../../services/livestockService';
+import { livestock as livestockRepo } from "../../services/livestockService";
 
 import SellerInfoCard from "../../components/Main/ViewListings/SellerInfoCard.vue";
 import SimilarListings from "../../components/Main/ViewListings/SimilarListings.vue";
@@ -52,7 +52,7 @@ interface Seller {
   reviewCount: number;
   showPhoneNumber: boolean;
   phoneNumber?: string;
-  memberSince: string;
+  memberSince: number;
   responseTime: string;
   totalListings: number;
 }
@@ -65,6 +65,21 @@ interface Review {
   comment: string;
   date: Date;
 }
+
+type SimListing = {
+  id: number | string;
+  image_url: string;
+  title: string;
+  certified?: boolean;
+  isFavorite?: boolean;
+  price: number;
+  negotiable?: boolean;
+  location: string;
+  breed: string;
+  age: number | string;
+  ageUnit: string;
+};
+
 const route = useRoute();
 const router = useRouter();
 
@@ -72,19 +87,17 @@ const loading = ref(true);
 const livestock = ref<Livestock>({} as Livestock);
 const seller = ref<Seller>({} as Seller);
 const reviews = ref<Review[]>([]);
-const similarListings = ref<Livestock[]>([]);
+const similarListings = ref<SimListing[]>([]);
 const selectedImage = ref(0);
 const additionalImages = ref<string[]>([]);
 const selectedQuantity = ref(1);
-const contactDialogVisible = ref(false);
 const videoDialogVisible = ref(false);
-const contactMessage = ref("");
 const activeImageIndex = ref(0);
 const imageGalleryModalVisible = ref(false);
 
 const listingId = route.query.id as string;
 
-const props = defineProps<{
+defineProps<{
   type: number;
   required: true;
 }>();
@@ -112,150 +125,106 @@ const livestockDetails = computed(() => {
 
 // Fetch livestock details
 const fetchLivestockDetails = async () => {
-    const livestockData = await livestockRepo.getListingsById(listingId);
-  // In a real app, this would be an API call
-  setTimeout(() => {
-    // Mock data for livestock details
-    livestock.value = {
-      id: livestockData.id,
-      title: livestockData.title,
-      description: livestockData.description,
-      category: livestockData.category,
-      breed: livestockData.breed,
-      age: livestockData.age,
-      ageUnit: livestockData.age_unit,
-      gender: livestockData.gender,
-      weight: livestockData.weight,
-      weightUnit: livestockData.weight_unit,
-      price: livestockData.price,
-      negotiable: livestockData.negotiable,
-      quantity: livestockData.quantity,
-      location: livestockData.location,
-      healthStatus: livestockData.health_status,
-      feedingType: livestockData.feeding_type,
-      imageUrl: livestockData.image_url[0],
-      videoThumbnail: "/src/assets/Bull.jpg?text=Video+Thumbnail",
-      videoUrl: livestockData.video_url,
-      certified: livestockData.certified,
-      auction: livestockData.auction,
-      availableImmediate: livestockData.available_immediate,
-      isFavorite: false,
-      listedDate: new Date(livestockData.listed_date),
-      deliveryOption: livestockData.delivery_option,
-      deliveryDetails: "Available for pick-up Monday to Saturday, 8am to 5pm",
-      restrictions: livestockData.restrictions,
-      sellerId: 123,
-    };
+  const livestockData = await livestockRepo.getListingsById(listingId);
+  livestock.value = {
+    id: livestockData.id,
+    title: livestockData.title,
+    description: livestockData.description,
+    category: livestockData.category,
+    breed: livestockData.breed,
+    age: livestockData.age,
+    ageUnit: livestockData.age_unit,
+    gender: livestockData.gender,
+    weight: livestockData.weight,
+    weightUnit: livestockData.weight_unit,
+    price: livestockData.price,
+    negotiable: livestockData.negotiable,
+    quantity: livestockData.quantity,
+    location: livestockData.location,
+    healthStatus: livestockData.health_status,
+    feedingType: livestockData.feeding_type,
+    imageUrl: livestockData.image_url[0],
+    videoThumbnail: "/src/assets/Bull.jpg?text=Video+Thumbnail",
+    videoUrl: livestockData.video_url,
+    certified: livestockData.certified,
+    auction: livestockData.auction,
+    availableImmediate: livestockData.available_immediate,
+    isFavorite: false,
+    listedDate: new Date(livestockData.listed_date),
+    deliveryOption: livestockData.delivery_option,
+    deliveryDetails: "Available for pick-up Monday to Saturday, 8am to 5pm",
+    restrictions: livestockData.restrictions,
+    sellerId: livestockData.seller_id,
+  };
 
-    // Generate additional images
-    additionalImages.value = [
-      livestock.value.imageUrl,
-      "/src/assets/Bull.jpg?text=Brahman+Side+View",
-      "/src/assets/Bull.jpg?text=Brahman+Front+View",
-      "/src/assets/Bull.jpg?text=Brahman+Close+Up",
-    ];
+  // Generate additional images
+  additionalImages.value = [
+    livestock.value.imageUrl,
 
-    // Mock seller data
-    seller.value = {
-      id: 123,
-      name: "John Doe's Farm",
-      avatarUrl: "/src/assets/Bull.jpg?text=JD",
-      rating: 4.8,
-      reviewCount: 15,
-      showPhoneNumber: true,
-      phoneNumber: "+63 912 345 6789",
-      memberSince: "2020",
-      responseTime: "Within 2 hours",
-      totalListings: 25,
-    };
+  ];
 
-    // Mock reviews
-    reviews.value = [
-      {
-        id: 1,
-        username: "FarmerMike",
-        avatarUrl: "/src/assets/Bull.jpg?text=FM",
-        rating: 5,
-        comment:
-          "Great quality livestock! Healthy and exactly as described. The seller was very knowledgeable and helpful.",
-        date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-      },
-      {
-        id: 2,
-        username: "RanchOwner22",
-        rating: 4,
-        comment:
-          "Good cattle, slightly smaller than expected but overall healthy and good condition.",
-        date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-      },
-      {
-        id: 3,
-        username: "AgriBusiness101",
-        avatarUrl: "/src/assets/Bull.jpg?text=AB",
-        rating: 5,
-        comment:
-          "Excellent Brahman cattle. We purchased 3 and all arrived in perfect health. Will definitely buy again from this seller.",
-        date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-      },
-      {
-        id: 4,
-        username: "LivestockLover",
-        rating: 4,
-        comment:
-          "Very good experience overall. The cow was as described and the delivery was smooth.",
-        date: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-      },
-    ];
+  // Mock seller data
+  seller.value = {
+    id: livestockData.farms.user_id,
+    name: livestockData.farms.farm_name,
+    avatarUrl: "/src/assets/Bull.jpg?text=JD",
+    rating: 4.8,
+    reviewCount: 15,
+    showPhoneNumber: true,
+    phoneNumber: livestockData.farms.phone,
+    memberSince: new Date(livestockData.farms.created_at).getFullYear(),
+    responseTime: "Within 2 hours",
+    totalListings: 25,
+  };
 
-    // Similar listings
-    fetchSimilarListings();
+  // Mock reviews
+  reviews.value = [
+    {
+      id: 1,
+      username: "FarmerMike",
+      avatarUrl: "/src/assets/Bull.jpg?text=FM",
+      rating: 5,
+      comment:
+        "Great quality livestock! Healthy and exactly as described. The seller was very knowledgeable and helpful.",
+      date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 2,
+      username: "RanchOwner22",
+      rating: 4,
+      comment:
+        "Good cattle, slightly smaller than expected but overall healthy and good condition.",
+      date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 3,
+      username: "AgriBusiness101",
+      avatarUrl: "/src/assets/Bull.jpg?text=AB",
+      rating: 5,
+      comment:
+        "Excellent Brahman cattle. We purchased 3 and all arrived in perfect health. Will definitely buy again from this seller.",
+      date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 4,
+      username: "LivestockLover",
+      rating: 4,
+      comment:
+        "Very good experience overall. The cow was as described and the delivery was smooth.",
+      date: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+    },
+  ];
 
-    loading.value = false;
-  }, 1000);
+  // Similar listings
+  fetchSimilarListings(livestockData.seller_id, listingId);
+
+  loading.value = false;
 };
 
 // Fetch similar listings
-const fetchSimilarListings = () => {
-  // In a real app, this would call an API with the current livestock's category/breed
-  setTimeout(() => {
-    const items: Livestock[] = [];
-    for (let i = 0; i < 3; i++) {
-      items.push({
-        id: 1000 + i,
-        title: `${i % 2 === 0 ? "Brahman" : "Angus"} Cattle - ${
-          i % 2 === 0 ? "Female" : "Male"
-        }`,
-        description:
-          "High-quality livestock raised in optimal conditions. Fully vaccinated and health-certified with proper documentation. Ideal for breeding or farm expansion.",
-        category: "Cattle",
-        breed: i % 2 === 0 ? "Brahman" : "Angus",
-        age: 2 + i,
-        ageUnit: "years",
-        gender: i % 2 === 0 ? "Female" : "Male",
-        weight: 450 + i * 25,
-        weightUnit: "kg",
-        price: 900 + i * 100,
-        negotiable: true,
-        quantity: 1 + i,
-        location: `${
-          ["Cebu City", "Mandaue City", "Lapu-Lapu City", "Toledo City"][i]
-        }, Philippines`,
-        healthStatus: "Healthy",
-        feedingType: "Grass-fed",
-        imageUrl: `/src/assets/Bull.jpg?text=Similar+${i + 1}`,
-        certified: i % 3 === 0,
-        auction: i % 4 === 0,
-        availableImmediate: i % 2 === 0,
-        isFavorite: false,
-        listedDate: new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000),
-        deliveryOption: "Pick-up only",
-        deliveryDetails: "Available for pick-up Monday to Saturday, 8am to 5pm",
-        restrictions: "None",
-        sellerId: 123,
-      });
-    }
-    similarListings.value = items;
-  }, 500);
+const fetchSimilarListings = async (sellerId: string, listId: string) => {
+  const similar = await livestockRepo.getListingsBySeller(sellerId, 3, listId);
+  similarListings.value = similar;
 };
 
 onMounted(() => {
@@ -657,7 +626,15 @@ const viewAllReviews = () => {
                           Delivery Option
                         </h4>
                         <p class="text-gray-600">
-                          {{ livestock.deliveryOption }}
+                          <span
+                            v-for="(
+                              deliveryOption, index
+                            ) in livestock.deliveryOption"
+                            :key="index"
+                            class="mr-2"
+                          >
+                            {{ deliveryOption }},
+                          </span>
                         </p>
                         <p class="text-sm text-gray-500 mt-1">
                           {{ livestock.deliveryDetails }}
