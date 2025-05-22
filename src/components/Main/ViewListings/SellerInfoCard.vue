@@ -7,14 +7,16 @@ import Divider from 'primevue/divider';
 import Dialog from 'primevue/dialog'; // Added Dialog import
 
 interface Seller {
-    responseTime: any;
-    id: number;
-    name: string;
-    avatarUrl?: string;
-    rating: number;
-    reviewCount: number;
-    showPhoneNumber: boolean;
-    phoneNumber?: string;
+  id: number;
+  name: string;
+  avatarUrl?: string;
+  rating: number;
+  reviewCount: number;
+  showPhoneNumber: boolean;
+  phoneNumber?: string;
+  memberSince: number;
+  responseTime: string;
+  totalListings: number;
 }
 
 export default defineComponent({
@@ -105,7 +107,7 @@ export default defineComponent({
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <span class="text-gray-600">Member since</span>
-                    <span class="font-medium text-gray-800">2020</span>
+                    <span class="font-medium text-gray-800">{{ seller.memberSince }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-gray-600">Response time</span>

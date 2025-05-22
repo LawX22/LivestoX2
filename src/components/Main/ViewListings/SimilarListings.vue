@@ -3,7 +3,7 @@ import { defineComponent } from 'vue';
 
 type Listing = {
     id: number | string;
-    imageUrl: string;
+    image_url: string;
     title: string;
     certified?: boolean;
     isFavorite?: boolean;
@@ -30,7 +30,10 @@ export default defineComponent({
             this.$router.push('/main/LivestockMarket');
         },
         viewListingDetails(listingId: string | number) {
-            this.$router.push(`/main/ViewListings/${listingId}`);
+        this.$router.push({
+            path: '/main/ViewListings',
+            query: { id: String(listingId) }
+        });
         }
     }
 });
@@ -53,7 +56,7 @@ export default defineComponent({
                     class="bg-gradient-to-br from-white to-emerald-50 rounded-xl overflow-hidden shadow-sm border border-emerald-100 cursor-pointer transform hover:-translate-y-2 hover:shadow-lg transition-all duration-300"
                     @click="viewListingDetails(listing.id)">
                     <div class="relative aspect-video">
-                        <img :src="listing.imageUrl" :alt="listing.title" class="w-full h-full object-cover" />
+                        <img :src="listing.image_url[0]" :alt="listing.title" class="w-full h-full object-cover" />
                         <div v-if="listing.certified"
                             class="absolute top-3 left-3 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                             <i class="pi pi-verified mr-1"></i> Certified
@@ -80,7 +83,10 @@ export default defineComponent({
                             <span class="text-gray-600">{{ listing.age }} {{ listing.ageUnit }}</span>
                         </div>
                         <button 
-                            @click.stop="$router.push(`/main/ViewListings/${listing.id}`)" 
+                            @click.stop="$router.push({
+                                path: '/main/ViewListings',
+                                query: { id: String(listing.id) }
+                            })"
                             class="w-full bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium py-2 rounded-lg transition-colors duration-200 flex items-center justify-center">
                             <i class="pi pi-eye mr-2"></i>
                             View Details
