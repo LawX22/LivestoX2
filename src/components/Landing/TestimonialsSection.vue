@@ -2,12 +2,12 @@
 import { defineComponent, PropType } from 'vue';
 
 interface Testimonial {
-  text: string;
   name: string;
-  farm: string;
   image: string;
+  farm: string;
   state: string;
   memberSince: string;
+  text: string;
 }
 
 export default defineComponent({
@@ -16,50 +16,74 @@ export default defineComponent({
     testimonials: {
       type: Array as PropType<Testimonial[]>,
       required: true
-    },
-    title: {
-      type: String,
-      default: 'What Our Community Says'
-    },
-    description: {
-      type: String,
-      default: 'Hear from farmers who have successfully bought, sold, and learned on our platform.'
     }
   }
 });
 </script>
 
 <template>
-  <section class="py-20 bg-white relative overflow-hidden">
-    <div class="absolute top-20 right-0 w-96 h-96 bg-emerald-100 rounded-full filter blur-3xl opacity-30"></div>
-    <div class="absolute bottom-20 left-0 w-96 h-96 bg-emerald-100 rounded-full filter blur-3xl opacity-30"></div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-      <div class="text-center mb-16">
-        <span class="text-emerald-600 font-semibold uppercase tracking-wider">Testimonials</span>
-        <h2 class="text-4xl font-extrabold text-gray-900 mt-2">{{ title }}</h2>
-        <p class="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">{{ description }}</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div v-for="(testimonial, index) in testimonials" :key="index"
-          class="bg-white rounded-2xl shadow-lg p-8 relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
-          <div
-            class="absolute top-0 right-0 transform translate-x-2 -translate-y-2 text-6xl text-emerald-200 opacity-50 pointer-events-none font-serif">
-            "</div>
-
-          <p class="text-gray-600 mb-6 relative">{{ testimonial.text }}</p>
-
-          <div class="flex items-center">
-            <img :src="testimonial.image" :alt="testimonial.name" class="w-12 h-12 rounded-full mr-4">
-            <div>
-              <h4 class="font-bold text-gray-900">{{ testimonial.name }}</h4>
-              <p class="text-sm text-gray-500">{{ testimonial.farm }}, {{ testimonial.state }}</p>
-              <p class="text-xs text-emerald-600 mt-1">Member since {{ testimonial.memberSince }}</p>
-            </div>
+  <div class="grid md:grid-cols-3 gap-8">
+    <div v-for="testimonial in testimonials" :key="testimonial.name"
+      class="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105">
+      <div class="flex items-center mb-6">
+        <img :src="testimonial.image" :alt="testimonial.name" class="w-16 h-16 rounded-full object-cover mr-4">
+        <div>
+          <div class="font-bold text-slate-800">{{ testimonial.name }}</div>
+          <div class="text-slate-600">{{ testimonial.farm }}</div>
+          <div class="text-xs text-slate-500">{{ testimonial.state }} • Member since {{ testimonial.memberSince }}
           </div>
         </div>
       </div>
+
+      <blockquote class="text-slate-700 leading-relaxed mb-6 italic">
+        "{{ testimonial.text }}"
+      </blockquote>
+
+      <div class="flex text-yellow-500">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
+          <path
+            d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+        </svg>
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
+          <path
+            d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+        </svg>
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
+          <path
+            d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+        </svg>
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
+          <path
+            d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+        </svg>
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
+          <path
+            d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+        </svg>
+      </div>
     </div>
-  </section>
+  </div>
+
+  <!-- Trust Indicators -->
+  <div class="mt-20 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-3xl p-12 text-white text-center">
+    <slot name="trust-title"></slot>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div>
+        <div class="text-4xl font-black mb-2">98%</div>
+        <div class="text-emerald-100">Satisfaction Rate</div>
+      </div>
+      <div>
+        <div class="text-4xl font-black mb-2">24/7</div>
+        <div class="text-emerald-100">Customer Support</div>
+      </div>
+      <div>
+        <div class="text-4xl font-black mb-2">100%</div>
+        <div class="text-emerald-100">Verified Sellers</div>
+      </div>
+      <div>
+        <div class="text-4xl font-black mb-2">$0</div>
+        <div class="text-emerald-100">Hidden Fees</div>
+      </div>
+    </div>
+  </div>
 </template>

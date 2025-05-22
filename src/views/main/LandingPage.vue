@@ -6,7 +6,7 @@ import AnimalsMarketplace from '../../components/Landing/AnimalsMarketplace.vue'
 import CommunityForum from '../../components/Landing/CommunityForum.vue';
 import TestimonialsSection from '../../components/Landing/TestimonialsSection.vue';
 import HowItWork from '../../components/Landing/HowItWork.vue';
-import CategoriesSection from '../../components/Landing/CategoriesSection.vue';
+import AdsSection from '../../components/Landing/AdsSection.vue';
 import imageUrl from '/src/assets/Bull.jpg';
 
 interface AnimalListing {
@@ -39,7 +39,6 @@ interface ForumPost {
   category: string;
 }
 
-// Platform statistics
 interface PlatformStats {
   activeUsers: number;
   totalAnimalsListed: number;
@@ -58,13 +57,12 @@ export default defineComponent({
     CommunityForum,
     TestimonialsSection,
     HowItWork,
-    CategoriesSection
+    AdsSection,
   },
   setup() {
     const searchQuery = ref('');
     const animalCategory = ref('all');
 
-    // Platform statistics
     const platformStats = ref<PlatformStats>({
       activeUsers: 12467,
       totalAnimalsListed: 35892,
@@ -74,7 +72,6 @@ export default defineComponent({
       farmersHelped: 8900
     });
 
-    // Last updated timestamp
     const lastUpdated = ref('April 24, 2025 09:30 AM');
 
     const bestSellingAnimals = ref<AnimalListing[]>([
@@ -139,7 +136,6 @@ export default defineComponent({
       }
     ]);
 
-    // Recently added animals
     const recentlyAddedAnimals = ref<AnimalListing[]>([
       {
         id: 5,
@@ -277,7 +273,6 @@ export default defineComponent({
       { value: 'poultry', label: 'Poultry', count: 2555, icon: '🐓' }
     ]);
 
-    // Active users by time
     const activeUsersByTime = ref({
       now: 428,
       today: 2467,
@@ -285,7 +280,6 @@ export default defineComponent({
       month: 12467
     });
 
-    // Featured regions with high activity
     const activeRegions = ref([
       { name: "Midwest", activeUsers: 3842, listings: 12467 },
       { name: "South", activeUsers: 2975, listings: 9854 },
@@ -294,7 +288,6 @@ export default defineComponent({
     ]);
 
     const animals = computed(() => {
-      // Combine or filter animals as needed. Here, we combine both lists.
       return [...bestSellingAnimals.value, ...recentlyAddedAnimals.value];
     });
 
@@ -310,260 +303,367 @@ export default defineComponent({
       activeUsersByTime,
       activeRegions,
       lastUpdated,
-      animals
+      animals,
+      imageUrl
     };
   }
 });
 </script>
 
 <template>
-  <div class="min-h-screen font-sans text-gray-800 bg-gray-50 antialiased">
-    <!-- Fixed header with modern glass morphism design -->
-    <div class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-95 backdrop-blur-sm shadow-lg">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 font-sans text-slate-900">
+    <!-- Navigation -->
+    <nav
+      class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-95 backdrop-blur-lg shadow-sm border-b border-slate-200 border-opacity-50">
       <NavBar />
-    </div>
+    </nav>
 
-    <!-- Statistics Bar - Gradient animation and improved stats design -->
-    <div class="sticky top-16 z-40 bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-700 text-white py-2 shadow-md">
-      <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-sm px-4">
-        <div class="flex items-center space-x-2">
-          <div class="h-2.5 w-2.5 rounded-full bg-emerald-300 animate-pulse"></div>
-          <span class="font-medium">{{ activeUsersByTime.now }} users online now</span>
-        </div>
-        <div class="hidden md:flex items-center divide-x divide-emerald-600">
-          <span class="px-4 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> {{ platformStats.totalAnimalsListed.toLocaleString() }} Listings</span>
-          <span class="px-4 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> {{ platformStats.successfulSales.toLocaleString() }} Sales</span>
-          <span class="px-4 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg> {{ platformStats.activeUsers.toLocaleString() }} Users</span>
-          <span class="pl-4 text-emerald-200 text-xs flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Updated: {{ lastUpdated }}</span>
-        </div>
-        <!-- Mobile stats view -->
-        <div class="md:hidden flex items-center space-x-3 text-xs">
-          <span>{{ platformStats.totalAnimalsListed.toLocaleString() }} Listed</span>
-          <span>{{ platformStats.successfulSales.toLocaleString() }} Sales</span>
+    <!-- Hero Section with Background Image -->
+    <section class="relative min-h-screen bg-cover bg-center bg-no-repeat pt-16 overflow-hidden" :style="{}">
+      <!-- Enhanced Overlay with Multiple Gradients -->
+      <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-transparent opacity-90"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-emerald-900 via-transparent to-blue-900 opacity-40"></div>
+
+      <!-- Live Stats Ticker -->
+      <div
+        class="absolute top-16 left-0 w-full z-40 bg-gradient-to-r from-emerald-600 via-blue-600 to-violet-600 text-white py-3 overflow-hidden shadow-lg">
+        <div>
+          <div class="flex items-center justify-center space-x-8 text-sm font-medium">
+            <span class="inline-flex items-center">
+              <div class="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
+              {{ activeUsersByTime.now }} users online
+            </span>
+            <span class="inline-flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ platformStats.successfulSales.toLocaleString() }} completed sales
+            </span>
+            <span class="inline-flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+              </svg>
+              {{ platformStats.activeUsers.toLocaleString() }} registered farmers
+            </span>
+            <span class="inline-flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+              </svg>
+              {{ platformStats.totalAnimalsListed.toLocaleString() }} active listings
+            </span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Hero Section - Enhanced with modern design elements -->
-    <section class="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-800 via-teal-700 to-emerald-600 overflow-hidden">
-      <!-- Animated wave pattern overlay -->
-      <div class="absolute inset-0 opacity-5">
-        <svg class="h-full w-full" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#ffffff" fill-opacity="0.3" d="M0,192L48,176C96,160,192,128,288,138.7C384,149,480,203,576,202.7C672,203,768,149,864,138.7C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" class="animate-pulse" style="animation-duration: 15s;"></path>
-          <path fill="#ffffff" fill-opacity="0.3" d="M0,96L48,122.7C96,149,192,203,288,208C384,213,480,171,576,170.7C672,171,768,213,864,218.7C960,224,1056,192,1152,170.7C1248,149,1344,139,1392,133.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" class="animate-pulse" style="animation-duration: 20s; animation-delay: 1s;"></path>
-        </svg>
-      </div>
-      
-      <!-- Decorative circles -->
-      <div class="absolute top-20 left-1/4 w-64 h-64 bg-white rounded-full opacity-5 mix-blend-overlay filter blur-xl"></div>
-      <div class="absolute bottom-20 right-1/4 w-96 h-96 bg-yellow-300 rounded-full opacity-10 mix-blend-overlay filter blur-3xl"></div>
-
-      <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row items-center justify-between">
-          <div class="md:w-1/2 mb-12 md:mb-0 relative z-10">
-            <!-- Enhanced trust badge with gradient -->
-            <div class="inline-block bg-gradient-to-r from-white to-white/70 bg-opacity-10 backdrop-blur-sm rounded-full px-4 py-1.5 text-emerald-50 text-sm mb-6 shadow-sm border border-white border-opacity-20">
-              <div class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                Trusted by <span class="font-semibold">{{ platformStats.farmersHelped.toLocaleString() }}+</span> farmers nationwide
+      <!-- Main Hero Content -->
+      <div class="relative z-30 flex items-center min-h-screen pt-20 pb-12">
+        <div class="max-w-7xl mx-auto px-4 w-full">
+          <div class="grid lg:grid-cols-2 gap-16 items-center">
+            <!-- Left Column - Content -->
+            <div class="text-white space-y-8">
+              <!-- Trust Badge -->
+              <div
+                class="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-6 py-3 rounded-full text-sm font-semibold shadow-xl">
+                <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                TRUSTED BY {{ platformStats.farmersHelped.toLocaleString() }}+ FARMERS
               </div>
-            </div>
-            
-            <!-- Enhanced heading with underline animation -->
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
-              Find Your <span class="text-yellow-300 relative inline-block">
-                Perfect
-                <span class="absolute bottom-1 left-0 w-full h-1 bg-yellow-300 opacity-50 rounded"></span>
-              </span> Farm Animals
-            </h1>
-            
-            <p class="text-lg text-emerald-50 mb-8 leading-relaxed max-w-lg font-light">
-              Connect with trusted farmers and livestock sellers across the country.
-              Buy, sell, and learn about quality farm animals.
-            </p>
-            
-            <!-- Enhanced search box with soft glow -->
-            <div class="bg-white rounded-xl p-2 mb-8 shadow-xl ring-1 ring-white/20 ring-offset-4 ring-offset-emerald-700/30">
-              <div class="flex flex-col sm:flex-row">
-                <div class="relative flex-grow">
-                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  <input 
-                    v-model="searchQuery" 
-                    type="text" 
-                    placeholder="Search for animals..." 
-                    class="w-full pl-12 pr-4 py-3.5 rounded-l-lg border-0 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-gray-700"
-                  >
-                </div>
-                
-                <select 
-                  v-model="animalCategory"
-                  class="px-4 py-3.5 bg-gray-50 text-gray-700 border-l border-gray-100 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                >
-                  <option v-for="category in animalCategories" :key="category.value" :value="category.value">
-                    {{ category.icon }} {{ category.label }}
-                  </option>
-                </select>
-                
-                <button class="bg-gradient-to-br from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white font-medium py-3.5 px-6 rounded-r-lg transition duration-300 shadow-md">
-                  <div class="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    Search
-                  </div>
+
+              <!-- Main Headline -->
+              <div class="space-y-4">
+                <h1 class="text-5xl md:text-7xl font-black leading-tight tracking-tight">
+                  <span class="block text-white drop-shadow-2xl">Premium</span>
+                  <span
+                    class="block bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent drop-shadow-lg">Farm
+                    Animals</span>
+                  <span class="block text-slate-100 drop-shadow-xl">Marketplace</span>
+                </h1>
+              </div>
+
+              <p class="text-xl md:text-2xl text-slate-200 max-w-2xl font-light leading-relaxed drop-shadow-lg">
+                Connect directly with verified farmers and livestock sellers worldwide.
+                <span class="font-semibold text-emerald-300">No intermediaries</span>, no complications, just trusted
+                transactions.
+              </p>
+
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row gap-6 pt-4">
+                <button
+                  class="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-10 py-4 font-bold text-lg hover:from-emerald-600 hover:to-emerald-700 transition-all rounded-xl shadow-2xl hover:shadow-emerald-500 hover:shadow-lg transform hover:scale-105 hover:-translate-y-1">
+                  BROWSE ANIMALS
+                </button>
+                <button
+                  class="border-2 border-white text-white px-10 py-4 font-bold text-lg hover:bg-white hover:text-slate-900 transition-all rounded-xl backdrop-blur-sm bg-white bg-opacity-10">
+                  SELL ANIMALS
                 </button>
               </div>
-            </div>
-            
-            <!-- Enhanced call to action buttons -->
-            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <button class="bg-white text-emerald-800 font-medium py-3.5 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl hover:bg-gray-50 flex items-center justify-center group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                Browse Animals
-              </button>
-              <button class="bg-transparent border-2 border-white text-white font-medium py-3.5 px-8 rounded-lg hover:bg-white hover:bg-opacity-10 transition duration-300 shadow-md flex items-center justify-center group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Join Community
-              </button>
-            </div>
-          </div>
-          
-          <!-- Enhanced hero image with multi-layer effects -->
-          <div class="md:w-1/2">
-            <div class="relative">
-              <!-- Enhanced decorative elements -->
-              <div class="absolute -top-8 -right-8 w-80 h-80 bg-gradient-to-tr from-yellow-300 to-yellow-200 rounded-full opacity-20 filter blur-3xl"></div>
-              <div class="absolute -bottom-12 -left-12 w-64 h-64 bg-gradient-to-bl from-emerald-300 to-teal-200 rounded-full opacity-20 filter blur-3xl"></div>
 
-              <!-- Main image with enhanced styling -->
-              <div class="relative rounded-2xl overflow-hidden shadow-2xl transform transition-transform duration-500 hover:scale-[1.02]">
-                <!-- Card glow effect -->
-                <div class="absolute inset-0 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-300 opacity-30 blur-xl -z-10"></div>
-                
-                <img 
-                  src="/src/assets/Bull.jpg" 
-                  alt="Quality farm animals" 
-                  class="w-full h-96 object-cover"
-                >
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
-                
-                <!-- Enhanced card footer with glass morphism -->
-                <div class="absolute bottom-0 left-0 right-0 p-6 backdrop-blur-sm bg-black/20">
-                  <div class="flex justify-between items-center">
-                    <p class="text-white font-medium text-base">
-                      <span class="text-xs uppercase tracking-wider font-light block mb-1 text-emerald-100">Global Network</span>
-                      Verified sellers across <span class="font-bold">{{ platformStats.countries }}</span> countries
-                    </p>
-                    <div class="bg-emerald-600 text-white rounded-full px-3.5 py-1.5 text-sm font-medium flex items-center shadow-md">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <!-- Quality Badges -->
+              <div class="flex flex-wrap gap-4 pt-6">
+                <div
+                  class="inline-flex items-center gap-2 bg-emerald-500 bg-opacity-90 text-white px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide backdrop-blur-sm">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd" />
+                  </svg>
+                  VERIFIED SELLERS
+                </div>
+                <div
+                  class="inline-flex items-center gap-2 bg-blue-500 bg-opacity-90 text-white px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide backdrop-blur-sm">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  HEALTH CERTIFIED
+                </div>
+                <div
+                  class="inline-flex items-center gap-2 bg-violet-500 bg-opacity-90 text-white px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide backdrop-blur-sm">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" />
+                  </svg>
+                  BREED VERIFIED
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column - Search & Stats -->
+            <div class="space-y-8">
+              <!-- Advanced Search Interface -->
+              <div
+                class="bg-white bg-opacity-95 backdrop-blur-lg border border-slate-200 border-opacity-50 rounded-3xl shadow-2xl p-6">
+                <div class="text-center mb-6">
+                  <h3 class="text-2xl font-bold text-slate-900 mb-2">Find Your Perfect Animal</h3>
+                  <p class="text-slate-600">Search through thousands of verified listings</p>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="relative">
+                    <input v-model="searchQuery" type="text" placeholder="What animal are you looking for?"
+                      class="w-full px-6 py-4 text-lg border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-500 focus:ring-opacity-30 focus:border-emerald-500 font-medium placeholder-slate-400">
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
-                      Verified Listings
                     </div>
+                  </div>
+
+                  <select v-model="animalCategory"
+                    class="w-full px-6 py-4 text-lg border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-500 focus:ring-opacity-30 focus:border-emerald-500 font-medium text-slate-700">
+                    <option v-for="category in animalCategories" :key="category.value" :value="category.value">
+                      {{ category.icon }} {{ category.label }}
+                    </option>
+                  </select>
+
+                  <button
+                    class="w-full bg-gradient-to-r from-emerald-600 to-blue-600 text-white px-8 py-4 font-bold text-lg hover:from-emerald-700 hover:to-blue-700 transition-all rounded-xl shadow-lg hover:shadow-xl">
+                    SEARCH NOW
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live Statistics Grid -->
+              <div class="grid grid-cols-2 gap-4">
+                <div
+                  class="bg-white bg-opacity-90 backdrop-blur-sm border border-slate-200 border-opacity-50 rounded-2xl p-6 text-center shadow-xl hover:shadow-2xl transition-all hover:scale-105 group">
+                  <div
+                    class="text-3xl font-black mb-2 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform">
+                    {{ platformStats.activeUsers.toLocaleString() }}
+                  </div>
+                  <div class="text-xs uppercase tracking-wide font-bold text-slate-600">
+                    ACTIVE USERS
+                  </div>
+                </div>
+                <div
+                  class="bg-white bg-opacity-90 backdrop-blur-sm border border-slate-200 border-opacity-50 rounded-2xl p-6 text-center shadow-xl hover:shadow-2xl transition-all hover:scale-105 group">
+                  <div
+                    class="text-3xl font-black mb-2 bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform">
+                    {{ platformStats.totalAnimalsListed.toLocaleString() }}
+                  </div>
+                  <div class="text-xs uppercase tracking-wide font-bold text-slate-600">
+                    LISTINGS
+                  </div>
+                </div>
+                <div
+                  class="bg-white bg-opacity-90 backdrop-blur-sm border border-slate-200 border-opacity-50 rounded-2xl p-6 text-center shadow-xl hover:shadow-2xl transition-all hover:scale-105 group">
+                  <div
+                    class="text-3xl font-black mb-2 bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform">
+                    {{ platformStats.successfulSales.toLocaleString() }}
+                  </div>
+                  <div class="text-xs uppercase tracking-wide font-bold text-slate-600">
+                    SALES
+                  </div>
+                </div>
+                <div
+                  class="bg-white bg-opacity-90 backdrop-blur-sm border border-slate-200 border-opacity-50 rounded-2xl p-6 text-center shadow-xl hover:shadow-2xl transition-all hover:scale-105 group">
+                  <div
+                    class="text-3xl font-black mb-2 bg-gradient-to-r from-pink-600 to-emerald-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform">
+                    {{ platformStats.countries }}
+                  </div>
+                  <div class="text-xs uppercase tracking-wide font-bold text-slate-600">
+                    COUNTRIES
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Enhanced platform statistics with glass morphism -->
-        <div class="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div class="group relative p-5 rounded-xl backdrop-blur-md bg-white/10 border border-white/20 overflow-hidden transition-all duration-300 hover:bg-white/15">
-            <!-- Animated background element -->
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="text-3xl font-bold text-white mb-1 relative">{{ platformStats.activeUsers.toLocaleString() }}</div>
-            <div class="text-emerald-100 text-sm relative flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              Active Users
-            </div>
-          </div>
-          <div class="group relative p-5 rounded-xl backdrop-blur-md bg-white/10 border border-white/20 overflow-hidden transition-all duration-300 hover:bg-white/15">
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="text-3xl font-bold text-white mb-1 relative">{{ platformStats.totalAnimalsListed.toLocaleString() }}</div>
-      <div class="text-emerald-100 text-sm relative flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              Total Listings
-            </div>
-          </div>
-          <div class="group relative p-5 rounded-xl backdrop-blur-md bg-white/10 border border-white/20 overflow-hidden transition-all duration-300 hover:bg-white/15">
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="text-3xl font-bold text-white mb-1 relative">{{ platformStats.successfulSales.toLocaleString() }}</div>
-            <div class="text-emerald-100 text-sm relative flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Successful Sales
-            </div>
-          </div>
-          <div class="group relative p-5 rounded-xl backdrop-blur-md bg-white/10 border border-white/20 overflow-hidden transition-all duration-300 hover:bg-white/15">
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="text-3xl font-bold text-white mb-1 relative">{{ platformStats.countries }}</div>
-            <div class="text-emerald-100 text-sm relative flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Countries
-            </div>
-          </div>
-        </div>
+      <!-- Bottom Wave Separator -->
+      <div class="absolute bottom-0 left-0 w-full">
+        <svg class="w-full h-24 text-white" viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path
+            d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z"
+            fill="currentColor"></path>
+        </svg>
       </div>
     </section>
 
-    <!-- Featured Categories Section -->
-    <CategoriesSection :categories="animalCategories" />
+    <!-- Ads Section -->
+    <section class="py-5 ">
+      <div class="text-center mb-10">
+          <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">
+            Livestock Animals
+          </h2>
+          <p class="text-xl text-slate-300 font-light max-w-2xl mx-auto">
+           All aboard the farm animal express!
+          </p>
+        </div>
+       <AdsSection />
+    </section>
 
     <!-- How It Works Section -->
-    <HowItWork />
+    <section
+      class="py-24 bg-gradient-to-br from-slate-900 via-blue-900 to-emerald-900 text-white relative overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 relative z-10">
+        <div class="text-center mb-20">
+          <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">
+            How It Works
+          </h2>
+          <p class="text-xl text-slate-300 font-light max-w-2xl mx-auto">
+            Get started in just three simple steps
+          </p>
+        </div>
 
-    <!-- Marketplace Section -->
-    <AnimalsMarketplace 
-      :bestSellingAnimals="bestSellingAnimals" 
-      :recentlyAddedAnimals="recentlyAddedAnimals" 
-    />
+        <HowItWork>
+          <template #button>
+            <button
+              class="bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-12 py-4 font-bold text-lg hover:from-emerald-600 hover:to-blue-600 transition-all rounded-xl shadow-2xl hover:shadow-emerald-500 hover:shadow-lg transform hover:scale-105">
+              GET STARTED NOW
+            </button>
+          </template>
+        </HowItWork>
+      </div>
+    </section>
 
-    <!-- Community Section -->
-    <CommunityForum :forumPosts="forumPosts" />
+    <!-- Animals Marketplace Section -->
+    <section class="py-24 bg-gradient-to-br from-slate-50 to-white">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-20">
+          <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">
+            <span class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Featured
+              Animals</span>
+          </h2>
+          <p class="text-xl text-slate-600 font-light max-w-2xl mx-auto">
+            Discover premium livestock from verified sellers across the country
+          </p>
+        </div>
+
+        <AnimalsMarketplace :best-selling-animals="bestSellingAnimals" :recently-added-animals="recentlyAddedAnimals">
+          <template #title-best-selling>
+            <h3 class="text-2xl font-bold mb-8 text-slate-800">🔥 Best Selling This Week</h3>
+          </template>
+          <template #title-recently-added>
+            <h3 class="text-2xl font-bold mb-8 text-slate-800">🆕 Recently Added</h3>
+          </template>
+          <template #button>
+            <button
+              class="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-12 py-4 font-bold text-lg hover:from-slate-900 hover:to-black transition-all rounded-xl shadow-2xl">
+              VIEW ALL ANIMALS
+            </button>
+          </template>
+        </AnimalsMarketplace>
+      </div>
+    </section>
+
+    <!-- Community Forum Section -->
+    <section class="py-24 bg-gradient-to-br from-emerald-50 to-blue-50">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-20">
+          <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">
+            <span class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Community
+              Forum</span>
+          </h2>
+          <p class="text-xl text-slate-600 font-light max-w-2xl mx-auto">
+            Connect with fellow farmers, share knowledge, and get expert advice
+          </p>
+        </div>
+
+        <CommunityForum :forum-posts="forumPosts" :platform-stats="platformStats"
+          :active-users-by-time="activeUsersByTime">
+          <template #button>
+            <button
+              class="bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-12 py-4 font-bold text-lg hover:from-emerald-600 hover:to-blue-600 transition-all rounded-xl shadow-2xl">
+              JOIN THE COMMUNITY
+            </button>
+          </template>
+        </CommunityForum>
+      </div>
+    </section>
 
     <!-- Testimonials Section -->
-    <TestimonialsSection :testimonials="testimonials" />
-
-    <!-- Call to Action Section -->
-    <section class="relative py-20 bg-emerald-800 overflow-hidden">
-      <!-- Decorative background elements -->
-      <div class="absolute inset-0 opacity-10">
-        <svg class="h-full w-full" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#ffffff" fill-opacity="1" d="M0,192L48,176C96,160,192,128,288,138.7C384,149,480,203,576,202.7C672,203,768,149,864,138.7C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        </svg>
-      </div>
-      
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl font-bold text-white mb-4">Ready to Find Your Next Farm Animal?</h2>
-          <p class="text-lg text-emerald-100 max-w-2xl mx-auto">Join thousands of farmers who buy, sell, and learn about farm animals on our trusted platform.</p>
+    <section class="py-24 bg-white">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-20">
+          <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight">
+            <span class="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">What Farmers
+              Say</span>
+          </h2>
+          <p class="text-xl text-slate-600 font-light max-w-2xl mx-auto">
+            Real stories from real farmers who've found success on our platform
+          </p>
         </div>
-        
-        <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-          <a href="#" class="inline-block bg-white text-emerald-800 font-medium py-3.5 px-8 rounded-lg hover:bg-gray-50 transition duration-300 shadow-lg">
-            Create Free Account
-          </a>
-          <a href="#" class="inline-block border-2 border-white text-white font-medium py-3.5 px-8 rounded-lg hover:bg-white hover:bg-opacity-10 transition duration-300">
-            Learn More
-          </a>
+
+        <TestimonialsSection :testimonials="testimonials">
+          <template #trust-title>
+            <h3 class="text-3xl font-bold mb-8">Trusted by Thousands</h3>
+          </template>
+        </TestimonialsSection>
+      </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section
+      class="py-24 bg-gradient-to-br from-slate-900 via-blue-900 to-emerald-900 text-white relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-emerald-600 opacity-10"></div>
+      <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 opacity-20 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500 opacity-20 rounded-full blur-3xl"></div>
+
+      <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
+        <h2 class="text-4xl md:text-6xl font-black mb-8 tracking-tight">
+          Ready to Transform Your Farm?
+        </h2>
+        <p class="text-xl text-slate-300 font-light mb-12 max-w-2xl mx-auto">
+          Join thousands of successful farmers who've found their perfect animals and grown their operations with our
+          trusted platform.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-6 justify-center">
+          <button
+            class="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-12 py-4 font-bold text-lg hover:from-emerald-600 hover:to-emerald-700 transition-all rounded-xl shadow-2xl hover:shadow-emerald-500 hover:shadow-lg transform hover:scale-105">
+            START BUYING
+          </button>
+          <button
+            class="border-2 border-white text-white px-12 py-4 font-bold text-lg hover:bg-white hover:text-slate-900 transition-all rounded-xl backdrop-blur-sm bg-white bg-opacity-10">
+            START SELLING
+          </button>
+        </div>
+
+        <div class="mt-12 text-slate-400 text-sm">
+          Last updated: {{ lastUpdated }} • {{ activeUsersByTime.now }} users currently online
         </div>
       </div>
     </section>

@@ -1,90 +1,109 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 
-interface Step {
-  id: number;
-  title: string;
-  description: string;
-  icon: string;
-}
-
 export default defineComponent({
-  name: 'HowItWorksSection',
-  props: {
-    title: {
-      type: String,
-      default: 'How Our Platform Works'
-    },
-    subtitle: {
-      type: String,
-      default: 'Process'
-    },
-    description: {
-      type: String,
-      default: 'Simple steps to connect farmers and buyers in our trusted marketplace.'
-    },
-    steps: {
-      type: Array as () => Step[],
-      default: () => [
-        {
-          id: 1,
-          title: 'Create Account',
-          description: 'Sign up for free and complete your profile with your farm details and location.',
-          icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-        },
-        {
-          id: 2,
-          title: 'Browse or List',
-          description: 'Search for animals or create detailed listings with health records and documentation.',
-          icon: 'M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z'
-        },
-        {
-          id: 3,
-          title: 'Connect',
-          description: 'Message sellers directly, ask questions, and arrange visits to view animals in person.',
-          icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'
-        },
-        {
-          id: 4,
-          title: 'Complete Sale',
-          description: 'Finalize transactions securely and leave reviews to build our trusted community.',
-          icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
-        }
-      ]
-    },
-    bgColor: {
-      type: String,
-      default: 'bg-gray-50'
-    }
-  }
+  name: 'HowItWork'
 });
 </script>
 
 <template>
-  <section :class="['py-20', bgColor]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <span class="text-emerald-600 font-semibold uppercase tracking-wider">{{ subtitle }}</span>
-        <h2 class="text-4xl font-extrabold text-gray-900 mt-2">{{ title }}</h2>
-        <p class="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">{{ description }}</p>
+  <div class="grid md:grid-cols-3 gap-12">
+    <!-- Step 1 -->
+    <div class="text-center group">
+      <div class="relative mb-8">
+        <div
+          class="w-24 h-24 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-3xl flex items-center justify-center font-black text-3xl mx-auto mb-6 group-hover:scale-110 transition-transform shadow-2xl">
+          1
+        </div>
+        <div
+          class="absolute -top-4 -right-4 w-8 h-8 bg-emerald-400 rounded-full opacity-20 group-hover:opacity-100 transition-opacity">
+        </div>
       </div>
+      <h3 class="text-2xl font-bold mb-4 text-white">Start as Buyer</h3>
+      <p class="text-slate-300 leading-relaxed">
+        Create your account and start browsing thousands of verified animals. As a buyer, you can search, view details, and purchase livestock from verified farmers.
+      </p>
+      <div class="mt-4 px-3 py-1 bg-emerald-500/20 rounded-full text-emerald-300 text-sm inline-block">
+        Default Account Type
+      </div>
+    </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div v-for="step in steps" :key="step.id"
-          class="bg-white rounded-2xl shadow-lg p-8 relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 text-center">
-          <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="step.icon" />
-            </svg>
+    <!-- Step 2 -->
+    <div class="text-center group">
+      <div class="relative mb-8">
+        <div
+          class="w-24 h-24 bg-gradient-to-r from-blue-500 to-violet-500 text-white rounded-3xl flex items-center justify-center font-black text-3xl mx-auto mb-6 group-hover:scale-110 transition-transform shadow-2xl">
+          2
+        </div>
+        <div
+          class="absolute -top-4 -right-4 w-8 h-8 bg-blue-400 rounded-full opacity-20 group-hover:opacity-100 transition-opacity">
+        </div>
+      </div>
+      <h3 class="text-2xl font-bold mb-4 text-white">Upgrade to Farmer</h3>
+      <p class="text-slate-300 leading-relaxed">
+        Ready to sell? Upgrade your account to become a verified farmer. Submit your farm credentials and get approved to list and sell your own livestock.
+      </p>
+      <div class="mt-4 px-3 py-1 bg-blue-500/20 rounded-full text-blue-300 text-sm inline-block">
+        Verification Required
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="text-center group">
+      <div class="relative mb-8">
+        <div
+          class="w-24 h-24 bg-gradient-to-r from-violet-500 to-pink-500 text-white rounded-3xl flex items-center justify-center font-black text-3xl mx-auto mb-6 group-hover:scale-110 transition-transform shadow-2xl">
+          3
+        </div>
+        <div
+          class="absolute -top-4 -right-4 w-8 h-8 bg-violet-400 rounded-full opacity-20 group-hover:opacity-100 transition-opacity">
+        </div>
+      </div>
+      <h3 class="text-2xl font-bold mb-4 text-white">Buy & Sell Freely</h3>
+      <p class="text-slate-300 leading-relaxed">
+        With full access, connect directly with other farmers and buyers. Secure payments, logistics coordination, and all paperwork handled seamlessly.
+      </p>
+      <div class="mt-4 px-3 py-1 bg-violet-500/20 rounded-full text-violet-300 text-sm inline-block">
+        Complete Access
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Info Section -->
+  <div class="mt-12 bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h4 class="text-xl font-bold text-white mb-4">Account Types Explained</h4>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3">
+            <div class="w-2 h-2 bg-emerald-400 rounded-full mt-2 flex-shrink-0"></div>
+            <div>
+              <p class="text-white font-medium">Buyer Account (Default)</p>
+              <p class="text-slate-400 text-sm">Browse, search, and purchase animals from verified sellers</p>
+            </div>
           </div>
-          <div
-            class="absolute -top-4 -right-4 bg-emerald-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg">
-            {{ step.id }}</div>
-          <h3 class="text-xl font-bold text-gray-900 mb-4">{{ step.title }}</h3>
-          <p class="text-gray-600">{{ step.description }}</p>
+          <div class="flex items-start gap-3">
+            <div class="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+            <div>
+              <p class="text-white font-medium">Farmer Account (Upgraded)</p>
+              <p class="text-slate-400 text-sm">All buyer features plus ability to list and sell your livestock</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-violet-500 text-white px-6 py-3 rounded-xl font-medium">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Verification Process Required
         </div>
       </div>
     </div>
-  </section>
+  </div>
+
+  <!-- CTA Button -->
+  <div class="text-center mt-16">
+    <slot name="button"></slot>
+  </div>
 </template>
