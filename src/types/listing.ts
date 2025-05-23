@@ -21,7 +21,7 @@ export interface AnimalListing {
   certified: boolean;
   auction: boolean;
   available_immediate: boolean;
-  listed_date: Date;
+  listed_date?: Date;
   delivery_option: Record<string, any>;
   max_delivery_distance: number | null;
   delivery_distance_unit: string;
@@ -36,7 +36,7 @@ export interface LivestockListing {
   category: string;
   breed: string;
   age: number | null;
-  ageUnit: string;
+  age_unit: string;
   gender: string;
   weight: number | null;
   weight_unit: string;
@@ -53,5 +53,5 @@ export interface LivestockListing {
   auction: boolean;
   available_immediate: boolean;
   isFavorite: boolean;
-  listedDate: Date;
+  listed_date: Date;
 }
