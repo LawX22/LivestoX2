@@ -491,7 +491,7 @@ export default defineComponent({
         <div
             class="max-w-6xl mx-auto flex flex-col lg:flex-row rounded-3xl overflow-hidden shadow-2xl bg-white relative z-10 border border-emerald-100">
             <!-- Left side panel component -->
-            <LeftPanel :currentStep="currentStep" />
+            <LeftPanel />
 
             <!-- Right side form panel with improved UI -->
             <div class="w-full lg:w-3/5 p-6 md:p-12">

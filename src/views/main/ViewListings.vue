@@ -338,10 +338,9 @@ const formatPrice = (price: number) => {
 };
 
 // View all reviews method
-const viewAllReviews = () => {
-  // In a real app, this would navigate to a full reviews page or open a dialog
-  alert("Viewing all reviews for this seller.");
-};
+// const viewAllReviews = () => {
+//   alert("Viewing all reviews for this seller.");
+// };
 </script>
 
 <template>

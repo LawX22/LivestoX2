@@ -6,7 +6,7 @@ export default defineComponent({
   props: {
     logoPath: {
       type: String,
-      required: true
+      required: false,
     },
     carouselImages: {
       type: Array,

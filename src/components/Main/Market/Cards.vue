@@ -12,7 +12,7 @@ const searchQuery = ref("");
 const selectedCategory = ref<{ name: string; code: string } | null>(null);
 const sortOption = ref({ value: "newest", label: "Newest First" });
 const first = ref(0);
-const selectedListing = ref();
+// const selectedListing = ref();
 
 const props = defineProps<{
   listings: LivestockListing[];
