@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { supabase } from './lib/supabaseClient'
 import { useAuthStore } from './stores/authContext'
+import { supabase } from './supabase'
 
 const authStore = useAuthStore()
 
